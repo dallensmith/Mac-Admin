@@ -9,6 +9,20 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: local
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://root:mysecretpassword@db:5432/local
+      ORIGIN: http://localhost:3000
+    depends_on:
+      - db
+    restart: unless-stopped
+
 volumes:
   pgdata:
