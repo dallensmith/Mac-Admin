@@ -1,46 +1,44 @@
-# sv
+# Mac Admin Panel
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+An admin control panel for the Smart Mac / Mac Bot Discord bot, built with SvelteKit 2 and Tailwind CSS.
 
-## Creating a project
+## Current Status: Frontend Scaffold Only
 
-If you're seeing this, you've probably already done this step. Congrats!
+This project is currently in the **UI Scaffolding Phase**. 
 
-```sh
-# create a new project
-npx sv create my-app
-```
+**Important Notes:**
+- Authentication, API routing, and database connections are **NOT** wired up yet.
+- The app uses completely mock data (located in `src/lib/mock/admin.ts`).
+- All buttons and actions are non-functional placeholders.
+- No real secrets or API keys are used in the codebase.
+- The `DATABASE_URL` check is satisfied by placeholder values in `.env` for local development.
 
-To recreate this project with the same configuration:
+## Future Plans
 
-```sh
-# recreate this project
-npx sv@0.15.2 create --template minimal --types ts --add prettier eslint vitest="usages:unit,component" playwright tailwindcss="plugins:typography,forms" sveltekit-adapter="adapter:auto" better-auth="demo:password" mdsvex mcp="ide:vscode+setup:local" drizzle="database:postgresql+postgresql:postgres.js+docker:yes" --install npm ./
-```
+- **Authentication**: Will be handled by [Better Auth](https://better-auth.com/) using **Discord OAuth ONLY**. Access will be restricted to approved bot admin Discord accounts. There will be no email/password or other social logins.
+- **Database**: Drizzle ORM with PostgreSQL.
+- **Backend API**: SvelteKit server functions will handle bot config synchronization, logs, and database CRUD.
 
-## Developing
+## Getting Started Locally
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+1. Clone or download the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy the environment file to satisfy any library checks during scaffolding:
+   ```bash
+   cp .env.example .env
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+5. Navigate to `http://localhost:5173` to explore the admin dashboard.
 
-```sh
-npm run dev
+## Project Structure
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-
-## zasderq was here
-
+- `src/lib/components/`: Reusable UI components (Sidebar, Topbar, StatCard, etc.)
+- `src/lib/mock/`: Mock data files for the UI scaffold
+- `src/routes/`: SvelteKit pages matching the dashboard navigation
+- `src/routes/login/`: Placeholder Discord login UI
