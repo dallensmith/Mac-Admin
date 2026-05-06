@@ -8,7 +8,7 @@
 </script>
 
 <div
-	class="group relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-900/40 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-slate-700 hover:bg-slate-800/60 hover:shadow-[0_0_25px_rgba(34,211,238,0.05)]"
+	class="group relative overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/80 p-6 shadow-[4px_4px_0_0_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400 hover:bg-slate-800 hover:shadow-[6px_6px_0_0_rgba(34,211,238,0.2)]"
 >
 	<div
 		class="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-purple-500/5 blur-[50px] transition-all duration-500 group-hover:bg-cyan-500/10"

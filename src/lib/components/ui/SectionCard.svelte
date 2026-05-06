@@ -15,14 +15,14 @@
 </script>
 
 <div
-	class="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/60 shadow-lg backdrop-blur-sm"
+	class="group relative overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/80 shadow-[4px_4px_0_0_rgba(0,0,0,0.5)] backdrop-blur-md"
 >
 	<!-- Subtle top glow -->
 	<div
 		class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent transition-all duration-500 group-hover:via-cyan-400/40"
 	></div>
 	<div
-		class="flex items-center justify-between border-b border-slate-800/50 bg-slate-950/40 px-6 py-4"
+		class="flex items-center justify-between border-b-2 border-slate-700 bg-slate-950/60 px-6 py-4"
 	>
 		<div>
 			<h3

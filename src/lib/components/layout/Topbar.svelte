@@ -3,7 +3,7 @@
 </script>
 
 <header
-	class="relative z-20 flex h-16 items-center justify-between border-b border-slate-800/80 bg-slate-950/80 px-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.5)] backdrop-blur-md"
+	class="relative z-20 flex h-16 items-center justify-between border-b-2 border-cyan-500 bg-slate-950/60 px-6 shadow-[0_4px_15px_rgba(34,211,238,0.15)] backdrop-blur-xl"
 >
 	<!-- Subtle bottom glow line -->
 	<div
@@ -49,7 +49,7 @@
 				<img
 					src={mockUser.avatar}
 					alt="Avatar"
-					class="relative h-8 w-8 rounded-full border border-slate-950 bg-slate-800"
+					class="relative h-8 w-8 rounded-none border-2 border-cyan-400 bg-slate-800"
 				/>
 			</div>
 		</div>

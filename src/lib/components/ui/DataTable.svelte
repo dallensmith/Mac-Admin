@@ -12,10 +12,12 @@
 	}>();
 </script>
 
-<div class="overflow-x-auto rounded-lg border border-slate-800/80 bg-slate-900/40 backdrop-blur-sm">
+<div
+	class="overflow-x-auto rounded-none border-2 border-slate-700 bg-slate-900/40 backdrop-blur-sm"
+>
 	<table class="w-full text-left text-sm text-slate-400">
 		<thead
-			class="border-b border-slate-800/80 bg-slate-950/50 text-[10px] font-bold tracking-widest text-slate-400 uppercase"
+			class="border-b-2 border-slate-700 bg-slate-950/80 text-[10px] font-bold tracking-widest text-slate-300 uppercase"
 		>
 			<tr>
 				{#each columns as col (col)}
@@ -26,7 +28,7 @@
 		<tbody class="divide-y divide-slate-800/50">
 			{#each data as row, idx (idx)}
 				<tr
-					class="border-b border-slate-800/30 transition-all duration-200 last:border-0 hover:bg-slate-800/40 hover:shadow-[inset_2px_0_0_rgba(192,38,211,0.5)]"
+					class="border-b border-slate-700/50 transition-all duration-200 last:border-0 hover:bg-slate-800/80 hover:shadow-[inset_4px_0_0_rgba(34,211,238,1)]"
 				>
 					{@render rowSnippet(row)}
 				</tr>
