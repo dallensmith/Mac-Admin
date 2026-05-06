@@ -55,13 +55,13 @@
 				<div>
 					<label
 						for="templateSelect"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Edit Template</label
 					>
 					<select
 						id="templateSelect"
 						bind:value={selectedTemplateId}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					>
 						{#each mockTemplates as template (template.id)}
 							<option value={template.id}>{template.name}</option>
@@ -81,28 +81,28 @@
 				<div>
 					<label
 						for="titleFormat"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Embed Title</label
 					>
 					<input
 						id="titleFormat"
 						type="text"
 						bind:value={currentTemplateData.titleFormat}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					/>
 				</div>
 
 				<div>
 					<label
 						for="descFormat"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Description Body</label
 					>
 					<textarea
 						id="descFormat"
 						rows="3"
 						bind:value={currentTemplateData.descriptionFormat}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					></textarea>
 				</div>
 
@@ -110,7 +110,7 @@
 					<div>
 						<label
 							for="accentColor"
-							class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+							class="label-caps"
 							>Accent Color (Hex)</label
 						>
 						<div class="mt-2 flex gap-2">
@@ -123,21 +123,21 @@
 							<input
 								type="text"
 								bind:value={currentTemplateData.accentColor}
-								class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 uppercase shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+								class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 uppercase shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
 							/>
 						</div>
 					</div>
 					<div>
 						<label
 							for="footerText"
-							class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+							class="label-caps"
 							>Footer Text</label
 						>
 						<input
 							id="footerText"
 							type="text"
 							bind:value={currentTemplateData.footerText}
-							class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+							class="input-dark"
 						/>
 					</div>
 				</div>
@@ -198,15 +198,10 @@
 		</SectionCard>
 
 		<div class="flex justify-end gap-3">
-			<button
-				class="rounded border border-slate-800/80 bg-slate-900/50 px-5 py-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase transition-all hover:bg-slate-800 hover:text-slate-200"
-				onclick={() => loadPreset('full-archive')}
-			>
+			<button class="btn-ghost" onclick={() => loadPreset('full-archive')}>
 				Reset Defaults
 			</button>
-			<button
-				class="relative rounded border border-cyan-500/50 bg-cyan-500/10 px-5 py-2 text-[10px] font-bold tracking-widest text-cyan-400 uppercase shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]"
-			>
+			<button class="btn-cyan">
 				Save Template
 			</button>
 		</div>
@@ -229,7 +224,7 @@
 	<!-- Right Side: Live Preview & Limits -->
 	<div class="space-y-6 xl:col-span-5">
 		<SectionCard title="Live Preview">
-			<div class="rounded-lg bg-slate-950 p-2 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+			<div class="rounded-lg bg-slate-950 p-2 shadow-inset-form-deep">
 				<DiscordTemplatePreview templateData={currentTemplateData} />
 			</div>
 		</SectionCard>

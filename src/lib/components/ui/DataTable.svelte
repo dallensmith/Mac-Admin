@@ -17,7 +17,7 @@
 >
 	<table class="w-full text-left text-sm text-slate-400">
 		<thead
-			class="border-b-2 border-slate-700 bg-slate-950/80 text-[10px] font-bold tracking-widest text-slate-300 uppercase"
+			class="border-b-2 border-slate-700 bg-slate-950/80 text-label font-bold tracking-widest text-slate-300 uppercase"
 		>
 			<tr>
 				{#each columns as col (col)}
@@ -28,7 +28,7 @@
 		<tbody class="divide-y divide-slate-800/50">
 			{#each data as row, idx (idx)}
 				<tr
-					class="border-b border-slate-700/50 transition-all duration-200 last:border-0 hover:bg-slate-800/80 hover:shadow-[inset_4px_0_0_rgba(34,211,238,1)]"
+					class="border-b border-slate-700/50 transition-all duration-200 last:border-0 hover:bg-slate-800/80 hover:shadow-inset-accent"
 				>
 					{@render rowSnippet(row)}
 				</tr>

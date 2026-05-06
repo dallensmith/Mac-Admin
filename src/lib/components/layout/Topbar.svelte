@@ -3,7 +3,7 @@
 </script>
 
 <header
-	class="relative z-20 flex h-16 items-center justify-between border-b-2 border-cyan-500 bg-slate-950/60 px-6 shadow-[0_4px_15px_rgba(34,211,238,0.15)] backdrop-blur-xl"
+	class="relative z-20 flex h-16 items-center justify-between border-b-2 border-cyan-500 bg-slate-950/60 px-6 shadow-topbar backdrop-blur-xl"
 >
 	<!-- Subtle bottom glow line -->
 	<div
@@ -38,7 +38,7 @@
 				<span class="text-xs font-bold tracking-wider text-slate-200 uppercase drop-shadow-sm"
 					>{mockUser.name}</span
 				>
-				<span class="text-[10px] font-medium tracking-widest text-fuchsia-400 uppercase"
+				<span class="text-label font-medium tracking-widest text-fuchsia-400 uppercase"
 					>{mockUser.role}</span
 				>
 			</div>

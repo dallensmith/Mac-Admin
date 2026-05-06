@@ -4,7 +4,7 @@
 </script>
 
 <button
-	class="flex w-full items-center justify-center gap-3 rounded-lg bg-[#5865F2] px-6 py-3 font-medium text-white shadow-sm transition-all hover:bg-[#4752C4] focus:ring-2 focus:ring-[#5865F2] focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none disabled:opacity-50"
+	class="flex w-full items-center justify-center gap-3 rounded-lg bg-discord px-6 py-3 font-medium text-white shadow-sm transition-all hover:bg-discord-hover focus:ring-2 focus:ring-discord focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none disabled:opacity-50"
 	onclick={(e) => {
 		e.preventDefault();
 		alert('Discord login is not wired up yet. (Better Auth placeholder)');

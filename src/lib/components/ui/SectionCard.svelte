@@ -15,7 +15,7 @@
 </script>
 
 <div
-	class="group relative overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/80 shadow-[4px_4px_0_0_rgba(0,0,0,0.5)] backdrop-blur-md"
+	class="group relative overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/80 shadow-card backdrop-blur-md"
 >
 	<!-- Subtle top glow -->
 	<div

@@ -87,7 +87,7 @@
 		<!-- Review Queue -->
 		{#if needsReviewQuestions > 0}
 			<div
-				class="group relative overflow-hidden rounded-xl border border-fuchsia-500/50 bg-fuchsia-500/10 p-6 shadow-[0_0_20px_rgba(217,70,239,0.15)]"
+				class="group relative overflow-hidden rounded-xl border border-fuchsia-500/50 bg-fuchsia-500/10 p-6 shadow-glow-fuchsia-md"
 			>
 				<div
 					class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-transparent to-transparent"
@@ -103,7 +103,7 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="lucide lucide-clipboard-check text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]"
+						class="lucide lucide-clipboard-check text-fuchsia-400 drop-shadow-glow-fuchsia-bright"
 						><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path
 							d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
 						/><path d="m9 14 2 2 4-4" /></svg
@@ -116,13 +116,13 @@
 					{#each questions.filter((q) => q.status === 'Needs Review') as q (q.id)}
 						<div class="rounded border border-fuchsia-500/30 bg-slate-950/60 p-4">
 							<div class="mb-2">
-								<span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase"
+								<span class="text-label font-bold tracking-widest text-slate-400 uppercase"
 									>Question:</span
 								>
 								<p class="text-sm text-slate-200">{q.question}</p>
 							</div>
 							<div class="mb-3">
-								<span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase"
+								<span class="text-label font-bold tracking-widest text-slate-400 uppercase"
 									>Answer:</span
 								>
 								<p class="text-sm text-emerald-400">{q.answer}</p>
@@ -130,23 +130,23 @@
 							<div class="flex items-center justify-between">
 								<div class="flex gap-2">
 									<span
-										class="rounded bg-slate-800/80 px-2 py-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase"
+										class="rounded bg-slate-800/80 px-2 py-0.5 text-label font-bold tracking-wider text-slate-400 uppercase"
 										>{q.category}</span
 									>
 									<span
-										class="rounded bg-slate-800/80 px-2 py-0.5 text-[10px] font-bold tracking-wider text-cyan-400 uppercase"
+										class="rounded bg-slate-800/80 px-2 py-0.5 text-label font-bold tracking-wider text-cyan-400 uppercase"
 										>{q.source}</span
 									>
 								</div>
 								<div class="flex gap-2">
 									<button
 										onclick={() => updateQuestionStatus(q.id, 'Approved')}
-										class="rounded border border-emerald-500/50 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300"
+										class="rounded border border-emerald-500/50 bg-emerald-500/10 px-3 py-1 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300"
 										>Approve</button
 									>
 									<button
 										onclick={() => updateQuestionStatus(q.id, 'Draft')}
-										class="rounded border border-rose-500/50 bg-rose-500/10 px-3 py-1 text-[10px] font-bold tracking-widest text-rose-400 uppercase transition-colors hover:bg-rose-500/20 hover:text-rose-300"
+										class="rounded border border-rose-500/50 bg-rose-500/10 px-3 py-1 text-label font-bold tracking-widest text-rose-400 uppercase transition-colors hover:bg-rose-500/20 hover:text-rose-300"
 										>Reject to Draft</button
 									>
 								</div>
@@ -161,30 +161,30 @@
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				{#each mockGameModes as mode (mode.id)}
 					<div
-						class="group relative flex flex-col items-start gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-5 transition-all duration-300 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+						class="group relative flex flex-col items-start gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-5 transition-all duration-300 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-sm-soft"
 					>
 						<div
 							class="pointer-events-none absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 						></div>
 						<div class="relative z-10 flex w-full items-start justify-between">
 							<span
-								class="text-[11px] font-bold tracking-widest text-cyan-400 uppercase drop-shadow-sm"
+								class="text-ui font-bold tracking-widest text-cyan-400 uppercase drop-shadow-sm"
 								>{mode.name}</span
 							>
 							<span
-								class="inline-flex items-center rounded border px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase {mode.status ===
+								class="inline-flex items-center rounded border px-2 py-0.5 text-label-xs font-bold tracking-wider uppercase {mode.status ===
 								'enabled'
-									? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+									? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-glow-emerald-xs'
 									: 'border-slate-500/30 bg-slate-500/10 text-slate-400'}">{mode.status}</span
 							>
 						</div>
 						<p class="relative z-10 flex-1 text-xs text-slate-400">{mode.description}</p>
 						<div class="relative z-10 mt-2 flex w-full items-center justify-between">
-							<span class="text-[9px] font-bold tracking-widest text-fuchsia-400 uppercase"
+							<span class="text-label-xs font-bold tracking-widest text-fuchsia-400 uppercase"
 								>Diff: {mode.difficultyRange}</span
 							>
 							<button
-								class="text-[10px] font-bold tracking-widest text-slate-300 uppercase transition-colors hover:text-cyan-300"
+								class="text-label font-bold tracking-widest text-slate-300 uppercase transition-colors hover:text-cyan-300"
 								>Configure</button
 							>
 						</div>
@@ -206,11 +206,11 @@
 						>{row.answer}</td
 					>
 					<td
-						class="px-6 py-4 text-[10px] font-bold tracking-widest whitespace-nowrap text-cyan-400 uppercase"
+						class="px-6 py-4 text-label font-bold tracking-widest whitespace-nowrap text-cyan-400 uppercase"
 						>{row.category}</td
 					>
 					<td
-						class="px-6 py-4 text-[10px] font-bold tracking-widest whitespace-nowrap text-fuchsia-400 uppercase"
+						class="px-6 py-4 text-label font-bold tracking-widest whitespace-nowrap text-fuchsia-400 uppercase"
 						>{row.source}</td
 					>
 					<td class="px-6 py-4 whitespace-nowrap">
@@ -219,21 +219,21 @@
 					<td class="px-6 py-4 text-right whitespace-nowrap">
 						<div class="flex justify-end gap-3">
 							<button
-								class="text-[10px] font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
+								class="text-label font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
 								>Edit</button
 							>
 							<button
-								class="text-[10px] font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
+								class="text-label font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
 								>Duplicate</button
 							>
 							<button
 								onclick={() => updateQuestionStatus(row.id, 'Draft')}
-								class="text-[10px] font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-rose-400"
+								class="text-label font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-rose-400"
 								>Archive</button
 							>
 							<button
 								onclick={() => removeQuestion(row.id)}
-								class="text-[10px] font-bold tracking-wider text-slate-600 uppercase transition-colors hover:text-rose-500"
+								class="text-label font-bold tracking-wider text-slate-600 uppercase transition-colors hover:text-rose-500"
 								>Delete</button
 							>
 						</div>
@@ -250,7 +250,7 @@
 				<div>
 					<label
 						for="question"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Question <span class="text-rose-500">*</span></label
 					>
 					<textarea
@@ -258,13 +258,13 @@
 						rows="3"
 						bind:value={newQuestion}
 						required
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					></textarea>
 				</div>
 				<div>
 					<label
 						for="answer"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Correct Answer <span class="text-rose-500">*</span></label
 					>
 					<input
@@ -272,33 +272,33 @@
 						type="text"
 						bind:value={newAnswer}
 						required
-						class="mt-2 block w-full rounded border border-emerald-500/30 bg-slate-950/50 px-3 py-2 text-sm text-emerald-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
+						class="mt-2 block w-full rounded border border-emerald-500/30 bg-slate-950/50 px-3 py-2 text-sm text-emerald-400 shadow-inset-form transition-all duration-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
 					/>
 				</div>
 				<div>
 					<label
 						for="wrongAnswers"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Wrong Answers (comma separated)</label
 					>
 					<input
 						id="wrongAnswers"
 						type="text"
 						placeholder="Optional..."
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 focus:outline-none"
+						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-inset-form transition-all duration-300 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 focus:outline-none"
 					/>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<div>
 						<label
 							for="category"
-							class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+							class="label-caps"
 							>Category</label
 						>
 						<select
 							id="category"
 							bind:value={newCategory}
-							class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+							class="input-dark"
 						>
 							<option>Movie Trivia</option>
 							<option>Quote Guessing</option>
@@ -309,13 +309,13 @@
 					<div>
 						<label
 							for="difficulty"
-							class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+							class="label-caps"
 							>Difficulty</label
 						>
 						<select
 							id="difficulty"
 							bind:value={newDifficulty}
-							class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+							class="input-dark"
 						>
 							<option>Easy</option>
 							<option>Medium</option>
@@ -327,13 +327,13 @@
 				<div>
 					<label
 						for="source"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Source Type</label
 					>
 					<select
 						id="source"
 						bind:value={newSource}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					>
 						<option>Manual</option>
 						<option>Movie metadata</option>
@@ -343,10 +343,7 @@
 					</select>
 				</div>
 
-				<button
-					type="submit"
-					class="relative mt-4 w-full rounded border border-cyan-500/50 bg-cyan-500/10 px-5 py-2 text-[10px] font-bold tracking-widest text-cyan-400 uppercase shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]"
-				>
+				<button type="submit" class="btn-cyan mt-4 w-full">
 					Save to Drafts
 				</button>
 			</form>
@@ -361,11 +358,11 @@
 				{#each mockSources as src (src.name)}
 					<li class="rounded border border-slate-800/60 bg-slate-950/40 p-3">
 						<div class="mb-1 flex items-center justify-between">
-							<span class="text-[11px] font-bold tracking-widest text-cyan-400 uppercase"
+							<span class="text-ui font-bold tracking-widest text-cyan-400 uppercase"
 								>{src.name}</span
 							>
 							<span
-								class="text-[9px] font-bold tracking-widest uppercase {src.status === 'active'
+								class="text-label-xs font-bold tracking-widest uppercase {src.status === 'active'
 									? 'text-emerald-400'
 									: 'text-slate-500'}">{src.status}</span
 							>
