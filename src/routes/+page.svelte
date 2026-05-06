@@ -4,6 +4,8 @@
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import { mockDashboardStats, mockRecentActivity } from '$lib/mock/admin';
 
+	let { data } = $props();
+
 	const activityIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>`;
 	const serverIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-server"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>`;
 	const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>`;
@@ -19,7 +21,12 @@
 		trend="Online"
 		icon={activityIcon}
 	/>
-	<StatCard title="Active Guilds" value={mockDashboardStats.guildCount} icon={serverIcon} />
+	<StatCard
+		title={data.guildStats?.name ?? 'Guild Members'}
+		value={data.guildStats?.memberCount ?? '—'}
+		trend={data.guildStats ? `${data.guildStats.onlineCount} online` : undefined}
+		icon={serverIcon}
+	/>
 	<StatCard title="API Latency" value={mockDashboardStats.ping} icon={zapIcon} />
 	<StatCard title="Daily API Cost" value={mockDashboardStats.dailyCost} icon={dollarIcon} />
 </div>

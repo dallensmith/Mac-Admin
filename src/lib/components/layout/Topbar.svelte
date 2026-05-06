@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { mockUser } from '$lib/mock/admin';
+	const DEFAULT_AVATAR = 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+	let {
+		user,
+		role
+	}: {
+		user: { name: string; image: string | null };
+		role: string;
+	} = $props();
 </script>
 
 <header
@@ -36,10 +44,10 @@
 		<div class="flex items-center gap-3 border-l border-slate-800/60 pl-4">
 			<div class="flex flex-col items-end">
 				<span class="text-xs font-bold tracking-wider text-slate-200 uppercase drop-shadow-sm"
-					>{mockUser.name}</span
+					>{user.name}</span
 				>
 				<span class="text-label font-medium tracking-widest text-fuchsia-400 uppercase"
-					>{mockUser.role}</span
+					>{role}</span
 				>
 			</div>
 			<div class="relative">
@@ -47,7 +55,7 @@
 					class="absolute -inset-0.5 rounded-full bg-linear-to-tr from-cyan-400 to-purple-500 opacity-50 blur-subtle"
 				></div>
 				<img
-					src={mockUser.avatar}
+					src={user.image ?? DEFAULT_AVATAR}
 					alt="Avatar"
 					class="relative h-8 w-8 rounded-none border-2 border-cyan-400 bg-slate-800"
 				/>
