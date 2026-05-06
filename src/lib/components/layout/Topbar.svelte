@@ -7,7 +7,7 @@
 >
 	<!-- Subtle bottom glow line -->
 	<div
-		class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent"
+		class="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-cyan-500/20 to-transparent"
 	></div>
 	<div class="flex flex-1 items-center">
 		<!-- Search or breadcrumbs could go here -->
@@ -44,7 +44,7 @@
 			</div>
 			<div class="relative">
 				<div
-					class="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-500 opacity-50 blur-[2px]"
+					class="absolute -inset-0.5 rounded-full bg-linear-to-tr from-cyan-400 to-purple-500 opacity-50 blur-subtle"
 				></div>
 				<img
 					src={mockUser.avatar}

@@ -11,7 +11,7 @@
 			class="absolute -top-40 -left-40 h-96 w-96 animate-pulse rounded-full bg-cyan-600/20 blur-orb-md"
 		></div>
 		<div
-			class="absolute right-0 bottom-0 h-[30rem] w-[30rem] translate-x-1/3 translate-y-1/3 rounded-full bg-purple-600/20 blur-orb-lg"
+			class="absolute right-0 bottom-0 h-120 w-120 translate-x-1/3 translate-y-1/3 rounded-full bg-purple-600/20 blur-orb-lg"
 		></div>
 	</div>
 
@@ -20,7 +20,7 @@
 			class="group relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-slate-900/80 p-8 shadow-login-card backdrop-blur-xl"
 		>
 			<div
-				class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent"
+				class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent"
 			></div>
 			<div class="relative z-10 mb-8 text-center">
 				<div
@@ -43,7 +43,7 @@
 					>
 				</div>
 				<h1
-					class="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-3xl font-black tracking-widest text-transparent uppercase drop-shadow-glow-purple-md"
+					class="bg-linear-to-r from-cyan-400 to-purple-500 bg-clip-text text-3xl font-black tracking-widest text-transparent uppercase drop-shadow-glow-purple-md"
 				>
 					MAC.ADMIN
 				</h1>

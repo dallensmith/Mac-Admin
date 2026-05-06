@@ -90,7 +90,7 @@
 				class="group relative overflow-hidden rounded-xl border border-fuchsia-500/50 bg-fuchsia-500/10 p-6 shadow-glow-fuchsia-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-transparent to-transparent"
+					class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-fuchsia-900/20 via-transparent to-transparent"
 				></div>
 				<div class="relative z-10 mb-4 flex items-center gap-3">
 					<svg
@@ -164,7 +164,7 @@
 						class="group relative flex flex-col items-start gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-5 transition-all duration-300 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-sm-soft"
 					>
 						<div
-							class="pointer-events-none absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+								class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 						></div>
 						<div class="relative z-10 flex w-full items-start justify-between">
 							<span

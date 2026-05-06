@@ -63,7 +63,7 @@
 				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -87,7 +87,7 @@
 				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:bg-slate-800/80 hover:shadow-glow-fuchsia-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +115,7 @@
 				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/50 hover:bg-slate-800/80 hover:shadow-glow-purple-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-purple-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -139,7 +139,7 @@
 				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"

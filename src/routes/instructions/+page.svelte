@@ -115,7 +115,7 @@
 				</button>
 			{/snippet}
 
-			<div class="flex max-h-[600px] flex-col gap-2 overflow-y-auto pr-1">
+			<div class="flex max-h-150 flex-col gap-2 overflow-y-auto pr-1">
 				{#each templates as t (t.id)}
 					<button
 						class="group flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-all duration-200 {selectedTemplateId ===
@@ -240,7 +240,7 @@
 			</div>
 
 			<textarea
-				class="h-[400px] w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+				class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
 				bind:value={selectedTemplate.files[activeTab]}
 			></textarea>
 		</SectionCard>
@@ -279,7 +279,7 @@
 				class="group relative overflow-hidden rounded-lg border border-slate-800/80 bg-slate-950/80 p-4"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<div class="relative z-10 flex items-start gap-3">
 					<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-discord">
