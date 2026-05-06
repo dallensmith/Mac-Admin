@@ -1,24 +1,24 @@
 ---
-description: "Use when writing or editing Svelte components, reactive state, props, effects, or event handlers. Enforces Svelte 5 runes syntax and forbids legacy Svelte 4 patterns."
-applyTo: "**/*.svelte"
+description: 'Use when writing or editing Svelte components, reactive state, props, effects, or event handlers. Enforces Svelte 5 runes syntax and forbids legacy Svelte 4 patterns.'
+applyTo: '**/*.svelte'
 ---
 
 # Svelte 5 Rules
 
 ## Always Use Runes
 
-| Need | Use | Never |
-|------|-----|-------|
-| Local state | `$state()` | `let x = 1` (mutable) |
-| Computed value | `$derived(expr)` | `$: x = expr` |
-| Side effects | `$effect(() => { ... })` | `onMount` (unless cleanup needed) |
-| Component props | `let { x } = $props()` | `export let x` |
-| Two-way bindable prop | `$bindable()` | — |
+| Need                  | Use                      | Never                             |
+| --------------------- | ------------------------ | --------------------------------- |
+| Local state           | `$state()`               | `let x = 1` (mutable)             |
+| Computed value        | `$derived(expr)`         | `$: x = expr`                     |
+| Side effects          | `$effect(() => { ... })` | `onMount` (unless cleanup needed) |
+| Component props       | `let { x } = $props()`   | `export let x`                    |
+| Two-way bindable prop | `$bindable()`            | —                                 |
 
 ```svelte
 <script lang="ts">
-  let { label, value = $bindable('') }: { label: string; value?: string } = $props();
-  let upper = $derived(value.toUpperCase());
+	let { label, value = $bindable('') }: { label: string; value?: string } = $props();
+	let upper = $derived(value.toUpperCase());
 </script>
 ```
 
@@ -40,7 +40,7 @@ Use direct HTML event attributes — not `on:` directive syntax.
 ```svelte
 <!-- ✅ -->
 {#snippet row(item)}
-  <tr><td>{item.name}</td></tr>
+	<tr><td>{item.name}</td></tr>
 {/snippet}
 {@render row(movie)}
 

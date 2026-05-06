@@ -32,29 +32,29 @@ npm run format       # Prettier
 
 Svelte 5 uses **runes** — always prefer them over legacy Svelte 4 syntax.
 
-| Rune | Purpose |
-|------|---------|
-| `$state()` | Reactive local state |
-| `$derived()` | Computed values (replaces `$:`) |
-| `$effect()` | Side effects (replaces `onMount` for most cases) |
-| `$props()` | Component props (replaces `export let`) |
-| `$bindable()` | Two-way bindable props |
+| Rune          | Purpose                                          |
+| ------------- | ------------------------------------------------ |
+| `$state()`    | Reactive local state                             |
+| `$derived()`  | Computed values (replaces `$:`)                  |
+| `$effect()`   | Side effects (replaces `onMount` for most cases) |
+| `$props()`    | Component props (replaces `export let`)          |
+| `$bindable()` | Two-way bindable props                           |
 
 ```svelte
 <script lang="ts">
-  // Props
-  let { title, count = $bindable(0) }: { title: string; count?: number } = $props();
+	// Props
+	let { title, count = $bindable(0) }: { title: string; count?: number } = $props();
 
-  // State
-  let search = $state('');
+	// State
+	let search = $state('');
 
-  // Derived
-  let filtered = $derived(items.filter(i => i.name.includes(search)));
+	// Derived
+	let filtered = $derived(items.filter((i) => i.name.includes(search)));
 
-  // Effects (for DOM/third-party only — avoid overusing)
-  $effect(() => {
-    document.title = title;
-  });
+	// Effects (for DOM/third-party only — avoid overusing)
+	$effect(() => {
+		document.title = title;
+	});
 </script>
 ```
 
@@ -63,35 +63,41 @@ Svelte 5 uses **runes** — always prefer them over legacy Svelte 4 syntax.
 ## SvelteKit Patterns
 
 ### Routing
+
 Files in `src/routes/` define pages. Use `+page.svelte`, `+layout.svelte`, `+page.server.ts`, `+layout.server.ts`.
 
 ### Data Loading
+
 Load data in `+page.server.ts` via `load()`, access via `$page.data` or the `data` prop.
 
 ```ts
 // +page.server.ts
 export const load = async ({ params, locals }) => {
-  return { movie: await db.getMovie(params.id) };
+	return { movie: await db.getMovie(params.id) };
 };
 ```
 
 ```svelte
 <!-- +page.svelte -->
 <script lang="ts">
-  let { data } = $props();
+	let { data } = $props();
 </script>
+
 <h1>{data.movie.title}</h1>
 ```
 
 ### Form Actions
+
 Use `+page.server.ts` `actions` for mutations; use `enhance` for progressive enhancement.
 
 ### Environment Variables
+
 - Secret/server-only: `$env/static/private` or `$env/dynamic/private`
 - Public: `$env/static/public` or `$env/dynamic/public`
 - Never import private env modules in `.svelte` files or `+page.ts`
 
 ### State Management
+
 - Component-local: `$state()` rune
 - Cross-component: Svelte context (`setContext` / `getContext`) or `.svelte.ts` reactive modules
 - Avoid `svelte/store` for new code; use runes-based reactive state instead

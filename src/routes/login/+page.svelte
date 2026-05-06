@@ -1,122 +1,73 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import { authClient } from '$lib/auth-client';
-	import type { ActionData } from './$types';
-
-	let { form }: { form: ActionData } = $props();
-
-	let mode = $state<'signin' | 'register'>('signin');
+	import MockDiscordLoginButton from '$lib/components/auth/MockDiscordLoginButton.svelte';
 </script>
 
-<div class="flex min-h-screen items-center justify-center">
-	<div class="w-full max-w-sm space-y-6 p-8">
-		<div class="text-center">
-			<h1 class="text-2xl font-bold">
-				{mode === 'signin' ? 'Welcome Back' : 'Create Account'}
-			</h1>
-			<p class="text-sm text-gray-500 mt-1">
-				{mode === 'signin' ? 'Sign in to access your account' : 'Register a new account'}
-			</p>
-		</div>
+<div
+	class="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-4"
+>
+	<!-- Abstract decorative background -->
+	<div class="absolute inset-0 z-0">
+		<div
+			class="absolute -top-40 -left-40 h-96 w-96 animate-pulse rounded-full bg-cyan-600/20 blur-orb-md"
+		></div>
+		<div
+			class="absolute right-0 bottom-0 h-120 w-120 translate-x-1/3 translate-y-1/3 rounded-full bg-purple-600/20 blur-orb-lg"
+		></div>
+	</div>
 
-		{#if form?.message}
-			<p class="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-600">
-				{form.message}
-			</p>
-		{/if}
-
-		<form
-			method="post"
-			action={mode === 'signin' ? '?/signIn' : '?/register'}
-			use:enhance
-			class="space-y-4"
+	<div class="relative z-10 w-full max-w-md">
+		<div
+			class="group relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-slate-900/80 p-8 shadow-login-card backdrop-blur-xl"
 		>
-			{#if mode === 'register'}
-				<div>
-					<label for="name" class="block text-sm font-medium">Name</label>
-					<input
-						id="name"
-						name="name"
-						type="text"
-						required
-						class="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-					/>
+			<div
+				class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent"
+			></div>
+			<div class="relative z-10 mb-8 text-center">
+				<div
+					class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xl border border-cyan-500/50 bg-cyan-500/10 shadow-glow-cyan-login"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="32"
+						height="32"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="lucide lucide-bot text-cyan-400 drop-shadow-glow-cyan-sm"
+						><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path
+							d="M2 14h2"
+						/><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg
+					>
 				</div>
-			{/if}
-
-			<div>
-				<label for="email" class="block text-sm font-medium">Email Address</label>
-				<input
-					id="email"
-					name="email"
-					type="email"
-					required
-					placeholder="Enter your email address"
-					class="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-				/>
+				<h1
+					class="bg-linear-to-r from-cyan-400 to-purple-500 bg-clip-text text-3xl font-black tracking-widest text-transparent uppercase drop-shadow-glow-purple-md"
+				>
+					MAC.ADMIN
+				</h1>
+				<p class="mt-2 text-xs font-medium tracking-wider text-cyan-500/70 uppercase">
+					Sign in to manage the Smart Mac Discord bot.
+				</p>
 			</div>
 
-			<div>
-				<label for="password" class="block text-sm font-medium">Password</label>
-				<input
-					id="password"
-					name="password"
-					type="password"
-					required
-					placeholder="Enter your password"
-					class="mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-				/>
+			<div class="space-y-4">
+				<MockDiscordLoginButton />
 			</div>
 
-			<button
-				type="submit"
-				class="w-full rounded-md bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+			<p class="mt-6 text-center text-xs text-slate-500">Admin access required.</p>
+
+			<!-- TODO: Add Better Auth wiring note -->
+			<div
+				class="mt-8 rounded border border-amber-500/20 bg-amber-500/10 p-4 text-xs text-amber-200/80"
 			>
-				{mode === 'signin' ? 'Sign In' : 'Create Account'}
-			</button>
-		</form>
-
-		<div class="relative">
-			<div class="absolute inset-0 flex items-center">
-				<span class="w-full border-t"></span>
-			</div>
-			<div class="relative flex justify-center text-xs uppercase">
-				<span class="bg-white px-2 text-gray-400">or continue with</span>
+				<p class="mb-1 font-semibold text-amber-400">Developer Note:</p>
+				<p>
+					Authentication will be handled by Better Auth (Discord OAuth only). Once wired, this page
+					will redirect authenticated admins to the dashboard.
+				</p>
 			</div>
 		</div>
-
-		<button
-			onclick={() => authClient.signIn.social({ provider: 'discord', callbackURL: '/' })}
-			class="flex w-full items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-		>
-			<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-				<path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
-			</svg>
-			Continue with Discord
-		</button>
-
-		<p class="text-center text-sm text-gray-500">
-			{#if mode === 'signin'}
-				Don't have an account?
-				<button
-					onclick={() => (mode = 'register')}
-					class="font-medium text-purple-600 hover:underline"
-				>
-					Create one here
-				</button>
-			{:else}
-				Already have an account?
-				<button
-					onclick={() => (mode = 'signin')}
-					class="font-medium text-purple-600 hover:underline"
-				>
-					Sign in
-				</button>
-			{/if}
-		</p>
-
-		<p class="text-center text-sm">
-			<a href="/" class="text-gray-400 hover:text-gray-600">&larr; Back to home</a>
-		</p>
 	</div>
 </div>

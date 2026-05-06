@@ -1,13 +1,14 @@
 ---
-description: "Scaffold a new SvelteKit route with a server load function and Svelte 5 page component. Generates +page.server.ts (auth guard, Drizzle stub, typed return) and +page.svelte (runes, Tailwind layout)."
-name: "New Route"
+description: 'Scaffold a new SvelteKit route with a server load function and Svelte 5 page component. Generates +page.server.ts (auth guard, Drizzle stub, typed return) and +page.svelte (runes, Tailwind layout).'
+name: 'New Route'
 argument-hint: "Route path and purpose (e.g. 'movies/[id] detail page' or 'movies list with search')"
-agent: "agent"
+agent: 'agent'
 ---
 
 Scaffold a new SvelteKit route for: ${input}
 
 Follow all conventions in:
+
 - [svelte5.instructions.md](.github/instructions/svelte5.instructions.md)
 - [server-ts.instructions.md](.github/instructions/server-ts.instructions.md)
 
@@ -23,14 +24,14 @@ import { db } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  if (!locals.user) redirect(302, '/login');
+	if (!locals.user) redirect(302, '/login');
 
-  // TODO: replace with real query
-  // const item = await db.query.<table>.findFirst({ where: eq(<table>.id, params.id) });
+	// TODO: replace with real query
+	// const item = await db.query.<table>.findFirst({ where: eq(<table>.id, params.id) });
 
-  return {
-    // item
-  };
+	return {
+		// item
+	};
 };
 ```
 
@@ -41,13 +42,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 ```svelte
 <script lang="ts">
-  import type { PageData } from './$types';
-  let { data }: { data: PageData } = $props();
+	import type { PageData } from './$types';
+	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="p-6">
-  <h1 class="text-2xl font-bold"><!-- Page title --></h1>
-  <!-- TODO: render data -->
+	<h1 class="text-2xl font-bold"><!-- Page title --></h1>
+	<!-- TODO: render data -->
 </div>
 ```
 

@@ -1,6 +1,6 @@
 ---
-description: "Use when writing or editing SvelteKit server modules: load functions, form actions, API routes, hooks, or any server-side logic. Enforces environment variable safety, auth guards, Drizzle query patterns, and form action conventions."
-applyTo: "src/**/*.server.ts"
+description: 'Use when writing or editing SvelteKit server modules: load functions, form actions, API routes, hooks, or any server-side logic. Enforces environment variable safety, auth guards, Drizzle query patterns, and form action conventions.'
+applyTo: 'src/**/*.server.ts'
 ---
 
 # Server Module Rules
@@ -10,8 +10,8 @@ applyTo: "src/**/*.server.ts"
 Always use SvelteKit's env modules — never `process.env` directly.
 
 | Secret / server-only | `$env/static/private` (build-time) or `$env/dynamic/private` (runtime) |
-|---|---|
-| Public / client-safe | `$env/static/public` or `$env/dynamic/public` |
+| -------------------- | ---------------------------------------------------------------------- |
+| Public / client-safe | `$env/static/public` or `$env/dynamic/public`                          |
 
 ```ts
 // ✅
@@ -22,6 +22,7 @@ const url = process.env.DATABASE_URL;
 ```
 
 **Never** import `$env/static/private` or `$env/dynamic/private` from:
+
 - `.svelte` component files
 - `+page.ts` or `+layout.ts` (run on both server and client)
 - Any module that may be imported client-side
@@ -35,8 +36,8 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-  if (!locals.user) redirect(302, '/login');
-  // ...
+	if (!locals.user) redirect(302, '/login');
+	// ...
 };
 ```
 
@@ -68,19 +69,19 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
 export const actions: Actions = {
-  default: async ({ request, locals }) => {
-    if (!locals.user) redirect(302, '/login');
+	default: async ({ request, locals }) => {
+		if (!locals.user) redirect(302, '/login');
 
-    const data = await request.formData();
-    const title = data.get('title');
+		const data = await request.formData();
+		const title = data.get('title');
 
-    if (!title || typeof title !== 'string') {
-      return fail(422, { title, error: 'Title is required' });
-    }
+		if (!title || typeof title !== 'string') {
+			return fail(422, { title, error: 'Title is required' });
+		}
 
-    // mutate...
-    redirect(303, '/movies');
-  }
+		// mutate...
+		redirect(303, '/movies');
+	}
 };
 ```
 
