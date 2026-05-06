@@ -71,7 +71,7 @@
 />
 
 <div
-	class="mb-6 rounded border border-rose-500/30 bg-rose-500/10 p-4 shadow-[0_0_15px_rgba(244,63,94,0.1)]"
+	class="mb-6 rounded border border-rose-500/30 bg-rose-500/10 p-4 shadow-glow-rose-sm"
 >
 	<div class="flex items-start gap-3">
 		<svg
@@ -90,7 +90,7 @@
 			/><path d="M12 17h.01" /></svg
 		>
 		<div>
-			<h3 class="text-[11px] font-bold tracking-widest text-rose-400 uppercase drop-shadow-sm">
+			<h3 class="text-ui font-bold tracking-widest text-rose-400 uppercase drop-shadow-sm">
 				Caution
 			</h3>
 			<ul class="mt-1 list-inside list-disc text-xs text-rose-300/80">
@@ -108,25 +108,25 @@
 		<SectionCard title="Bot Profiles">
 			{#snippet headerAction()}
 				<button
-					class="text-[10px] font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300"
+					class="text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300"
 					onclick={handleNewTemplate}
 				>
 					+ New
 				</button>
 			{/snippet}
 
-			<div class="flex max-h-[600px] flex-col gap-2 overflow-y-auto pr-1">
+			<div class="flex max-h-150 flex-col gap-2 overflow-y-auto pr-1">
 				{#each templates as t (t.id)}
 					<button
 						class="group flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-all duration-200 {selectedTemplateId ===
 						t.id
-							? 'border-cyan-500/50 bg-slate-800/80 shadow-[0_0_15px_rgba(34,211,238,0.15)]'
+							? 'border-cyan-500/50 bg-slate-800/80 shadow-glow-cyan-sm'
 							: 'border-slate-800/60 bg-slate-900/40 hover:border-cyan-500/30 hover:bg-slate-800/50'}"
 						onclick={() => (selectedTemplateId = t.id)}
 					>
 						<div class="flex w-full items-start justify-between">
 							<span
-								class="text-[11px] font-bold tracking-widest uppercase transition-colors {selectedTemplateId ===
+								class="text-ui font-bold tracking-widest uppercase transition-colors {selectedTemplateId ===
 								t.id
 									? 'text-cyan-400'
 									: 'text-slate-300 group-hover:text-cyan-400'}">{t.name}</span
@@ -134,7 +134,7 @@
 							<StatusBadge status={t.status} />
 						</div>
 						<span class="line-clamp-2 text-xs text-slate-400">{t.description}</span>
-						<span class="text-[9px] font-bold tracking-widest text-slate-500 uppercase"
+						<span class="text-label-xs font-bold tracking-widest text-slate-500 uppercase"
 							>Edited: {t.lastEdited}</span
 						>
 					</button>
@@ -150,26 +150,26 @@
 				<div>
 					<label
 						for="profileName"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Profile Name</label
 					>
 					<input
 						id="profileName"
 						type="text"
 						bind:value={selectedTemplate.name}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					/>
 				</div>
 				<div>
 					<label
 						for="profileTag"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Mode Tag</label
 					>
 					<select
 						id="profileTag"
 						bind:value={selectedTemplate.tag}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					>
 						<option value="default">Default</option>
 						<option value="evil">Evil</option>
@@ -181,14 +181,14 @@
 				<div class="sm:col-span-2">
 					<label
 						for="profileDesc"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Description</label
 					>
 					<textarea
 						id="profileDesc"
 						rows="2"
 						bind:value={selectedTemplate.description}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					></textarea>
 				</div>
 			</div>
@@ -197,27 +197,27 @@
 				{#if selectedTemplate.status !== 'active'}
 					<button
 						onclick={handleSetActive}
-						class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-[10px] font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300"
+						class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300"
 						>Set Active</button
 					>
 				{/if}
 				<button
-					class="rounded border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-[10px] font-bold tracking-widest text-cyan-400 uppercase shadow-[0_0_10px_rgba(34,211,238,0.1)] transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-[0_0_15px_rgba(34,211,238,0.3)]"
+					class="rounded border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-label font-bold tracking-widest text-cyan-400 uppercase shadow-glow-cyan-sm-soft transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-glow-cyan-sm-hover"
 					>Save Draft</button
 				>
 				<button
 					onclick={handleDuplicate}
-					class="rounded border border-slate-700 bg-slate-800 px-4 py-2 text-[10px] font-bold tracking-widest text-slate-300 uppercase transition-colors hover:bg-slate-700 hover:text-slate-200"
+					class="rounded border border-slate-700 bg-slate-800 px-4 py-2 text-label font-bold tracking-widest text-slate-300 uppercase transition-colors hover:bg-slate-700 hover:text-slate-200"
 					>Duplicate</button
 				>
 				<button
-					class="rounded border border-slate-700 bg-slate-800 px-4 py-2 text-[10px] font-bold tracking-widest text-slate-300 uppercase transition-colors hover:bg-slate-700 hover:text-slate-200"
+					class="rounded border border-slate-700 bg-slate-800 px-4 py-2 text-label font-bold tracking-widest text-slate-300 uppercase transition-colors hover:bg-slate-700 hover:text-slate-200"
 					>Reload Bot</button
 				>
 				<div class="flex-1"></div>
 				<button
 					onclick={handleDelete}
-					class="rounded border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-[10px] font-bold tracking-widest text-rose-400 uppercase transition-colors hover:bg-rose-500/20 hover:text-rose-300"
+					class="rounded border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-label font-bold tracking-widest text-rose-400 uppercase transition-colors hover:bg-rose-500/20 hover:text-rose-300"
 					disabled={templates.length <= 1}>Delete</button
 				>
 			</div>
@@ -227,7 +227,7 @@
 			<div class="mb-4 flex gap-2 border-b border-slate-800/80 pb-px">
 				{#each ['system.md', 'behavior.md', 'tools.md', 'personality.md'] as tab (tab)}
 					<button
-						class="border-b-2 px-4 py-2 text-[11px] font-bold tracking-widest uppercase transition-all {activeTab ===
+						class="border-b-2 px-4 py-2 text-ui font-bold tracking-widest uppercase transition-all {activeTab ===
 						tab
 							? 'border-cyan-500 text-cyan-400'
 							: 'border-transparent text-slate-500 hover:text-slate-300'}"
@@ -240,7 +240,7 @@
 			</div>
 
 			<textarea
-				class="h-[400px] w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+				class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
 				bind:value={selectedTemplate.files[activeTab]}
 			></textarea>
 		</SectionCard>
@@ -251,7 +251,7 @@
 		<SectionCard title="Bot Preview">
 			<div class="mb-4 text-center">
 				<div
-					class="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 shadow-[0_0_15px_rgba(217,70,239,0.2)]"
+					class="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 shadow-glow-fuchsia-sm"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -263,7 +263,7 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="lucide lucide-bot text-fuchsia-400 drop-shadow-[0_0_5px_rgba(217,70,239,0.8)]"
+						class="lucide lucide-bot text-fuchsia-400 drop-shadow-glow-fuchsia-xl"
 						><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path
 							d="M2 14h2"
 						/><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg
@@ -279,10 +279,10 @@
 				class="group relative overflow-hidden rounded-lg border border-slate-800/80 bg-slate-950/80 p-4"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<div class="relative z-10 flex items-start gap-3">
-					<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#5865F2]">
+					<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-discord">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="14"
@@ -301,10 +301,10 @@
 					</div>
 					<div>
 						<div class="flex items-baseline gap-2">
-							<span class="text-[11px] font-bold text-white">Smart Mac</span>
-							<span class="text-[9px] text-[#949ba4]">Today at 4:20 PM</span>
+							<span class="text-ui font-bold text-white">Smart Mac</span>
+							<span class="text-label-xs text-discord-muted">Today at 4:20 PM</span>
 						</div>
-						<p class="mt-1 text-xs text-[#dbdee1] italic">
+						<p class="mt-1 text-xs text-discord-text italic">
 							"{selectedTemplate.mockPreview}"
 						</p>
 					</div>

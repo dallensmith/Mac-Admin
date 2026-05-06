@@ -96,13 +96,13 @@
 						type="text"
 						placeholder="Search by title or user..."
 						bind:value={searchQuery}
-						class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
 					/>
 				</div>
 				<div class="w-full sm:w-48">
 					<select
 						bind:value={filterStatus}
-						class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
 					>
 						<option value="All">All Statuses</option>
 						<option value="pending">Pending</option>
@@ -126,7 +126,7 @@
 						<td class="px-6 py-4 whitespace-nowrap text-slate-300">{row.suggestedBy}</td>
 						<td class="px-6 py-4 text-xs whitespace-nowrap text-slate-500">{row.date}</td>
 						<td
-							class="px-6 py-4 text-[10px] font-bold tracking-widest whitespace-nowrap text-slate-400 uppercase"
+							class="px-6 py-4 text-label font-bold tracking-widest whitespace-nowrap text-slate-400 uppercase"
 							>{row.source}</td
 						>
 						<td class="px-6 py-4 whitespace-nowrap">
@@ -137,31 +137,31 @@
 								{#if row.status !== 'approved'}
 									<button
 										onclick={() => updateStatus(row.id, 'approved')}
-										class="text-[10px] font-bold tracking-wider text-cyan-500 uppercase transition-colors hover:text-cyan-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+										class="text-label font-bold tracking-wider text-cyan-500 uppercase transition-colors hover:text-cyan-300 hover:drop-shadow-glow-cyan-xl"
 										>Approve</button
 									>
 								{/if}
 								{#if row.status !== 'rejected'}
 									<button
 										onclick={() => updateStatus(row.id, 'rejected')}
-										class="text-[10px] font-bold tracking-wider text-rose-500 uppercase transition-colors hover:text-rose-400 hover:drop-shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+										class="text-label font-bold tracking-wider text-rose-500 uppercase transition-colors hover:text-rose-400 hover:drop-shadow-glow-rose-lg"
 										>Reject</button
 									>
 								{/if}
 								{#if row.status !== 'watched'}
 									<button
 										onclick={() => updateStatus(row.id, 'watched')}
-										class="text-[10px] font-bold tracking-wider text-emerald-500 uppercase transition-colors hover:text-emerald-400 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+										class="text-label font-bold tracking-wider text-emerald-500 uppercase transition-colors hover:text-emerald-400 hover:drop-shadow-glow-emerald-lg"
 										>Watched</button
 									>
 								{/if}
 								<button
-									class="text-[10px] font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
+									class="text-label font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
 									>Edit</button
 								>
 								<button
 									onclick={() => removeSuggestion(row.id)}
-									class="text-[10px] font-bold tracking-wider text-slate-600 uppercase transition-colors hover:text-rose-500"
+									class="text-label font-bold tracking-wider text-slate-600 uppercase transition-colors hover:text-rose-500"
 									>Remove</button
 								>
 							</div>
@@ -190,7 +190,7 @@
 				<div>
 					<label
 						for="movieTitle"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Movie Title <span class="text-rose-500">*</span></label
 					>
 					<input
@@ -199,13 +199,13 @@
 						placeholder="e.g. Sharknado"
 						bind:value={newTitle}
 						required
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					/>
 				</div>
 				<div>
 					<label
 						for="movieYear"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Year</label
 					>
 					<input
@@ -213,13 +213,13 @@
 						id="movieYear"
 						placeholder="e.g. 2013"
 						bind:value={newYear}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					/>
 				</div>
 				<div>
 					<label
 						for="suggestedBy"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Suggested By</label
 					>
 					<input
@@ -227,13 +227,13 @@
 						id="suggestedBy"
 						placeholder="e.g. DiscordUser123"
 						bind:value={newSuggestedBy}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					/>
 				</div>
 				<div>
 					<label
 						for="notes"
-						class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase drop-shadow-sm"
+						class="label-caps"
 						>Notes</label
 					>
 					<textarea
@@ -241,13 +241,10 @@
 						rows="2"
 						placeholder="Optional context..."
 						bind:value={newNotes}
-						class="mt-2 block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+						class="input-dark"
 					></textarea>
 				</div>
-				<button
-					type="submit"
-					class="relative mt-2 w-full rounded border border-cyan-500/50 bg-cyan-500/10 px-5 py-2 text-[10px] font-bold tracking-widest text-cyan-400 uppercase shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]"
-				>
+			<button type="submit" class="btn-cyan mt-2 w-full">
 					Add to Queue
 				</button>
 			</form>

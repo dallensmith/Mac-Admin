@@ -32,7 +32,7 @@
 					class="flex items-start gap-4 border-b border-slate-800/40 pb-4 last:border-0 last:pb-0"
 				>
 					<div
-						class="mt-1 rounded border border-cyan-500/30 bg-cyan-500/10 p-1.5 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.2)]"
+						class="mt-1 rounded border border-cyan-500/30 bg-cyan-500/10 p-1.5 text-cyan-400 shadow-glow-cyan-xs"
 					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -60,10 +60,10 @@
 	<SectionCard title="Quick Actions">
 		<div class="grid gap-4 sm:grid-cols-2">
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)]"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -75,19 +75,19 @@
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					class="lucide lucide-refresh-cw text-slate-400 transition-colors duration-300 group-hover:text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+					class="lucide lucide-refresh-cw text-slate-400 transition-colors duration-300 group-hover:text-cyan-400 group-hover:drop-shadow-glow-cyan-md"
 					><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg
 				>
 				<span
-					class="text-[11px] font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
+					class="text-ui font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
 					>Restart Bot</span
 				>
 			</button>
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(217,70,239,0.15)]"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:bg-slate-800/80 hover:shadow-glow-fuchsia-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +99,7 @@
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					class="lucide lucide-dices text-slate-400 transition-colors duration-300 group-hover:text-fuchsia-400 group-hover:drop-shadow-[0_0_8px_rgba(217,70,239,0.6)]"
+					class="lucide lucide-dices text-slate-400 transition-colors duration-300 group-hover:text-fuchsia-400 group-hover:drop-shadow-glow-fuchsia-lg"
 					><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /><path
 						d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"
 					/><path d="M6 18h.01" /><path d="M10 14h.01" /><path d="M15 6h.01" /><path
@@ -107,15 +107,15 @@
 					/></svg
 				>
 				<span
-					class="text-[11px] font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
+					class="text-ui font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
 					>Force Spin Wheel</span
 				>
 			</button>
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/50 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/50 hover:bg-slate-800/80 hover:shadow-glow-purple-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-purple-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -127,19 +127,19 @@
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					class="lucide lucide-message-square text-slate-400 transition-colors duration-300 group-hover:text-purple-400 group-hover:drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
+					class="lucide lucide-message-square text-slate-400 transition-colors duration-300 group-hover:text-purple-400 group-hover:drop-shadow-glow-purple-lg"
 					><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg
 				>
 				<span
-					class="text-[11px] font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
+					class="text-ui font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
 					>Global Announcement</span
 				>
 			</button>
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)]"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				></div>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -151,13 +151,13 @@
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					class="lucide lucide-settings text-slate-400 transition-colors duration-300 group-hover:text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+					class="lucide lucide-settings text-slate-400 transition-colors duration-300 group-hover:text-cyan-400 group-hover:drop-shadow-glow-cyan-md"
 					><path
 						d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
 					/><circle cx="12" cy="12" r="3" /></svg
 				>
 				<span
-					class="text-[11px] font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
+					class="text-ui font-bold tracking-wider text-slate-400 uppercase transition-colors duration-300 group-hover:text-slate-200"
 					>Sync Configs</span
 				>
 			</button>

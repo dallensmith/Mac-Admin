@@ -28,7 +28,7 @@
 	<p class="mt-2 text-sm text-slate-400">{message}</p>
 	{#if actionLabel}
 		<button
-			class="mt-6 rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+			class="mt-6 rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cyan-700"
 		>
 			{actionLabel}
 		</button>
