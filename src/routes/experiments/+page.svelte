@@ -14,7 +14,7 @@
 <SectionCard title="Past & Ongoing Experiments">
 	{#snippet headerAction()}
 		<button
-			class="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+			class="rounded-md bg-cyan-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
 			disabled
 		>
 			New Experiment
@@ -37,7 +37,7 @@
 			</td>
 			<td class="px-6 py-4 whitespace-nowrap">
 				<button
-					class="pointer-events-none text-xs font-medium text-indigo-400 opacity-50 hover:text-indigo-300"
+					class="pointer-events-none text-xs font-medium text-cyan-400 opacity-50 hover:text-indigo-300"
 					disabled>View Details</button
 				>
 			</td>

@@ -17,7 +17,7 @@
 			<div class="flex-1 p-6">
 				<div class="mb-4 flex items-center gap-3">
 					<div
-						class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-400"
+						class="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/20 text-xs font-bold text-cyan-400"
 					>
 						U{i + 1}
 					</div>

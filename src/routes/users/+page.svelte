@@ -19,7 +19,7 @@
 		{#snippet rowSnippet(row)}
 			<td class="flex items-center gap-3 px-6 py-4 font-medium whitespace-nowrap text-slate-200">
 				<div
-					class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500/20 text-[10px] font-bold text-indigo-400"
+					class="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] font-bold text-cyan-400"
 				>
 					{row.name.charAt(0)}
 				</div>
@@ -47,7 +47,7 @@
 					>
 				{/if}
 				<span class="text-slate-700">|</span>
-				<button class="text-xs font-medium text-indigo-400 hover:text-indigo-300" disabled
+				<button class="text-xs font-medium text-cyan-400 hover:text-indigo-300" disabled
 					>Edit Role</button
 				>
 			</td>

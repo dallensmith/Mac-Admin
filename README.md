@@ -4,9 +4,10 @@ An admin control panel for the Smart Mac / Mac Bot Discord bot, built with Svelt
 
 ## Current Status: Frontend Scaffold Only
 
-This project is currently in the **UI Scaffolding Phase**. 
+This project is currently in the **UI Scaffolding Phase**.
 
 **Important Notes:**
+
 - Authentication, API routing, and database connections are **NOT** wired up yet.
 - The app uses completely mock data (located in `src/lib/mock/admin.ts`).
 - All buttons and actions are non-functional placeholders.

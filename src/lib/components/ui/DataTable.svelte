@@ -12,18 +12,22 @@
 	}>();
 </script>
 
-<div class="overflow-x-auto rounded-lg border border-slate-800 bg-slate-900/50">
+<div class="overflow-x-auto rounded-lg border border-slate-800/80 bg-slate-900/40 backdrop-blur-sm">
 	<table class="w-full text-left text-sm text-slate-400">
-		<thead class="border-b border-slate-800 bg-slate-800/50 text-xs text-slate-300 uppercase">
+		<thead
+			class="border-b border-slate-800/80 bg-slate-950/50 text-[10px] font-bold tracking-widest text-slate-400 uppercase"
+		>
 			<tr>
 				{#each columns as col (col)}
-					<th scope="col" class="px-6 py-3 font-medium tracking-wider">{col}</th>
+					<th scope="col" class="px-6 py-4">{col}</th>
 				{/each}
 			</tr>
 		</thead>
 		<tbody class="divide-y divide-slate-800/50">
 			{#each data as row, idx (idx)}
-				<tr class="transition-colors hover:bg-slate-800/20">
+				<tr
+					class="border-b border-slate-800/30 transition-all duration-200 last:border-0 hover:bg-slate-800/40 hover:shadow-[inset_2px_0_0_rgba(192,38,211,0.5)]"
+				>
 					{@render rowSnippet(row)}
 				</tr>
 			{/each}

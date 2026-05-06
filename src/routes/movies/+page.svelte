@@ -42,7 +42,7 @@
 				<div class="absolute top-2 right-2 flex gap-1">
 					{#if i % 2 === 0}
 						<span
-							class="rounded border border-indigo-500/20 bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-medium text-indigo-400"
+							class="rounded border border-cyan-500/30 bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-medium text-cyan-400"
 							>BadMovies.co</span
 						>
 					{:else}
@@ -62,7 +62,7 @@
 				<p class="mt-1 text-xs text-slate-500">202{i} • Action, Comedy</p>
 				<div class="mt-auto flex items-center justify-between pt-4">
 					<span class="text-xs font-medium text-slate-400">Rating: 4.2/10</span>
-					<button class="text-xs font-medium text-indigo-400 hover:text-indigo-300" disabled
+					<button class="text-xs font-medium text-cyan-400 hover:text-indigo-300" disabled
 						>Details</button
 					>
 				</div>

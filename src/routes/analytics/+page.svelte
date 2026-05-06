@@ -20,7 +20,7 @@
 			<div class="flex h-full w-full items-end justify-between pt-4">
 				{#each [40, 65, 45, 80, 55, 90, 75] as height, idx (idx)}
 					<div
-						class="group relative w-1/12 rounded-t-sm border-x border-t border-indigo-500/50 bg-indigo-500/20 transition-all hover:bg-indigo-500/40"
+						class="group relative w-1/12 rounded-t-sm border-x border-t border-indigo-500/50 bg-cyan-500/20 transition-all hover:bg-indigo-500/40"
 						style="height: {height}%"
 					>
 						<div
