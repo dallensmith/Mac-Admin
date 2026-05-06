@@ -110,6 +110,19 @@ Use `+page.server.ts` `actions` for mutations; use `enhance` for progressive enh
 - Prefer `$derived` over `$effect` for computed values
 - Use `svelte-check` before committing (`npm run check`)
 
+## Coding Instructions
+
+Detailed rules for each domain live in `.github/instructions/`. **Always consult the relevant file before writing code in that area.**
+
+| File | Applies to | Covers |
+| ---- | ---------- | ------ |
+| [`svelte5.instructions.md`](.github/instructions/svelte5.instructions.md) | `**/*.svelte` | Svelte 5 runes, event handlers, snippets — forbids legacy Svelte 4 patterns |
+| [`svelte-ts.instructions.md`](.github/instructions/svelte-ts.instructions.md) | `**/*.svelte.ts` | Runes-based shared reactive state modules, forbids `svelte/store` |
+| [`server-ts.instructions.md`](.github/instructions/server-ts.instructions.md) | `src/**/*.server.ts` | Load functions, form actions, env variable safety, auth guards, Drizzle queries |
+| [`components.instructions.md`](.github/instructions/components.instructions.md) | `src/lib/components/**/*.svelte` | Folder structure, naming, prop typing, snippet composition, existing UI inventory |
+| [`icons.instructions.md`](.github/instructions/icons.instructions.md) | `**/*.svelte`, `**/*.ts` | Lucide SVG string pattern, `{@html}` rendering, icon prop conventions, sizing |
+| [`tailwindcss.instructions.md`](.github/instructions/tailwindcss.instructions.md) | `**/*.svelte`, `layout.css` | Tailwind v4 CSS-first config, `@theme` design tokens, component utilities, dark-only palette |
+
 ## Key Docs
 
 - [Svelte 5 runes](https://svelte.dev/docs/svelte/what-are-runes)
