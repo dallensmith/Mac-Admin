@@ -346,16 +346,11 @@
 			</div>
 		</SectionCard>
 
-		<!-- ── Channel IDs (restart required) ────────────────── -->
+		<!-- ── Channel IDs ───────────────────────────────────── -->
 		<SectionCard title="Channel IDs">
-			<p class="mb-4 text-sm text-slate-400">
-				Changes to these fields require a bot restart to take effect.
-			</p>
 			<div class="grid gap-6 sm:grid-cols-2">
 				<div>
-					<label for="reviews_channel_id" class="label-caps">
-						Reviews Channel ID {@render restartBadge()}
-					</label>
+					<label for="reviews_channel_id" class="label-caps">Reviews Channel ID</label>
 					<input
 						type="text"
 						id="reviews_channel_id"
@@ -365,9 +360,7 @@
 					/>
 				</div>
 				<div>
-					<label for="quotes_channel_id" class="label-caps">
-						Quotes Channel ID {@render restartBadge()}
-					</label>
+					<label for="quotes_channel_id" class="label-caps">Quotes Channel ID</label>
 					<input
 						type="text"
 						id="quotes_channel_id"
@@ -377,9 +370,7 @@
 					/>
 				</div>
 				<div>
-					<label for="reports_channel_id" class="label-caps">
-						Reports Channel ID {@render restartBadge()}
-					</label>
+					<label for="reports_channel_id" class="label-caps">Reports Channel ID</label>
 					<input
 						type="text"
 						id="reports_channel_id"
@@ -389,9 +380,7 @@
 					/>
 				</div>
 				<div>
-					<label for="announcement_channel_id" class="label-caps">
-						Announcement Channel ID {@render restartBadge()}
-					</label>
+					<label for="announcement_channel_id" class="label-caps">Announcement Channel ID</label>
 					<input
 						type="text"
 						id="announcement_channel_id"
@@ -401,9 +390,7 @@
 					/>
 				</div>
 				<div>
-					<label for="game_leaderboard_channel_id" class="label-caps">
-						Game Leaderboard Channel ID {@render restartBadge()}
-					</label>
+					<label for="game_leaderboard_channel_id" class="label-caps">Game Leaderboard Channel ID</label>
 					<input
 						type="text"
 						id="game_leaderboard_channel_id"
@@ -415,16 +402,14 @@
 			</div>
 		</SectionCard>
 
-		<!-- ── Advanced (restart required) ───────────────────── -->
+		<!-- ── Advanced ─────────────────────────────────────── -->
 		<SectionCard title="Advanced">
 			<p class="mb-4 text-sm text-slate-400">
-				Changes to these fields require a bot restart to take effect.
+				Fields marked ⚠ require a bot restart to take effect.
 			</p>
 			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 				<div>
-					<label for="daily_event_check_cron" class="label-caps">
-						Daily Event Check Cron {@render restartBadge()}
-					</label>
+					<label for="daily_event_check_cron" class="label-caps">Daily Event Check Cron</label>
 					<input
 						type="text"
 						id="daily_event_check_cron"
