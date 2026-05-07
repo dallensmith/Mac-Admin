@@ -1,6 +1,6 @@
 ---
 description: "Use when writing or editing tests. Covers the two Vitest project environments (client browser tests and server node tests), e2e Playwright tests, file naming conventions, and the requireAssertions rule."
-applyTo: ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/*.e2e.ts", "src/**/*.svelte.test.ts", "src/**/*.svelte.spec.ts"]
+applyTo: "src/**/*.test.ts", "src/**/*.spec.ts", "src/**/*.e2e.ts", "src/**/*.svelte.test.ts", "src/**/*.svelte.spec.ts"
 ---
 
 # Testing Rules
@@ -9,10 +9,10 @@ applyTo: ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/*.e2e.ts", "src/**/*.s
 
 This project uses a split Vitest config with two projects. Use the correct file extension to target the right runner:
 
-| Environment | File pattern | Runner | Use for |
-|---|---|---|---|
-| **Client** (browser) | `*.svelte.test.ts` / `*.svelte.spec.ts` | Playwright (Chromium, headless) | Svelte component tests, DOM interaction |
-| **Server** (Node) | `*.test.ts` / `*.spec.ts` | Node | Server logic, load functions, utilities, Drizzle queries |
+| Environment          | File pattern                            | Runner                          | Use for                                                  |
+| -------------------- | --------------------------------------- | ------------------------------- | -------------------------------------------------------- |
+| **Client** (browser) | `*.svelte.test.ts` / `*.svelte.spec.ts` | Playwright (Chromium, headless) | Svelte component tests, DOM interaction                  |
+| **Server** (Node)    | `*.test.ts` / `*.spec.ts`               | Node                            | Server logic, load functions, utilities, Drizzle queries |
 
 > The client project **excludes** `src/lib/server/**` — never write browser tests for server modules.
 
