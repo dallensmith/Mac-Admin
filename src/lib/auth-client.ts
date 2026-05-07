@@ -1,3 +1,4 @@
-import { createAuthClient } from 'better-auth/client';
+import PocketBase from 'pocketbase';
+import { PUBLIC_POCKETBASE_URL } from '$env/static/public';
 
-export const authClient = createAuthClient();
+export const pb = new PocketBase(PUBLIC_POCKETBASE_URL);

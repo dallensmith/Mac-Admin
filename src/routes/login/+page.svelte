@@ -1,5 +1,5 @@
 <script lang="ts">
-	import MockDiscordLoginButton from '$lib/components/auth/MockDiscordLoginButton.svelte';
+	import DiscordLoginButton from '$lib/components/auth/DiscordLoginButton.svelte';
 </script>
 
 <div
@@ -53,21 +53,10 @@
 			</div>
 
 			<div class="space-y-4">
-				<MockDiscordLoginButton />
+				<DiscordLoginButton />
 			</div>
 
 			<p class="mt-6 text-center text-xs text-slate-500">Admin access required.</p>
-
-			<!-- TODO: Add Better Auth wiring note -->
-			<div
-				class="mt-8 rounded border border-amber-500/20 bg-amber-500/10 p-4 text-xs text-amber-200/80"
-			>
-				<p class="mb-1 font-semibold text-amber-400">Developer Note:</p>
-				<p>
-					Authentication will be handled by Better Auth (Discord OAuth only). Once wired, this page
-					will redirect authenticated admins to the dashboard.
-				</p>
-			</div>
 		</div>
 	</div>
 </div>
