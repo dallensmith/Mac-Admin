@@ -46,7 +46,7 @@
 			/>
 			<div class="flex flex-1 flex-col overflow-hidden">
 				<Topbar
-					user={data.user ?? { name: '', image: null }}
+					user={{ name: data.user?.name ?? '', image: data.user?.avatar ?? null }}
 					role={data.discordRole ?? ''}
 				/>
 				<main class="flex-1 overflow-y-auto p-6 lg:p-8">

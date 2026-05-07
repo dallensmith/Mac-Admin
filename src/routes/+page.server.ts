@@ -1,10 +1,11 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { auth } from '$lib/server/auth';
 
 export const actions: Actions = {
-	signOut: async (event) => {
-		await auth.api.signOut({ headers: event.request.headers });
+	signOut: async ({ locals, cookies }) => {
+		locals.pb.authStore.clear();
+		cookies.delete('pb_auth', { path: '/' });
+		cookies.delete('pb_profile', { path: '/' });
 		redirect(302, '/login');
 	}
 };

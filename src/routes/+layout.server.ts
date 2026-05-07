@@ -1,13 +1,10 @@
 import { redirect } from '@sveltejs/kit';
-import { eq, and } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
-import { auth } from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import { account } from '$lib/server/db/schema';
+import { USERS_COLLECTION } from '$lib/server/auth';
 import { checkGuildMemberAccess, getGuildStats } from '$lib/server/discord';
 
-export const load: LayoutServerLoad = async ({ locals, url, request }) => {
-	if (url.pathname === '/login') {
+export const load: LayoutServerLoad = async ({ locals, url }) => {
+	if (url.pathname === '/login' || url.pathname.startsWith('/auth/')) {
 		return { user: locals.user, discordRole: null, guildStats: null };
 	}
 
@@ -15,19 +12,26 @@ export const load: LayoutServerLoad = async ({ locals, url, request }) => {
 		redirect(302, '/login');
 	}
 
-	// Look up the Discord account ID stored by better-auth
-	const discordAccount = await db.query.account.findFirst({
-		where: and(eq(account.userId, locals.user.id), eq(account.providerId, 'discord'))
-	});
+	// Look up the Discord external auth linked to this user
+	let discordUserId: string | null = null;
+	try {
+		const externalAuths = await locals.pb
+			.collection(USERS_COLLECTION)
+			.listExternalAuths(locals.user.id);
+		const discordAuth = externalAuths.find((a) => a.provider === 'discord');
+		discordUserId = discordAuth?.providerId ?? null;
+	} catch {
+		discordUserId = null;
+	}
 
-	if (!discordAccount) {
-		await auth.api.signOut({ headers: request.headers });
+	if (!discordUserId) {
+		locals.pb.authStore.clear();
 		redirect(302, '/login');
 	}
 
 	// Run access check and guild stats in parallel
 	const [accessResult, guildStats] = await Promise.allSettled([
-		checkGuildMemberAccess(discordAccount.accountId),
+		checkGuildMemberAccess(discordUserId),
 		getGuildStats()
 	]);
 
@@ -36,7 +40,7 @@ export const load: LayoutServerLoad = async ({ locals, url, request }) => {
 		accessResult.status === 'rejected' ||
 		(accessResult.status === 'fulfilled' && !accessResult.value.allowed)
 	) {
-		await auth.api.signOut({ headers: request.headers });
+		locals.pb.authStore.clear();
 		redirect(302, '/login');
 	}
 

@@ -1,15 +1,11 @@
 services:
-  db:
-    image: postgres
-    restart: always
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    restart: unless-stopped
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: local
+      - 8090:8090
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pbdata:/pb/pb_data
 
   web:
     build: .
@@ -18,11 +14,11 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgres://root:mysecretpassword@db:5432/local
+      POCKETBASE_URL: http://pocketbase:8090
       ORIGIN: http://localhost:3000
     depends_on:
-      - db
+      - pocketbase
     restart: unless-stopped
 
 volumes:
-  pgdata:
+  pbdata:
