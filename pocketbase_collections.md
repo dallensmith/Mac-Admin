@@ -305,3 +305,7 @@ Settings marked **restart-required** are stored here and applied on the next bot
 | `resources` | text | Overrides `config/instructions/resources.md` — injected reference material. Empty = use file |
 | `conversation_rules` | text | JSON string overriding `conversation-rules.json`. Empty = use file |
 | `response_templates` | text | JSON string overriding `response-templates.json` (formatting templates). Empty = use file |
+| `trigger_phrases` | text | JSON array of `{action, group?, examples[], notes?}`. **Additive** — appended to hardcoded trigger phrase examples. Empty = no additions |
+| `custom_rules` | text | JSON array of `{label, rule}` blocks injected before OUTPUT DISCIPLINE. Empty = use file default (`promptRules` in `conversation-rules.json`) |
+| `output_discipline` | text | **Replaces** the hardcoded OUTPUT DISCIPLINE section when non-empty. Empty = use hardcoded |
+| `addendum` | text | Free-form text appended at the very end of the prompt. Empty = nothing appended |
