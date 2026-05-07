@@ -5,7 +5,7 @@
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
@@ -40,9 +40,15 @@
 		></div>
 
 		<div class="relative z-10 flex h-full w-full">
-			<Sidebar />
+			<Sidebar
+				guildIconUrl={data.guildStats?.iconUrl ?? null}
+				guildName={data.guildStats?.name ?? 'MAC.ADMIN'}
+			/>
 			<div class="flex flex-1 flex-col overflow-hidden">
-				<Topbar />
+				<Topbar
+					user={{ name: data.user?.name ?? '', image: data.user?.avatar ?? null }}
+					role={data.discordRole ?? ''}
+				/>
 				<main class="flex-1 overflow-y-auto p-6 lg:p-8">
 					{@render children()}
 				</main>

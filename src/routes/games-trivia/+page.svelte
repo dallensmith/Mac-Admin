@@ -6,20 +6,25 @@
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import { mockGameModes, mockTriviaQuestions, mockSources } from '$lib/mock/gamesTrivia';
 
-	// TODO: Connect trivia questions to database
-	// TODO: Define game session model
-	// TODO: Sync game commands with Discord bot
-	// TODO: Add per-guild game settings
-	// TODO: Add scoring/leaderboards
-	// TODO: Add AI-assisted trivia generation
-	// TODO: Require admin approval before AI-generated trivia goes live
+	let { data } = $props();
 
 	let questions = $state([...mockTriviaQuestions]);
 
 	let totalQuestions = $derived(questions.length);
 	let draftQuestions = $derived(questions.filter((q) => q.status === 'Draft').length);
 	let needsReviewQuestions = $derived(questions.filter((q) => q.status === 'Needs Review').length);
-	let activeGames = $state(2); // Hardcoded mock
+
+	function formatDuration(startMs: number, endMs: number | null): string {
+		if (!endMs) return 'In Progress';
+		const ms = endMs - startMs;
+		const mins = Math.floor(ms / 60000);
+		const secs = Math.floor((ms % 60000) / 1000);
+		return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+	}
+
+	function formatDate(ms: number): string {
+		return new Date(ms).toLocaleString();
+	}
 
 	// Form state
 	let newQuestion = $state('');
@@ -65,8 +70,12 @@
 />
 
 <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-	<StatCard title="Total Trivia Questions" value={totalQuestions.toString()} />
-	<StatCard title="Active Games" value={activeGames.toString()} />
+	<StatCard title="Total Players" value={data.totalPlayers.toString()} />
+	<StatCard
+		title="Active Games"
+		value={data.activeSessionCount.toString()}
+		trend={data.activeSessionCount > 0 ? 'Live' : 'None active'}
+	/>
 	<StatCard
 		title="Draft Questions"
 		value={draftQuestions.toString()}
@@ -198,7 +207,7 @@
 				columns={['Question', 'Answer', 'Category', 'Source', 'Status', 'Actions']}
 				data={questions}
 			>
-				{#snippet rowSnippet(row)}
+				{#snippet rowSnippet(row, _idx)}
 					<td class="max-w-xs truncate px-6 py-4 font-medium text-slate-200" title={row.question}
 						>{row.question}</td
 					>
@@ -373,4 +382,60 @@
 			</ul>
 		</SectionCard>
 	</div>
+</div>
+
+<!-- Leaderboard -->
+<div class="mt-6 space-y-6">
+	<SectionCard title="Leaderboard">
+		{#if data.leaderboard.length === 0}
+			<p class="py-8 text-center text-sm text-slate-500">No leaderboard entries yet.</p>
+		{:else}
+			<DataTable
+				columns={['Rank', 'Player', 'Points', 'Wins', 'Games Played', 'Last Active']}
+				data={data.leaderboard}
+			>
+				{#snippet rowSnippet(row, idx)}
+					<td class="px-6 py-4 text-center font-mono font-bold text-slate-400">
+						{idx + 1}
+					</td>
+					<td class="px-6 py-4 font-medium text-slate-200">{row.username}</td>
+					<td class="px-6 py-4 font-bold text-cyan-400">{(row.points as number).toLocaleString()}</td>
+					<td class="px-6 py-4 text-slate-300">{row.wins}</td>
+					<td class="px-6 py-4 text-slate-300">{row.games_played}</td>
+					<td class="px-6 py-4 text-xs text-slate-500">
+						{row.updated_at ? formatDate(row.updated_at as number) : '—'}
+					</td>
+				{/snippet}
+			</DataTable>
+		{/if}
+	</SectionCard>
+
+	<SectionCard title="Recent Game Sessions">
+		{#if data.sessions.length === 0}
+			<p class="py-8 text-center text-sm text-slate-500">No sessions recorded yet.</p>
+		{:else}
+			<DataTable
+				columns={['Game Type', 'Status', 'Channel', 'Started By', 'Duration', 'Started At']}
+				data={data.sessions}
+			>
+				{#snippet rowSnippet(row, _idx)}
+					<td
+						class="px-6 py-4 text-label font-bold tracking-widest whitespace-nowrap text-fuchsia-400 uppercase"
+						>{row.game_type}</td
+					>
+					<td class="px-6 py-4 whitespace-nowrap">
+						<StatusBadge status={row.state as string} />
+					</td>
+					<td class="px-6 py-4 font-mono text-xs text-slate-500">{row.channel_id}</td>
+					<td class="px-6 py-4 font-mono text-xs text-slate-500">{row.started_by}</td>
+					<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+						{formatDuration(row.started_at as number, row.ended_at as number | null)}
+					</td>
+					<td class="px-6 py-4 text-xs text-slate-500">
+						{row.started_at ? formatDate(row.started_at as number) : '—'}
+					</td>
+				{/snippet}
+			</DataTable>
+		{/if}
+	</SectionCard>
 </div>

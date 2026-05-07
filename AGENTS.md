@@ -122,6 +122,9 @@ Detailed rules for each domain live in `.github/instructions/`. **Always consult
 | [`components.instructions.md`](.github/instructions/components.instructions.md) | `src/lib/components/**/*.svelte` | Folder structure, naming, prop typing, snippet composition, existing UI inventory |
 | [`icons.instructions.md`](.github/instructions/icons.instructions.md) | `**/*.svelte`, `**/*.ts` | Lucide SVG string pattern, `{@html}` rendering, icon prop conventions, sizing |
 | [`tailwindcss.instructions.md`](.github/instructions/tailwindcss.instructions.md) | `**/*.svelte`, `layout.css` | Tailwind v4 CSS-first config, `@theme` design tokens, component utilities, dark-only palette |
+| [`drizzle.instructions.md`](.github/instructions/drizzle.instructions.md) | `src/lib/server/db/**/*.ts` | Schema conventions, column types, relations, query patterns, migration workflow |
+| [`better-auth.instructions.md`](.github/instructions/better-auth.instructions.md) | `src/**/*.server.ts`, `hooks.server.ts` | Session access via `locals`, route guards, server vs client auth API, `sveltekitCookies` plugin order |
+| [`testing.instructions.md`](.github/instructions/testing.instructions.md) | `**/*.test.ts`, `**/*.e2e.ts` | Client (browser) vs server (Node) Vitest environments, `requireAssertions`, e2e Playwright tests |
 
 ## Key Docs
 

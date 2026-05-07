@@ -25,7 +25,7 @@
 		columns={['ID', 'Name', 'Date Started', 'Movies Watched', 'Status', 'Results']}
 		data={mockExperiments}
 	>
-		{#snippet rowSnippet(row)}
+		{#snippet rowSnippet(row, _idx)}
 			<td class="px-6 py-4 font-mono text-xs whitespace-nowrap text-slate-400"
 				>EXP-{row.id.toString().padStart(3, '0')}</td
 			>

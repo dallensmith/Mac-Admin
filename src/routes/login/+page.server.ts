@@ -1,46 +1,30 @@
-import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-import { auth } from '$lib/server/auth';
-import { APIError } from 'better-auth/api';
+import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from './$types';
+import { USERS_COLLECTION } from '$lib/server/auth';
+import { env } from '$env/dynamic/private';
 
-export const load: PageServerLoad = ({ locals }) => {
+const CALLBACK_URL = `${env.ORIGIN}/auth/callback`;
+
+export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) redirect(302, '/');
-	return {};
 };
 
 export const actions: Actions = {
-	signIn: async (event) => {
-		const formData = await event.request.formData();
-		const email = formData.get('email')?.toString() ?? '';
-		const password = formData.get('password')?.toString() ?? '';
+	discord: async ({ locals, cookies }) => {
+		const methods = await locals.pb.collection(USERS_COLLECTION).listAuthMethods();
+		const discord = methods.oauth2?.providers?.find((p) => p.name === 'discord');
 
-		try {
-			await auth.api.signInEmail({ body: { email, password } });
-		} catch (error) {
-			if (error instanceof APIError) {
-				return fail(400, { message: error.message || 'Sign in failed' });
-			}
-			return fail(500, { message: 'Unexpected error' });
+		if (!discord) {
+			return { error: 'Discord OAuth is not configured in PocketBase.' };
 		}
 
-		redirect(302, '/');
-	},
+		cookies.set('pb_code_verifier', discord.codeVerifier, {
+			path: '/',
+			httpOnly: true,
+			secure: false,
+			maxAge: 60 * 5
+		});
 
-	register: async (event) => {
-		const formData = await event.request.formData();
-		const email = formData.get('email')?.toString() ?? '';
-		const password = formData.get('password')?.toString() ?? '';
-		const name = formData.get('name')?.toString() ?? '';
-
-		try {
-			await auth.api.signUpEmail({ body: { email, password, name } });
-		} catch (error) {
-			if (error instanceof APIError) {
-				return fail(400, { message: error.message || 'Registration failed' });
-			}
-			return fail(500, { message: 'Unexpected error' });
-		}
-
-		redirect(302, '/');
+		redirect(302, discord.authURL + CALLBACK_URL);
 	}
 };
