@@ -7,6 +7,7 @@ declare global {
 	namespace App {
 		interface Locals {
 			pb: PocketBase;
+			adminPb: PocketBase;
 			user: RecordModel | null;
 		}
 

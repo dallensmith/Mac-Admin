@@ -8,7 +8,7 @@
 	let { columns, data, rowSnippet } = $props<{
 		columns: string[];
 		data: Record<string, unknown>[];
-		rowSnippet: Snippet<[Record<string, unknown>]>;
+		rowSnippet: Snippet<[Record<string, unknown>, number]>;
 	}>();
 </script>
 
@@ -30,7 +30,7 @@
 				<tr
 					class="border-b border-slate-700/50 transition-all duration-200 last:border-0 hover:bg-slate-800/80 hover:shadow-inset-accent"
 				>
-					{@render rowSnippet(row)}
+					{@render rowSnippet(row, idx)}
 				</tr>
 			{/each}
 		</tbody>

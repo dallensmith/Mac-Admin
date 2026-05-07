@@ -25,7 +25,7 @@
 			<div class="flex items-center justify-between border-b border-slate-800 pb-4">
 				<div>
 					<p class="text-sm font-medium text-slate-200">Database Connection</p>
-					<p class="text-xs text-slate-500">PostgreSQL via Drizzle ORM</p>
+					<p class="text-xs text-slate-500">PocketBase</p>
 				</div>
 				<span
 					class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 ring-1 ring-emerald-500/20 ring-inset"
@@ -61,12 +61,12 @@
 			</div>
 			<div class="flex items-center justify-between border-b border-slate-800 pb-4">
 				<div>
-					<p class="text-sm font-medium text-slate-200">Discord OAuth Client (Better Auth)</p>
-					<p class="text-xs text-amber-500/80">Pending configuration for admin login.</p>
+					<p class="text-sm font-medium text-slate-200">Discord OAuth (PocketBase)</p>
+					<p class="text-xs text-slate-500">Used for admin Discord login.</p>
 				</div>
 				<div class="flex items-center gap-2">
-					<div class="h-2 w-2 rounded-full bg-amber-500"></div>
-					<span class="text-sm text-slate-400">Missing</span>
+					<div class="h-2 w-2 rounded-full bg-emerald-500"></div>
+					<span class="text-sm text-slate-400">Configured</span>
 				</div>
 			</div>
 			<div class="flex items-center justify-between">

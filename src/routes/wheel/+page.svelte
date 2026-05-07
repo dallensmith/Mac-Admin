@@ -120,7 +120,7 @@
 					columns={['Movie Title', 'Year', 'Suggested By', 'Date', 'Source', 'Status', 'Actions']}
 					data={filteredSuggestions}
 				>
-					{#snippet rowSnippet(row)}
+					{#snippet rowSnippet(row, _idx)}
 						<td class="px-6 py-4 font-medium whitespace-nowrap text-cyan-400">{row.title}</td>
 						<td class="px-6 py-4 whitespace-nowrap text-slate-400">{row.year || '—'}</td>
 						<td class="px-6 py-4 whitespace-nowrap text-slate-300">{row.suggestedBy}</td>

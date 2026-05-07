@@ -19,10 +19,6 @@ export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 			.collection(USERS_COLLECTION)
 			.authWithOAuth2Code('discord', code, codeVerifier, CALLBACK_URL);
 
-		// Log meta to identify Discord field names
-		console.log('[callback] meta keys:', JSON.stringify(Object.keys(authData.meta ?? {})));
-		console.log('[callback] meta:', JSON.stringify(authData.meta));
-
 		const name = authData.meta?.name ?? authData.meta?.username ?? '';
 		const avatar = authData.meta?.avatarUrl ?? null;
 

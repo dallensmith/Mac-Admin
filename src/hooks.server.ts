@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { createPb, USERS_COLLECTION } from '$lib/server/auth';
+import { createPb, createAdminPb, USERS_COLLECTION } from '$lib/server/auth';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const pb = createPb();
@@ -27,6 +27,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	event.locals.pb = pb;
+	event.locals.adminPb = await createAdminPb();
 
 	if (pb.authStore.isValid) {
 		// Restore display fields from the separate profile cookie

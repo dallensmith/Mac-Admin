@@ -2,7 +2,7 @@
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import StatCard from '$lib/components/ui/StatCard.svelte';
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
-	import { mockDashboardStats, mockRecentActivity } from '$lib/mock/admin';
+	import { mockRecentActivity } from '$lib/mock/admin';
 
 	let { data } = $props();
 
@@ -17,8 +17,8 @@
 <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
 	<StatCard
 		title="Bot Status"
-		value={mockDashboardStats.botStatus}
-		trend="Online"
+		value={data.botStatus ?? '—'}
+		trend={data.botStatus ? 'Online' : 'Unknown'}
 		icon={activityIcon}
 	/>
 	<StatCard
@@ -27,8 +27,12 @@
 		trend={data.guildStats ? `${data.guildStats.onlineCount} online` : undefined}
 		icon={serverIcon}
 	/>
-	<StatCard title="API Latency" value={mockDashboardStats.ping} icon={zapIcon} />
-	<StatCard title="Daily API Cost" value={mockDashboardStats.dailyCost} icon={dollarIcon} />
+	<StatCard title="API Latency" value="—" icon={zapIcon} />
+	<StatCard
+		title="Daily API Cost"
+		value={data.dailyCost != null ? `$${data.dailyCost.toFixed(4)}` : '—'}
+		icon={dollarIcon}
+	/>
 </div>
 
 <div class="grid gap-6 lg:grid-cols-2">
