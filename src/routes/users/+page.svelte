@@ -16,7 +16,7 @@
 		columns={['Discord User', 'Role', 'Status', 'Usage Limits', 'Actions']}
 		data={mockUsers}
 	>
-		{#snippet rowSnippet(row)}
+		{#snippet rowSnippet(row, _idx)}
 			<td class="flex items-center gap-3 px-6 py-4 font-medium whitespace-nowrap text-slate-200">
 				<div
 					class="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] font-bold text-cyan-400"
