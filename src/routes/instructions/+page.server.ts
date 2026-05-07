@@ -35,6 +35,9 @@ export const actions: Actions = {
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
+		const existing = await locals.adminPb.collection('sm_instruction_sets').getOne(id);
+		if (existing.is_default) return fail(403, { error: 'Cannot edit the default profile' });
+
 		await locals.adminPb.collection('sm_instruction_sets').update(id, {
 			name: data.get('name') ?? '',
 			description: data.get('description') ?? '',
@@ -54,6 +57,9 @@ export const actions: Actions = {
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
 		const record = await locals.adminPb.collection('sm_instruction_sets').getOne(id);
+		if (record.is_default) {
+			return fail(422, { error: 'Cannot delete the default profile' });
+		}
 		if (record.is_active) {
 			return fail(422, { error: 'Cannot delete the active template' });
 		}

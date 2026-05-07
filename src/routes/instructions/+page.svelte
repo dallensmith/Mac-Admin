@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { RecordModel } from 'pocketbase';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -18,8 +18,8 @@
 		{ key: 'system.md', field: 'system' },
 		{ key: 'behavior.md', field: 'behavior' },
 		{ key: 'resources.md', field: 'resources' },
-		{ key: 'conversation-rules.md', field: 'conversation_rules' },
-		{ key: 'response-templates.md', field: 'response_templates' }
+		{ key: 'conversation-rules.json', field: 'conversation_rules' },
+		{ key: 'response-templates.json', field: 'response_templates' }
 	] as const;
 
 	type TabKey = (typeof tabs)[number]['key'];
@@ -71,6 +71,9 @@
 		if (!tab) return '';
 		return edits[tab.field] ?? '';
 	}
+
+	// Is the selected template the bot-managed default (read-only)?
+	let isDefaultProfile = $derived((selectedTemplate as RecordModel)?.is_default === true);
 
 	// enhance callbacks
 	const enhanceCreate = () =>
@@ -159,13 +162,18 @@
 							: 'border-slate-800/60 bg-slate-900/40 hover:border-cyan-500/30 hover:bg-slate-800/50'}"
 						onclick={() => (selectedTemplateId = t.id)}
 					>
-						<div class="flex w-full items-start justify-between">
-							<span
-								class="text-ui font-bold tracking-widest uppercase transition-colors {selectedTemplateId ===
-								t.id
-									? 'text-cyan-400'
-									: 'text-slate-300 group-hover:text-cyan-400'}">{t.name}</span
-							>
+					<div class="flex w-full items-start justify-between">
+						<div class="flex items-center gap-1.5">
+						{#if t.is_default}
+						<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-slate-500"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+						{/if}
+								<span
+									class="text-ui font-bold tracking-widest uppercase transition-colors {selectedTemplateId ===
+									t.id
+										? 'text-cyan-400'
+										: 'text-slate-300 group-hover:text-cyan-400'}">{t.name}</span
+								>
+						</div>
 							<StatusBadge status={statusFromRecord(t as RecordModel)} />
 						</div>
 						<span class="line-clamp-2 text-xs text-slate-400">{t.description}</span>
@@ -183,7 +191,17 @@
 		{#if selectedTemplate}
 			<form id="updateForm" method="POST" action="?/update" use:enhance>
 				<input type="hidden" name="id" value={selectedTemplate.id} />
-
+				{#if isDefaultProfile}
+					<div class="mb-4 rounded border border-slate-700/50 bg-slate-800/40 p-4">
+						<div class="flex items-start gap-3">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-slate-400"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+							<div>
+								<p class="text-ui font-bold tracking-widest text-slate-300 uppercase">Read-Only — Bot Managed</p>
+								<p class="mt-1 text-xs text-slate-500">This profile is populated by the bot from its <code class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400">config/instructions/</code> files on startup. No edits can be made here.</p>
+							</div>
+						</div>
+					</div>
+				{/if}
 				<SectionCard title="Template Metadata">
 					<div class="grid gap-4 sm:grid-cols-2">
 						<div>
@@ -193,7 +211,8 @@
 								name="name"
 								type="text"
 								bind:value={edits.name}
-								class="input-dark"
+								readonly={isDefaultProfile}
+								class="input-dark {isDefaultProfile ? 'cursor-default opacity-60' : ''}"
 							/>
 						</div>
 						<div class="sm:col-span-2">
@@ -203,7 +222,8 @@
 								name="description"
 								rows="2"
 								bind:value={edits.description}
-								class="input-dark"
+								readonly={isDefaultProfile}
+								class="input-dark {isDefaultProfile ? 'cursor-default opacity-60' : ''}"
 							></textarea>
 						</div>
 					</div>
@@ -216,10 +236,12 @@
 								class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300"
 							>Set Active</button>
 						{/if}
-						<button
-							type="submit"
-							class="rounded border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-label font-bold tracking-widest text-cyan-400 uppercase shadow-glow-cyan-sm-soft transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-glow-cyan-sm-hover"
-						>Save</button>
+						{#if !isDefaultProfile}
+							<button
+								type="submit"
+								class="rounded border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-label font-bold tracking-widest text-cyan-400 uppercase shadow-glow-cyan-sm-soft transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-glow-cyan-sm-hover"
+							>Save</button>
+						{/if}
 						<button
 							type="submit"
 							form="duplicateForm"
@@ -229,7 +251,7 @@
 						<button
 							type="submit"
 							form="deleteForm"
-							disabled={selectedTemplate.is_active || (data.templates as RecordModel[]).length <= 1}
+						disabled={selectedTemplate.is_active || selectedTemplate.is_default || (data.templates as RecordModel[]).length <= 1}
 							class="rounded border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-label font-bold tracking-widest text-rose-400 uppercase transition-colors hover:bg-rose-500/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
 						>Delete</button>
 					</div>
@@ -256,10 +278,10 @@
 						<textarea
 							name={tab.field}
 							bind:value={edits[tab.field]}
-							class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none {activeTab !==
-							tab.key
-								? 'hidden'
-								: ''}"
+							readonly={isDefaultProfile}
+							class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none {isDefaultProfile
+								? 'cursor-default opacity-70 focus:border-slate-800/80 focus:ring-0'
+								: ''} {activeTab !== tab.key ? 'hidden' : ''}"
 						></textarea>
 					{/each}
 				</SectionCard>
