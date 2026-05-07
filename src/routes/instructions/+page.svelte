@@ -75,12 +75,27 @@
 	// Is the selected template the bot-managed default (read-only)?
 	let isDefaultProfile = $derived((selectedTemplate as RecordModel)?.is_default === true);
 
+	// Validation
+	let updateNameError = $state('');
+
 	// enhance callbacks
 	const enhanceCreate = () =>
 		async ({ update }: { update: () => Promise<void> }) => {
 			await update();
 			selectedTemplateId = (data.templates[0] as RecordModel)?.id ?? '';
 		};
+
+	const enhanceUpdate = ({ cancel }: { cancel: () => void }) => {
+		if (!edits.name.trim()) {
+			updateNameError = 'Profile name is required';
+			cancel();
+			return;
+		}
+		updateNameError = '';
+		return async ({ update }: { update: () => Promise<void> }) => {
+			await update();
+		};
+	};
 
 	const enhanceDelete = () =>
 		async ({ update }: { update: () => Promise<void> }) => {
@@ -189,7 +204,7 @@
 	<!-- Main Area: Editor -->
 	<div class="space-y-6 xl:col-span-6">
 		{#if selectedTemplate}
-			<form id="updateForm" method="POST" action="?/update" use:enhance>
+			<form id="updateForm" method="POST" action="?/update" use:enhance={enhanceUpdate}>
 				<input type="hidden" name="id" value={selectedTemplate.id} />
 				{#if isDefaultProfile}
 					<div class="mb-4 rounded border border-slate-700/50 bg-slate-800/40 p-4">
@@ -212,8 +227,10 @@
 								type="text"
 								bind:value={edits.name}
 								readonly={isDefaultProfile}
-								class="input-dark {isDefaultProfile ? 'cursor-default opacity-60' : ''}"
+								aria-invalid={!!updateNameError}
+								class="input-dark {isDefaultProfile ? 'cursor-default opacity-60' : ''} {updateNameError ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
 							/>
+							{#if updateNameError}<p class="mt-1 text-xs text-rose-400">{updateNameError}</p>{/if}
 						</div>
 						<div class="sm:col-span-2">
 							<label for="profileDesc" class="label-caps">Description</label>

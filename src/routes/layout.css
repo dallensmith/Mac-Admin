@@ -100,12 +100,15 @@
 
 	/* Primary cyan action button */
 	.btn-cyan {
-		@apply relative rounded border border-cyan-500/50 bg-cyan-500/10 px-5 py-2 font-bold tracking-widest text-cyan-400 uppercase transition-all hover:bg-cyan-500/20 hover:text-cyan-300;
+		@apply relative rounded border border-cyan-500/50 bg-cyan-500/10 px-5 py-2 font-bold tracking-widest text-cyan-400 uppercase transition-all hover:bg-cyan-500/20 hover:text-cyan-300 disabled:cursor-not-allowed disabled:border-slate-700/50 disabled:bg-transparent disabled:text-slate-600 disabled:shadow-none;
 		font-size: var(--text-label);
 		box-shadow: var(--shadow-glow-cyan-sm);
 	}
 	.btn-cyan:hover {
 		box-shadow: var(--shadow-glow-cyan-md-bright);
+	}
+	.btn-cyan:disabled:hover {
+		box-shadow: none;
 	}
 
 	/* Secondary ghost button */
