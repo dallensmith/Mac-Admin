@@ -4,7 +4,7 @@ import type { PageServerLoad, Actions } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) redirect(302, '/login');
 
-	const templates = await locals.pb.collection('sm_instruction_sets').getFullList({
+	const templates = await locals.adminPb.collection('sm_instruction_sets').getFullList({
 		sort: '-updated'
 	});
 
@@ -15,7 +15,7 @@ export const actions: Actions = {
 	create: async ({ locals }) => {
 		if (!locals.user) redirect(302, '/login');
 
-		await locals.pb.collection('sm_instruction_sets').create({
+		await locals.adminPb.collection('sm_instruction_sets').create({
 			name: 'New Profile',
 			description: '',
 			is_active: false,
@@ -35,7 +35,7 @@ export const actions: Actions = {
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
-		await locals.pb.collection('sm_instruction_sets').update(id, {
+		await locals.adminPb.collection('sm_instruction_sets').update(id, {
 			name: data.get('name') ?? '',
 			description: data.get('description') ?? '',
 			system: data.get('system') ?? '',
@@ -53,12 +53,12 @@ export const actions: Actions = {
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
-		const record = await locals.pb.collection('sm_instruction_sets').getOne(id);
+		const record = await locals.adminPb.collection('sm_instruction_sets').getOne(id);
 		if (record.is_active) {
 			return fail(422, { error: 'Cannot delete the active template' });
 		}
 
-		await locals.pb.collection('sm_instruction_sets').delete(id);
+		await locals.adminPb.collection('sm_instruction_sets').delete(id);
 	},
 
 	setActive: async ({ locals, request }) => {
@@ -68,12 +68,12 @@ export const actions: Actions = {
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
-		const all = await locals.pb.collection('sm_instruction_sets').getFullList();
+		const all = await locals.adminPb.collection('sm_instruction_sets').getFullList();
 		for (const t of all) {
 			if (t.id === id) {
-				await locals.pb.collection('sm_instruction_sets').update(t.id, { is_active: true });
+				await locals.adminPb.collection('sm_instruction_sets').update(t.id, { is_active: true });
 			} else if (t.is_active) {
-				await locals.pb.collection('sm_instruction_sets').update(t.id, { is_active: false });
+				await locals.adminPb.collection('sm_instruction_sets').update(t.id, { is_active: false });
 			}
 		}
 	},
@@ -85,8 +85,8 @@ export const actions: Actions = {
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
-		const source = await locals.pb.collection('sm_instruction_sets').getOne(id);
-		await locals.pb.collection('sm_instruction_sets').create({
+		const source = await locals.adminPb.collection('sm_instruction_sets').getOne(id);
+		await locals.adminPb.collection('sm_instruction_sets').create({
 			name: source.name + ' (Copy)',
 			description: source.description ?? '',
 			is_active: false,

@@ -5,8 +5,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) redirect(302, '/login');
 
 	const [leaderboardRecords, sessionsPage] = await Promise.all([
-		locals.pb.collection('sm_game_leaderboard').getFullList({ sort: '-points' }),
-		locals.pb.collection('sm_game_sessions').getList(1, 50, { sort: '-started_at' })
+		locals.adminPb.collection('sm_game_leaderboard').getFullList({ sort: '-points' }),
+		locals.adminPb.collection('sm_game_sessions').getList(1, 50, { sort: '-started_at' })
 	]);
 
 	const activeSessions = leaderboardRecords.length; // players in leaderboard

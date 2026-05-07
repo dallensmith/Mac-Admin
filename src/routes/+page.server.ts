@@ -7,10 +7,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const today = new Date().toISOString().slice(0, 10);
 
 	const [dailyCostRecord, botStatusRecord] = await Promise.allSettled([
-		locals.pb
+		locals.adminPb
 			.collection('sm_global_usage')
 			.getFirstListItem(`date='${today}'`, { requestKey: null }),
-		locals.pb
+		locals.adminPb
 			.collection('sm_monitor_state')
 			.getFirstListItem("key='status'", { requestKey: null })
 	]);

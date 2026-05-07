@@ -10,8 +10,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.slice(0, 19);
 
 	const [globalUsage, usageLogs] = await Promise.all([
-		locals.pb.collection('sm_global_usage').getFullList({ sort: 'date' }),
-		locals.pb.collection('sm_usage_logs').getFullList({
+		locals.adminPb.collection('sm_global_usage').getFullList({ sort: 'date' }),
+		locals.adminPb.collection('sm_usage_logs').getFullList({
 			filter: `created >= '${thirtyDaysAgo}'`,
 			sort: 'created'
 		})
