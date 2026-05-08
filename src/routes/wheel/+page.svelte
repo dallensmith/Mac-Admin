@@ -47,6 +47,7 @@
 			year: entry.year ?? '',
 			tmdbId: entry.tmdbId ?? '',
 			imdbId: entry.imdbId ?? '',
+			posterPath: entry.posterPath ?? '',
 			suggestedBy: entry.suggestedBy ?? ''
 		};
 	}
@@ -58,6 +59,7 @@
 			year: '',
 			tmdbId: '',
 			imdbId: '',
+			posterPath: '',
 			suggestedBy: data.discordUserId ?? ''
 		};
 	}
@@ -100,6 +102,7 @@
 	<input type="hidden" name="year" value={editValues.year ?? ''} />
 	<input type="hidden" name="tmdbId" value={editValues.tmdbId ?? ''} />
 	<input type="hidden" name="imdbId" value={editValues.imdbId ?? ''} />
+	<input type="hidden" name="posterPath" value={editValues.posterPath ?? ''} />
 	<input type="hidden" name="suggestedBy" value={editValues.suggestedBy ?? ''} />
 </form>
 
@@ -123,6 +126,7 @@
 	<input type="hidden" name="year" value={editValues.year ?? ''} />
 	<input type="hidden" name="tmdbId" value={editValues.tmdbId ?? ''} />
 	<input type="hidden" name="imdbId" value={editValues.imdbId ?? ''} />
+	<input type="hidden" name="posterPath" value={editValues.posterPath ?? ''} />
 	<input type="hidden" name="suggestedBy" value={editValues.suggestedBy ?? ''} />
 </form>
 

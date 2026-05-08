@@ -11,6 +11,14 @@
 		updated: string;
 	}
 
+	interface MovieSearchResult {
+		tmdbId: number;
+		title: string;
+		year: string;
+		overview: string;
+		posterPath: string | null;
+	}
+
 	let {
 		entry = undefined,
 		isEditing = false,
@@ -19,7 +27,6 @@
 		saveFormId,
 		onEdit,
 		onDelete,
-		onSave,
 		onCancel
 	}: {
 		entry?: WheelEntry;
@@ -29,10 +36,106 @@
 		saveFormId: string;
 		onEdit?: () => void;
 		onDelete?: () => void;
-		onSave?: () => void;
 		onCancel?: () => void;
 	} = $props();
 
+	// ── Search state ────────────────────────────────────────────────────────────
+	let searchResults = $state<MovieSearchResult[]>([]);
+	let isSearching = $state(false);
+	let showDropdown = $state(false);
+	let justSelected = $state(false);
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+	let titleInputEl = $state<HTMLInputElement | null>(null);
+	let dropdownEl = $state<HTMLDivElement | null>(null);
+
+	let inEditMode = $derived(isEditing || isNew);
+
+	// Debounced watch on title
+	$effect(() => {
+		const title = editValues.title ?? '';
+
+		if (justSelected) {
+			justSelected = false;
+			return;
+		}
+
+		if (debounceTimer) clearTimeout(debounceTimer);
+
+		if (title.trim().length < 2) {
+			searchResults = [];
+			showDropdown = false;
+			return;
+		}
+
+		debounceTimer = setTimeout(() => triggerSearch(title), 400);
+
+		return () => {
+			if (debounceTimer) clearTimeout(debounceTimer);
+		};
+	});
+
+	// Close on outside click
+	$effect(() => {
+		if (!showDropdown) return;
+
+		function handleClickOutside(e: MouseEvent) {
+			const target = e.target as Node;
+			if (
+				titleInputEl && !titleInputEl.contains(target) &&
+				dropdownEl && !dropdownEl.contains(target)
+			) {
+				showDropdown = false;
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	});
+
+	async function triggerSearch(query?: string) {
+		const q = (query ?? editValues.title ?? '').trim();
+		if (q.length < 2) return;
+
+		isSearching = true;
+		showDropdown = true;
+
+		try {
+			const res = await fetch(`/api/movies/search?q=${encodeURIComponent(q)}`);
+			if (res.ok) {
+				searchResults = await res.json();
+			}
+		} finally {
+			isSearching = false;
+		}
+	}
+
+	async function selectResult(result: MovieSearchResult) {
+		justSelected = true;
+		editValues.title = result.title;
+		editValues.year = result.year;
+		editValues.tmdbId = String(result.tmdbId);
+		showDropdown = false;
+		searchResults = [];
+
+		// Fetch IMDb ID
+		try {
+			const res = await fetch(`/api/movies/${result.tmdbId}`);
+			if (res.ok) {
+				const data = await res.json();
+				editValues.imdbId = data.imdbId ?? '';
+			}
+		} catch {
+			// Non-fatal — user can fill manually
+		}
+	}
+
+	function handleTitleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			showDropdown = false;
+		}
+	}
+
+	// ── Display helpers ─────────────────────────────────────────────────────────
 	function voterCount(voters: string): number {
 		return voters ? voters.split(',').filter(Boolean).length : 0;
 	}
@@ -41,7 +144,7 @@
 		return voters ? voters.split(',').filter(Boolean).join(', ') : '';
 	}
 
-	let inEditMode = $derived(isEditing || isNew);
+	const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 </script>
 
 {#if inEditMode}
@@ -64,12 +167,138 @@
 				<p class="label-caps text-slate-500">Editing</p>
 			{/if}
 
-			<input
-				type="text"
-				placeholder="Title *"
-				bind:value={editValues.title}
-				class="input-dark"
-			/>
+			<!-- Title row with search button + dropdown -->
+			<div class="relative">
+				<div class="flex gap-1.5">
+					<input
+						bind:this={titleInputEl}
+						type="text"
+						placeholder="Title *"
+						bind:value={editValues.title}
+						onkeydown={handleTitleKeydown}
+						class="input-dark flex-1"
+						autocomplete="off"
+					/>
+					<button
+						type="button"
+						onclick={() => triggerSearch()}
+						title="Search TMDb"
+						class="flex shrink-0 items-center justify-center rounded-none border border-slate-700 bg-slate-800/60 px-2 text-slate-400 transition-colors hover:border-cyan-500/50 hover:text-cyan-400"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="lucide lucide-search"
+						>
+							<circle cx="11" cy="11" r="8" />
+							<path d="m21 21-4.3-4.3" />
+						</svg>
+					</button>
+				</div>
+
+				<!-- Search dropdown -->
+				{#if showDropdown}
+					<div
+						bind:this={dropdownEl}
+						class="absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-none border border-slate-700 bg-slate-900 shadow-card"
+					>
+						{#if isSearching}
+							<div class="flex items-center gap-2 px-3 py-3 text-ui text-slate-500">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									class="lucide lucide-loader-2 animate-spin"
+								>
+									<path d="M21 12a9 9 0 1 1-6.219-8.56" />
+								</svg>
+								Searching…
+							</div>
+						{:else if searchResults.length === 0}
+							<div class="px-3 py-3 text-ui text-slate-500">No results found</div>
+						{:else}
+							<ul class="max-h-80 overflow-y-auto">
+								{#each searchResults as result (result.tmdbId)}
+									<li>
+										<button
+											type="button"
+											onclick={() => selectResult(result)}
+											class="flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-800/60 hover:shadow-inset-accent"
+										>
+											<!-- Poster thumbnail -->
+											<div
+												class="shrink-0 overflow-hidden border border-slate-700 bg-slate-800"
+												style="width:40px;height:60px;"
+											>
+												{#if result.posterPath}
+													<img
+														src="{TMDB_IMAGE_BASE}{result.posterPath}"
+														alt={result.title}
+														width="40"
+														height="60"
+														class="h-full w-full object-cover"
+														loading="lazy"
+													/>
+												{:else}
+													<div class="flex h-full w-full items-center justify-center">
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															width="16"
+															height="16"
+															viewBox="0 0 24 24"
+															fill="none"
+															stroke="currentColor"
+															stroke-width="2"
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															class="lucide lucide-film text-slate-600"
+														>
+															<rect width="18" height="18" x="3" y="3" rx="2" />
+															<path d="M7 3v18" />
+															<path d="M3 7.5h4" />
+															<path d="M3 12h18" />
+															<path d="M3 16.5h4" />
+															<path d="M17 3v18" />
+															<path d="M17 7.5h4" />
+															<path d="M17 16.5h4" />
+														</svg>
+													</div>
+												{/if}
+											</div>
+
+											<!-- Text info -->
+											<div class="min-w-0 flex-1">
+												<div class="flex items-baseline gap-2">
+													<span class="truncate text-sm font-medium text-slate-200">{result.title}</span>
+													{#if result.year}
+														<span class="shrink-0 font-mono text-ui text-slate-500">{result.year}</span>
+													{/if}
+												</div>
+												{#if result.overview}
+													<p class="mt-0.5 line-clamp-2 text-ui text-slate-500">{result.overview}</p>
+												{/if}
+											</div>
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				{/if}
+			</div>
 			<div class="flex gap-2">
 				<input
 					type="text"
