@@ -14,7 +14,6 @@ export interface WheelEntry {
 	imdbId: string;
 	suggestedBy: string;
 	voters: string;
-	dateAdded: string;
 	created: string;
 	updated: string;
 }
@@ -26,7 +25,7 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 
 	const entries = await locals.adminPb
 		.collection(wheelCollection())
-		.getFullList<WheelEntry>({ sort: '-dateAdded' });
+		.getFullList<WheelEntry>({ sort: '-created' });
 
 	return { entries, discordUserId };
 };
@@ -47,8 +46,7 @@ export const actions: Actions = {
 			tmdbId: (data.get('tmdbId') as string | null)?.trim() ?? '',
 			imdbId: (data.get('imdbId') as string | null)?.trim() ?? '',
 			suggestedBy: (data.get('suggestedBy') as string | null)?.trim() ?? '',
-			voters: '',
-			dateAdded: new Date().toISOString().split('T')[0]
+			voters: ''
 		};
 
 		try {

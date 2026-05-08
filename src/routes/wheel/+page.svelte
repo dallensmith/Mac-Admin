@@ -30,9 +30,11 @@
 	);
 	let mostRecent = $derived(
 		data.entries.length > 0
-			? data.entries.reduce((latest: WheelEntry, e: WheelEntry) =>
-					e.dateAdded > latest.dateAdded ? e : latest
-				).dateAdded
+			? data.entries
+					.reduce((latest: WheelEntry, e: WheelEntry) =>
+						e.created > latest.created ? e : latest
+					)
+					.created.split('T')[0]
 			: '—'
 	);
 	let uniqueSuggesters = $derived(new Set(data.entries.map((e: WheelEntry) => e.suggestedBy)).size);
@@ -208,7 +210,7 @@
 						/>
 					</td>
 					<td class="px-4 py-2 text-xs text-slate-500">
-						{isNewRow ? new Date().toISOString().split('T')[0] : entry.dateAdded}
+						{isNewRow ? new Date().toISOString().split('T')[0] : entry.created.split('T')[0]}
 					</td>
 					<td class="px-4 py-2 text-xs text-slate-500">
 						{isNewRow || voterCount(entry.voters) === 0
@@ -255,7 +257,7 @@
 					<td class="px-6 py-4 whitespace-nowrap text-slate-400">{entry.year || '—'}</td>
 					<td class="px-6 py-4 whitespace-nowrap text-slate-300">{entry.suggestedBy || '—'}</td>
 					<td class="px-6 py-4 text-xs whitespace-nowrap text-slate-500"
-						>{entry.dateAdded || '—'}</td
+						>{entry.created ? entry.created.split('T')[0] : '—'}</td
 					>
 					<td class="px-6 py-4 whitespace-nowrap text-slate-400">
 						{#if voterCount(entry.voters) > 0}
