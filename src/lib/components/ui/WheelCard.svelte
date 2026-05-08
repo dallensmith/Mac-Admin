@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { cubicOut } from 'svelte/easing';
 
 	export interface WheelEntry {
@@ -46,7 +45,7 @@
 	let searchResults = $state<MovieSearchResult[]>([]);
 	let isSearching = $state(false);
 	let showDropdown = $state(false);
-	let justSelected = $state(false);
+	let skipNextSearch = false; // plain var — not reactive, so the effect won't re-run when it changes
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let titleInputEl = $state<HTMLInputElement | null>(null);
 	let dropdownEl = $state<HTMLDivElement | null>(null);
@@ -57,8 +56,8 @@
 	$effect(() => {
 		const title = editValues.title ?? '';
 
-		if (justSelected) {
-			untrack(() => { justSelected = false; });
+		if (skipNextSearch) {
+			skipNextSearch = false;
 			return;
 		}
 
@@ -113,7 +112,8 @@
 	}
 
 	async function selectResult(result: MovieSearchResult) {
-		justSelected = true;
+		skipNextSearch = true;
+		if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
 		movieWatched = false;
 		editValues.title = result.title;
 		editValues.year = result.year;
