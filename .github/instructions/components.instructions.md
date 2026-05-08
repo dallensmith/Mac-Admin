@@ -1,6 +1,6 @@
 ---
-description: "Use when creating, editing, or organizing Svelte components. Enforces folder structure, naming, prop typing, and composition conventions for src/lib/components/."
-applyTo: "src/lib/components/**/*.svelte"
+description: 'Use when creating, editing, or organizing Svelte components. Enforces folder structure, naming, prop typing, and composition conventions for src/lib/components/.'
+applyTo: 'src/lib/components/**/*.svelte'
 ---
 
 # Component Conventions
@@ -15,6 +15,7 @@ src/lib/components/
 ```
 
 Place new components in the most specific folder:
+
 - If it's a general-purpose display or form element → `ui/`
 - If it's a page-level structural shell → `layout/`
 - If it requires auth context → `auth/`
@@ -44,15 +45,15 @@ Type props inline using `$props<{...}>()` — do not use a separate `interface` 
 
 ```svelte
 <script lang="ts">
-  let {
-    title,
-    description = undefined,
-    children
-  } = $props<{
-    title: string;
-    description?: string;
-    children: Snippet;
-  }>();
+	let {
+		title,
+		description = undefined,
+		children
+	} = $props<{
+		title: string;
+		description?: string;
+		children: Snippet;
+	}>();
 </script>
 ```
 
@@ -67,7 +68,7 @@ Accept content via `Snippet` props. Common pattern:
 ```svelte
 <!-- SectionCard: accepts children + optional headerAction -->
 {#if headerAction}
-  {@render headerAction()}
+	{@render headerAction()}
 {/if}
 {@render children()}
 ```
@@ -76,24 +77,24 @@ Named snippets in the consumer:
 
 ```svelte
 {#snippet headerAction()}
-  <button class="btn-ghost">Export</button>
+	<button class="btn-ghost">Export</button>
 {/snippet}
 
 <SectionCard title="Movies" {headerAction}>
-  <!-- body -->
+	<!-- body -->
 </SectionCard>
 ```
 
 ## Existing UI Components (use before creating new ones)
 
-| Component | Purpose | Key Props |
-|---|---|---|
-| `PageHeader` | Page title + subtitle | `title`, `description?` |
-| `SectionCard` | Titled card panel with header/body | `title`, `description?`, `headerAction?`, `children` |
-| `StatCard` | Metric card with value, icon, trend | `title`, `value`, `icon?`, `trend?` |
-| `DataTable` | Generic data table | `columns`, `data`, `rowSnippet` |
-| `EmptyState` | Empty/zero-state placeholder | `title`, `message`, `actionLabel?` |
-| `StatusBadge` | Inline status indicator | varies |
+| Component     | Purpose                             | Key Props                                            |
+| ------------- | ----------------------------------- | ---------------------------------------------------- |
+| `PageHeader`  | Page title + subtitle               | `title`, `description?`                              |
+| `SectionCard` | Titled card panel with header/body  | `title`, `description?`, `headerAction?`, `children` |
+| `StatCard`    | Metric card with value, icon, trend | `title`, `value`, `icon?`, `trend?`                  |
+| `DataTable`   | Generic data table                  | `columns`, `data`, `rowSnippet`                      |
+| `EmptyState`  | Empty/zero-state placeholder        | `title`, `message`, `actionLabel?`                   |
+| `StatusBadge` | Inline status indicator             | varies                                               |
 
 Check this folder before building a new component that might already exist.
 
@@ -103,13 +104,17 @@ All `ui/` components follow the dark admin aesthetic — see `tailwindcss.instru
 
 ```svelte
 <!-- Standard card shell -->
-<div class="group relative overflow-hidden rounded-none border-2 border-slate-700
-            bg-slate-900/80 shadow-card backdrop-blur-md">
-  <!-- Hover top glow line -->
-  <div class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent
+<div
+	class="group relative overflow-hidden rounded-none border-2 border-slate-700
+            bg-slate-900/80 shadow-card backdrop-blur-md"
+>
+	<!-- Hover top glow line -->
+	<div
+		class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent
               via-cyan-500/20 to-transparent transition-all duration-500
-              group-hover:via-cyan-400/40"></div>
-  ...
+              group-hover:via-cyan-400/40"
+	></div>
+	...
 </div>
 ```
 

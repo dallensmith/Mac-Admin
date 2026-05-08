@@ -54,7 +54,9 @@ export function getAvatarUrl(userId: string, avatarHash: string | null): string 
 export async function checkGuildMemberAccess(discordUserId: string): Promise<MemberAccess> {
 	// Whitelist check — no API call needed
 	const whitelist = ADMIN_DISCORD_USER_IDS
-		? ADMIN_DISCORD_USER_IDS.split(',').map((id) => id.trim()).filter(Boolean)
+		? ADMIN_DISCORD_USER_IDS.split(',')
+				.map((id) => id.trim())
+				.filter(Boolean)
 		: [];
 
 	// Fetch member and all guild roles in parallel
@@ -66,9 +68,7 @@ export async function checkGuildMemberAccess(discordUserId: string): Promise<Mem
 	]);
 
 	if (!memberRes.ok || !rolesRes.ok) {
-		throw new Error(
-			`Discord API error: member=${memberRes.status} roles=${rolesRes.status}`
-		);
+		throw new Error(`Discord API error: member=${memberRes.status} roles=${rolesRes.status}`);
 	}
 
 	const member: DiscordGuildMember = await memberRes.json();
@@ -98,10 +98,9 @@ export async function checkGuildMemberAccess(discordUserId: string): Promise<Mem
  */
 export async function getGuildStats(): Promise<GuildStats | null> {
 	try {
-		const res = await fetch(
-			`${DISCORD_API}/guilds/${DISCORD_GUILD_ID}?with_counts=true`,
-			{ headers: botHeaders }
-		);
+		const res = await fetch(`${DISCORD_API}/guilds/${DISCORD_GUILD_ID}?with_counts=true`, {
+			headers: botHeaders
+		});
 		if (!res.ok) return null;
 
 		const guild: DiscordGuild = await res.json();

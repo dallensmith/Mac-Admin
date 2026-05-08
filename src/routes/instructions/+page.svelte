@@ -140,7 +140,8 @@
 	}
 
 	// enhance callbacks
-	const enhanceCreate = () =>
+	const enhanceCreate =
+		() =>
 		async ({ update }: { update: () => Promise<void> }) => {
 			await update();
 			selectedTemplateId = (data.templates[0] as RecordModel)?.id ?? '';
@@ -158,7 +159,8 @@
 		};
 	};
 
-	const enhanceDelete = () =>
+	const enhanceDelete =
+		() =>
 		async ({ update }: { update: () => Promise<void> }) => {
 			await update();
 			selectedTemplateId = (data.templates[0] as RecordModel)?.id ?? '';
@@ -170,9 +172,7 @@
 	description="Manage bot personalities and system profiles."
 />
 
-<div
-	class="mb-6 rounded border border-rose-500/30 bg-rose-500/10 p-4 shadow-glow-rose-sm"
->
+<div class="mb-6 rounded border border-rose-500/30 bg-rose-500/10 p-4 shadow-glow-rose-sm">
 	<div class="flex items-start gap-3">
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -238,18 +238,32 @@
 							: 'border-slate-800/60 bg-slate-900/40 hover:border-cyan-500/30 hover:bg-slate-800/50'}"
 						onclick={() => (selectedTemplateId = t.id)}
 					>
-					<div class="flex w-full items-start justify-between">
-						<div class="flex items-center gap-1.5">
-						{#if t.is_default}
-						<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-slate-500"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-						{/if}
+						<div class="flex w-full items-start justify-between">
+							<div class="flex items-center gap-1.5">
+								{#if t.is_default}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="11"
+										height="11"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="shrink-0 text-slate-500"
+										><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path
+											d="M7 11V7a5 5 0 0 1 10 0v4"
+										/></svg
+									>
+								{/if}
 								<span
 									class="text-ui font-bold tracking-widest uppercase transition-colors {selectedTemplateId ===
 									t.id
 										? 'text-cyan-400'
 										: 'text-slate-300 group-hover:text-cyan-400'}">{t.name}</span
 								>
-						</div>
+							</div>
 							<StatusBadge status={statusFromRecord(t as RecordModel)} />
 						</div>
 						<span class="line-clamp-2 text-xs text-slate-400">{t.description}</span>
@@ -270,10 +284,31 @@
 				{#if isDefaultProfile}
 					<div class="mb-4 rounded border border-slate-700/50 bg-slate-800/40 p-4">
 						<div class="flex items-start gap-3">
-							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 text-slate-400"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="18"
+								height="18"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="mt-0.5 shrink-0 text-slate-400"
+								><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path
+									d="M7 11V7a5 5 0 0 1 10 0v4"
+								/></svg
+							>
 							<div>
-								<p class="text-ui font-bold tracking-widest text-slate-300 uppercase">Read-Only — Bot Managed</p>
-								<p class="mt-1 text-xs text-slate-500">This profile is populated by the bot from its <code class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400">config/instructions/</code> files on startup. No edits can be made here.</p>
+								<p class="text-ui font-bold tracking-widest text-slate-300 uppercase">
+									Read-Only — Bot Managed
+								</p>
+								<p class="mt-1 text-xs text-slate-500">
+									This profile is populated by the bot from its <code
+										class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400"
+										>config/instructions/</code
+									> files on startup. No edits can be made here.
+								</p>
 							</div>
 						</div>
 					</div>
@@ -289,7 +324,9 @@
 								bind:value={edits.name}
 								readonly={isDefaultProfile}
 								aria-invalid={!!updateNameError}
-								class="input-dark {isDefaultProfile ? 'cursor-default opacity-60' : ''} {updateNameError ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+								class="input-dark {isDefaultProfile
+									? 'cursor-default opacity-60'
+									: ''} {updateNameError ? 'border-rose-500/60 ring-1 ring-rose-500/50' : ''}"
 							/>
 							{#if updateNameError}<p class="mt-1 text-xs text-rose-400">{updateNameError}</p>{/if}
 						</div>
@@ -312,26 +349,32 @@
 								type="submit"
 								form="setActiveForm"
 								class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300"
-							>Set Active</button>
+								>Set Active</button
+							>
 						{/if}
 						{#if !isDefaultProfile}
 							<button
 								type="submit"
 								class="rounded border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-label font-bold tracking-widest text-cyan-400 uppercase shadow-glow-cyan-sm-soft transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-glow-cyan-sm-hover"
-							>Save</button>
+								>Save</button
+							>
 						{/if}
 						<button
 							type="submit"
 							form="duplicateForm"
 							class="rounded border border-slate-700 bg-slate-800 px-4 py-2 text-label font-bold tracking-widest text-slate-300 uppercase transition-colors hover:bg-slate-700 hover:text-slate-200"
-						>Duplicate</button>
+							>Duplicate</button
+						>
 						<div class="flex-1"></div>
 						<button
 							type="submit"
 							form="deleteForm"
-						disabled={selectedTemplate.is_active || selectedTemplate.is_default || (data.templates as RecordModel[]).length <= 1}
+							disabled={selectedTemplate.is_active ||
+								selectedTemplate.is_default ||
+								(data.templates as RecordModel[]).length <= 1}
 							class="rounded border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-label font-bold tracking-widest text-rose-400 uppercase transition-colors hover:bg-rose-500/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
-						>Delete</button>
+							>Delete</button
+						>
 					</div>
 				</SectionCard>
 
@@ -418,9 +461,7 @@
 						<input type="hidden" name="custom_rules" value={customRulesJson} />
 						<div class="space-y-3">
 							{#each customRules as rule, i (i)}
-								<div
-									class="rounded border border-slate-800/60 bg-slate-900/40 p-3"
-								>
+								<div class="rounded border border-slate-800/60 bg-slate-900/40 p-3">
 									<div class="mb-2 flex items-center gap-2">
 										<input
 											type="text"
@@ -438,7 +479,20 @@
 												class="shrink-0 rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400"
 												aria-label="Remove rule"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="14"
+													height="14"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													><path d="M3 6h18" /><path
+														d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+													/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg
+												>
 											</button>
 										{/if}
 									</div>
@@ -475,9 +529,7 @@
 						<input type="hidden" name="trigger_phrases" value={triggerPhrasesJson} />
 						<div class="space-y-3">
 							{#each triggerPhrases as tp, i (i)}
-								<div
-									class="rounded border border-slate-800/60 bg-slate-900/40 p-3"
-								>
+								<div class="rounded border border-slate-800/60 bg-slate-900/40 p-3">
 									<div class="mb-2 flex items-start justify-between gap-2">
 										<div class="grid flex-1 gap-2 sm:grid-cols-2">
 											<input
@@ -506,7 +558,20 @@
 												class="mt-1 shrink-0 rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400"
 												aria-label="Remove trigger"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="14"
+													height="14"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													><path d="M3 6h18" /><path
+														d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+													/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg
+												>
 											</button>
 										{/if}
 									</div>
@@ -547,7 +612,9 @@
 				</SectionCard>
 			</form>
 		{:else}
-			<div class="flex h-64 items-center justify-center rounded-lg border border-slate-800/60 bg-slate-900/40">
+			<div
+				class="flex h-64 items-center justify-center rounded-lg border border-slate-800/60 bg-slate-900/40"
+			>
 				<p class="text-sm text-slate-500">No templates found. Create one to get started.</p>
 			</div>
 		{/if}
@@ -619,8 +686,7 @@
 							</div>
 							<p class="mt-1 text-xs text-discord-text italic">
 								"{activeTabContent()
-									? activeTabContent().slice(0, 160) +
-										(activeTabContent().length > 160 ? '…' : '')
+									? activeTabContent().slice(0, 160) + (activeTabContent().length > 160 ? '…' : '')
 									: 'No content on this tab yet.'}"
 							</p>
 						</div>

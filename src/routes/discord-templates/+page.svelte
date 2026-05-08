@@ -53,16 +53,8 @@
 		<SectionCard title="Template Selection">
 			<div class="grid gap-4 sm:grid-cols-2">
 				<div>
-					<label
-						for="templateSelect"
-						class="label-caps"
-						>Edit Template</label
-					>
-					<select
-						id="templateSelect"
-						bind:value={selectedTemplateId}
-						class="input-dark"
-					>
+					<label for="templateSelect" class="label-caps">Edit Template</label>
+					<select id="templateSelect" bind:value={selectedTemplateId} class="input-dark">
 						{#each mockTemplates as template (template.id)}
 							<option value={template.id}>{template.name}</option>
 						{/each}
@@ -79,11 +71,7 @@
 		<SectionCard title="Content Formatting">
 			<div class="space-y-4">
 				<div>
-					<label
-						for="titleFormat"
-						class="label-caps"
-						>Embed Title</label
-					>
+					<label for="titleFormat" class="label-caps">Embed Title</label>
 					<input
 						id="titleFormat"
 						type="text"
@@ -93,11 +81,7 @@
 				</div>
 
 				<div>
-					<label
-						for="descFormat"
-						class="label-caps"
-						>Description Body</label
-					>
+					<label for="descFormat" class="label-caps">Description Body</label>
 					<textarea
 						id="descFormat"
 						rows="3"
@@ -108,11 +92,7 @@
 
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div>
-						<label
-							for="accentColor"
-							class="label-caps"
-							>Accent Color (Hex)</label
-						>
+						<label for="accentColor" class="label-caps">Accent Color (Hex)</label>
 						<div class="mt-2 flex gap-2">
 							<input
 								id="accentColor"
@@ -128,11 +108,7 @@
 						</div>
 					</div>
 					<div>
-						<label
-							for="footerText"
-							class="label-caps"
-							>Footer Text</label
-						>
+						<label for="footerText" class="label-caps">Footer Text</label>
 						<input
 							id="footerText"
 							type="text"
@@ -198,12 +174,8 @@
 		</SectionCard>
 
 		<div class="flex justify-end gap-3">
-			<button class="btn-ghost" onclick={() => loadPreset('full-archive')}>
-				Reset Defaults
-			</button>
-			<button class="btn-cyan">
-				Save Template
-			</button>
+			<button class="btn-ghost" onclick={() => loadPreset('full-archive')}> Reset Defaults </button>
+			<button class="btn-cyan"> Save Template </button>
 		</div>
 
 		<SectionCard title="Variables & References">

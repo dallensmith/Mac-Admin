@@ -20,45 +20,6 @@ export const mockRecentActivity = [
 	{ id: 3, action: 'Bot spun the wheel: "Troll 2"', time: '2 hours ago', user: 'System' }
 ];
 
-export const wheelSuggestions = [
-	{
-		id: 1,
-		title: 'The Room',
-		year: 2003,
-		suggestedBy: 'zasderq',
-		date: '2024-03-10',
-		status: 'pending',
-		source: 'discord'
-	},
-	{
-		id: 2,
-		title: 'Troll 2',
-		year: 1990,
-		suggestedBy: 'Admin Dave',
-		date: '2024-03-11',
-		status: 'watched',
-		source: 'manual'
-	},
-	{
-		id: 3,
-		title: 'Birdemic',
-		year: 2010,
-		suggestedBy: 'System',
-		date: '2024-03-12',
-		status: 'approved',
-		source: 'discord'
-	},
-	{
-		id: 4,
-		title: 'Foodfight!',
-		year: 2012,
-		suggestedBy: 'troll_user',
-		date: '2024-03-13',
-		status: 'rejected',
-		source: 'discord'
-	}
-];
-
 export const mockExperiments = [
 	{ id: 1, name: 'Sarcasm Level 100', date: '2026-05-04', movies: 5, status: 'Completed' },
 	{ id: 2, name: '90s Action Focus', date: '2026-05-01', movies: 12, status: 'Completed' },

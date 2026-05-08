@@ -17,9 +17,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		dailyCost:
-			dailyCostRecord.status === 'fulfilled'
-				? (dailyCostRecord.value.total_cost as number)
-				: null,
+			dailyCostRecord.status === 'fulfilled' ? (dailyCostRecord.value.total_cost as number) : null,
 		botStatus:
 			botStatusRecord.status === 'fulfilled' ? (botStatusRecord.value.value as string) : null
 	};
