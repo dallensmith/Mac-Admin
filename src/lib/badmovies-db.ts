@@ -147,6 +147,7 @@ interface QuoteRow {
 	context: string | null;
 	isMemorable: boolean | null;
 	likes: number | null;
+	status: string | null;
 	createdAt: string | null;
 }
 
@@ -162,6 +163,7 @@ interface ReviewRow {
 	ratingEntertainment: string | null;
 	ratingSoBadItsGood: string | null;
 	ratingMemePotential: string | null;
+	status: string | null;
 	createdAt: string | null;
 }
 
@@ -1463,6 +1465,36 @@ export class BadMoviesDbClient {
 		}
 	}
 
+	/** Fetch the N most recent quotes across all statuses (admin use), newest first. */
+	public async getAllQuotes(limit = 50): Promise<NormalizedQuoteDetailed[]> {
+		try {
+			const rows = await this.db
+				.select({
+					id: schema.quotes.id,
+					text: schema.quotes.quote,
+					movie: schema.movies.title,
+					movieSlug: schema.movies.slug,
+					year: sql<string | null>`LEFT(${schema.movies.releaseDate}, 4)`,
+					character: schema.quotes.character,
+					actor: schema.quotes.actor,
+					context: schema.quotes.context,
+					isMemorable: schema.quotes.isMemorable,
+					likes: schema.quotes.likes,
+					status: schema.quotes.status,
+					createdAt: schema.quotes.createdAt
+				})
+				.from(schema.quotes)
+				.innerJoin(schema.movies, eq(schema.movies.id, schema.quotes.movieId!))
+				.orderBy(desc(schema.quotes.id))
+				.limit(limit);
+
+			return (rows as QuoteRow[]).map((r) => this.mapQuoteRow(r));
+		} catch (error: unknown) {
+			logger.error(`[BadMoviesDb] getAllQuotes failed: ${formatDbError(error)}`);
+			return [];
+		}
+	}
+
 	public async getNewQuotesSince(lastId: number): Promise<NormalizedQuoteDetailed[]> {
 		try {
 			const rows = await this.db
@@ -1647,6 +1679,41 @@ export class BadMoviesDbClient {
 			return (rows as unknown as ReviewRow[]).map((r) => this.mapReviewRow(r));
 		} catch (error: unknown) {
 			logger.error(`[BadMoviesDb] getLatestReviews failed: ${formatDbError(error)}`);
+			return [];
+		}
+	}
+
+	/** Return the N most recent reviews across all statuses (admin use), newest first. */
+	public async getAllReviews(limit = 50): Promise<NormalizedReview[]> {
+		try {
+			const rows = await this.db
+				.select({
+					id: schema.reviews.id,
+					movieTitle: schema.movies.title,
+					movieSlug: schema.movies.slug,
+					reviewerName: sql<
+						string | null
+					>`COALESCE(${schema.profiles.username}, ${schema.users.name})`,
+					content: schema.reviews.body,
+					ratingGood: schema.reviews.ratingGood,
+					ratingEntertainment: schema.reviews.ratingEntertainment,
+					ratingSoBadItsGood: schema.reviews.ratingSoBadItIsGood,
+					ratingMemePotential: schema.reviews.ratingMemePotential,
+					status: schema.reviews.status,
+					createdAt: schema.reviews.createdAt,
+					movieYear: sql<string | null>`LEFT(${schema.movies.releaseDate}, 4)`,
+					posterPath: schema.movies.posterPath
+				})
+				.from(schema.reviews)
+				.innerJoin(schema.movies, eq(schema.movies.id, schema.reviews.movieId!))
+				.innerJoin(schema.users, eq(schema.users.id, schema.reviews.userId!))
+				.leftJoin(schema.profiles, eq(schema.profiles.userId, schema.reviews.userId!))
+				.orderBy(desc(schema.reviews.id))
+				.limit(limit);
+
+			return (rows as unknown as ReviewRow[]).map((r) => this.mapReviewRow(r));
+		} catch (error: unknown) {
+			logger.error(`[BadMoviesDb] getAllReviews failed: ${formatDbError(error)}`);
 			return [];
 		}
 	}
@@ -1847,6 +1914,7 @@ export class BadMoviesDbClient {
 			ratingEntertainment: Number(row.ratingEntertainment ?? 0),
 			ratingSoBadItsGood: Number(row.ratingSoBadItsGood ?? 0),
 			ratingMemePotential: Number(row.ratingMemePotential ?? 0),
+			status: row.status ?? 'pending',
 			createdAt: row.createdAt ? new Date(row.createdAt).toISOString().slice(0, 10) : ''
 		};
 	}
@@ -1863,6 +1931,7 @@ export class BadMoviesDbClient {
 			context: row.context ?? undefined,
 			isMemorable: Boolean(row.isMemorable),
 			likes: row.likes ?? 0,
+			status: row.status ?? 'approved',
 			createdAt: row.createdAt ?? undefined
 		};
 	}
