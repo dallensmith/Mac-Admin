@@ -12,7 +12,6 @@ export interface WheelEntry {
 	year: string;
 	tmdbId: string;
 	imdbId: string;
-	posterPath: string;
 	suggestedBy: string;
 	voters: string;
 	created: string;
@@ -46,7 +45,6 @@ export const actions: Actions = {
 			year: (data.get('year') as string | null)?.trim() ?? '',
 			tmdbId: (data.get('tmdbId') as string | null)?.trim() ?? '',
 			imdbId: (data.get('imdbId') as string | null)?.trim() ?? '',
-			posterPath: (data.get('posterPath') as string | null)?.trim() ?? '',
 			suggestedBy: (data.get('suggestedBy') as string | null)?.trim() ?? '',
 			voters: ''
 		};
@@ -79,7 +77,6 @@ export const actions: Actions = {
 			year: (data.get('year') as string | null)?.trim() ?? '',
 			tmdbId: (data.get('tmdbId') as string | null)?.trim() ?? '',
 			imdbId: (data.get('imdbId') as string | null)?.trim() ?? '',
-			posterPath: (data.get('posterPath') as string | null)?.trim() ?? '',
 			suggestedBy: (data.get('suggestedBy') as string | null)?.trim() ?? ''
 		};
 

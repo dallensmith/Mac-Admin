@@ -9,13 +9,21 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	if (!tmdbId || !/^\d+$/.test(tmdbId)) error(400, 'Invalid TMDb ID');
 
 	const res = await fetch(
-		`https://api.themoviedb.org/3/movie/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`
+		`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids`
 	);
-	if (!res.ok) error(502, 'TMDb external_ids lookup failed');
+	if (!res.ok) error(502, 'TMDb movie lookup failed');
 
 	const data = await res.json();
-	const imdbId: string | null =
-		typeof data.imdb_id === 'string' && data.imdb_id.length > 0 ? data.imdb_id : null;
 
-	return json({ imdbId });
+	const imdbId: string | null =
+		typeof data.external_ids?.imdb_id === 'string' && data.external_ids.imdb_id.length > 0
+			? data.external_ids.imdb_id
+			: null;
+
+	const posterPath: string | null =
+		typeof data.poster_path === 'string' && data.poster_path.length > 0
+			? data.poster_path
+			: null;
+
+	return json({ imdbId, posterPath });
 };
