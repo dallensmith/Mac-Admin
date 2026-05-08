@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { cubicOut } from 'svelte/easing';
 
 	export interface WheelEntry {
@@ -57,7 +58,7 @@
 		const title = editValues.title ?? '';
 
 		if (justSelected) {
-			justSelected = false;
+			untrack(() => { justSelected = false; });
 			return;
 		}
 
@@ -113,18 +114,20 @@
 
 	async function selectResult(result: MovieSearchResult) {
 		justSelected = true;
+		movieWatched = false;
 		editValues.title = result.title;
 		editValues.year = result.year;
 		editValues.tmdbId = String(result.tmdbId);
 		showDropdown = false;
 		searchResults = [];
 
-		// Fetch IMDb ID
+		// Fetch IMDb ID + watched status
 		try {
 			const res = await fetch(`/api/movies/${result.tmdbId}`);
 			if (res.ok) {
 				const data = await res.json();
 				editValues.imdbId = data.imdbId ?? '';
+				movieWatched = data.watched ?? false;
 			}
 		} catch {
 			// Non-fatal — user can fill manually
@@ -152,6 +155,7 @@
 	// Lazy-load poster for display card
 	let posterUrl = $state<string | null>(null);
 	let posterLoading = $state(false);
+	let movieWatched = $state(false);
 
 	$effect(() => {
 		const tmdbId = entry?.tmdbId;
@@ -351,6 +355,32 @@
 					</div>
 				{/if}
 			</div>
+
+			<!-- Already-watched warning -->
+			{#if movieWatched}
+				<div class="flex items-start gap-2 rounded-none border border-amber-500/40 bg-amber-500/10 px-3 py-2.5">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="lucide lucide-triangle-alert mt-px shrink-0 text-amber-400"
+					>
+						<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+						<path d="M12 9v4" />
+						<path d="M12 17h.01" />
+					</svg>
+					<p class="text-ui text-amber-300">
+						This movie has already been watched at a Bad Movies experiment.
+					</p>
+				</div>
+			{/if}
+
 			<div class="flex gap-2">
 				<input
 					type="text"
@@ -385,7 +415,7 @@
 			<button
 				type="submit"
 				form={saveFormId}
-				disabled={!editValues.title?.trim()}
+				disabled={!editValues.title?.trim() || movieWatched}
 				class="text-label font-bold tracking-wider uppercase text-cyan-500 transition-colors hover:text-cyan-300 hover:drop-shadow-glow-cyan-xl disabled:cursor-not-allowed disabled:opacity-40"
 			>
 				Save

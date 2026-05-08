@@ -1,4 +1,5 @@
-﻿import { Pool, PoolConfig } from 'pg';
+﻿import { Pool } from 'pg';
+import type { PoolConfig } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, ilike, sql, desc, asc, gt, and, inArray, isNotNull } from 'drizzle-orm';
