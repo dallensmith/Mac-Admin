@@ -46,8 +46,7 @@
 				<span class="text-xs font-bold tracking-wider text-slate-200 uppercase drop-shadow-sm"
 					>{user.name}</span
 				>
-				<span class="text-label font-medium tracking-widest text-fuchsia-400 uppercase"
-					>{role}</span
+				<span class="text-label font-medium tracking-widest text-fuchsia-400 uppercase">{role}</span
 				>
 			</div>
 			<div class="relative">

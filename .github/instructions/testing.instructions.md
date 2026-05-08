@@ -35,12 +35,12 @@ src/lib/server/db/queries.test.ts               ← server test
 ```ts
 // ✅
 it('returns the movie title', () => {
-  expect(getTitle({ title: 'Manos' })).toBe('Manos');
+	expect(getTitle({ title: 'Manos' })).toBe('Manos');
 });
 
 // ❌ — will fail at runtime even if no error thrown
 it('does something', () => {
-  getTitle({ title: 'Manos' });
+	getTitle({ title: 'Manos' });
 });
 ```
 
@@ -53,8 +53,8 @@ import { render, screen } from '@testing-library/svelte';
 import StatCard from './StatCard.svelte';
 
 it('renders the value', () => {
-  render(StatCard, { props: { title: 'Guilds', value: 42 } });
-  expect(screen.getByText('42')).toBeInTheDocument();
+	render(StatCard, { props: { title: 'Guilds', value: 42 } });
+	expect(screen.getByText('42')).toBeInTheDocument();
 });
 ```
 
@@ -70,9 +70,9 @@ import { describe, it, expect } from 'vitest';
 import { formatMovieTitle } from './format';
 
 describe('formatMovieTitle', () => {
-  it('uppercases the title', () => {
-    expect(formatMovieTitle('manos')).toBe('MANOS');
-  });
+	it('uppercases the title', () => {
+		expect(formatMovieTitle('manos')).toBe('MANOS');
+	});
 });
 ```
 
@@ -82,7 +82,7 @@ Mock the `db` client when testing server logic to avoid real database calls:
 import { vi } from 'vitest';
 
 vi.mock('$lib/server/db', () => ({
-  db: { query: { movie: { findMany: vi.fn().mockResolvedValue([]) } } }
+	db: { query: { movie: { findMany: vi.fn().mockResolvedValue([]) } } }
 }));
 ```
 
@@ -95,8 +95,8 @@ End-to-end tests use Playwright directly (not Vitest). They run against the buil
 import { test, expect } from '@playwright/test';
 
 test('redirects unauthenticated users to /login', async ({ page }) => {
-  await page.goto('/');
-  await expect(page).toHaveURL('/login');
+	await page.goto('/');
+	await expect(page).toHaveURL('/login');
 });
 ```
 

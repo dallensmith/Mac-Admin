@@ -34,7 +34,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const rawProfile = event.cookies.get('pb_profile');
 		let profile: { name?: string; avatar?: string | null } = {};
 		if (rawProfile) {
-			try { profile = JSON.parse(rawProfile); } catch { /* ignore */ }
+			try {
+				profile = JSON.parse(rawProfile);
+			} catch {
+				/* ignore */
+			}
 		}
 		event.locals.user = {
 			...(pb.authStore.record as App.Locals['user']),

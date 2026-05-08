@@ -1,253 +1,338 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
+	import { enhance } from '$app/forms';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import DataTable from '$lib/components/ui/DataTable.svelte';
-	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import StatCard from '$lib/components/ui/StatCard.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { wheelSuggestions } from '$lib/mock/admin';
+	import type { WheelEntry } from './+page.server';
 
-	// TODO: Replace mock data with PocketBase collection
-	// TODO: Sync suggestions from Discord bot
-	// TODO: Add real-time updates
-
-	let suggestions = $state([...wheelSuggestions]);
+	let { data } = $props<{ data: import('./$types').PageData }>();
 
 	let searchQuery = $state('');
-	let filterStatus = $state('All');
+	let editingId = $state<string | null>(null);
+	let editValues = $state<Record<string, string>>({});
 
-	let filteredSuggestions = $derived(
-		suggestions.filter((s) => {
-			const matchesSearch =
-				s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				s.suggestedBy.toLowerCase().includes(searchQuery.toLowerCase());
-			const matchesStatus =
-				filterStatus === 'All' || s.status.toLowerCase() === filterStatus.toLowerCase();
-			return matchesSearch && matchesStatus;
+	let filteredEntries = $derived(
+		data.entries.filter((e: WheelEntry) => {
+			const q = searchQuery.toLowerCase();
+			return e.title.toLowerCase().includes(q) || e.suggestedBy.toLowerCase().includes(q);
 		})
 	);
 
-	let totalSuggestions = $derived(suggestions.length);
-	let pendingCount = $derived(suggestions.filter((s) => s.status === 'pending').length);
-	let approvedCount = $derived(suggestions.filter((s) => s.status === 'approved').length);
-	let watchedCount = $derived(suggestions.filter((s) => s.status === 'watched').length);
+	let totalEntries = $derived(data.entries.length);
+	let totalVotes = $derived(
+		data.entries.reduce((sum: number, e: WheelEntry) => {
+			const ids = e.voters ? e.voters.split(',').filter(Boolean) : [];
+			return sum + ids.length;
+		}, 0)
+	);
+	let mostRecent = $derived(
+		data.entries.length > 0
+			? data.entries.reduce((latest: WheelEntry, e: WheelEntry) =>
+					e.dateAdded > latest.dateAdded ? e : latest
+				).dateAdded
+			: '—'
+	);
+	let uniqueSuggesters = $derived(new Set(data.entries.map((e: WheelEntry) => e.suggestedBy)).size);
 
-	// New Suggestion Form State
-	let newTitle = $state('');
-	let newYear = $state('');
-	let newSuggestedBy = $state('');
-	let newNotes = $state('');
-
-	function handleAddSuggestion(e: Event) {
-		e.preventDefault();
-		if (!newTitle) return;
-
-		suggestions.push({
-			id: Math.max(...suggestions.map((s) => s.id), 0) + 1,
-			title: newTitle,
-			year: newYear ? parseInt(newYear) : undefined,
-			suggestedBy: newSuggestedBy || 'Admin',
-			date: new Date().toISOString().split('T')[0],
-			status: 'pending',
-			source: 'manual'
-		});
-
-		newTitle = '';
-		newYear = '';
-		newSuggestedBy = '';
-		newNotes = '';
+	function startEdit(entry: WheelEntry) {
+		editingId = entry.id;
+		editValues = {
+			id: entry.id,
+			title: entry.title,
+			year: entry.year ?? '',
+			tmdbId: entry.tmdbId ?? '',
+			imdbId: entry.imdbId ?? '',
+			suggestedBy: entry.suggestedBy ?? ''
+		};
 	}
 
-	function updateStatus(id: number, newStatus: string) {
-		const index = suggestions.findIndex((s) => s.id === id);
-		if (index !== -1) {
-			suggestions[index].status = newStatus;
-		}
+	function startAdd() {
+		editingId = 'new';
+		editValues = {
+			title: '',
+			year: '',
+			tmdbId: '',
+			imdbId: '',
+			suggestedBy: data.discordUserId ?? ''
+		};
 	}
 
-	function removeSuggestion(id: number) {
-		suggestions = suggestions.filter((s) => s.id !== id);
+	function cancelEdit() {
+		editingId = null;
+		editValues = {};
+	}
+
+	function voterTooltip(voters: string): string {
+		const ids = voters ? voters.split(',').filter(Boolean) : [];
+		return ids.join(', ');
+	}
+
+	function voterCount(voters: string): number {
+		return voters ? voters.split(',').filter(Boolean).length : 0;
 	}
 </script>
 
 <PageHeader
 	title="The Wheel"
-	description="Manage and moderate community movie suggestions from Discord."
+	description="Manage community movie wheel candidates synced from Discord."
 />
 
 <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-	<StatCard title="Total Suggestions" value={totalSuggestions.toString()} />
-	<StatCard
-		title="Pending"
-		value={pendingCount.toString()}
-		trend={pendingCount > 0 ? 'Action Required' : 'All Caught Up'}
-		trendUp={pendingCount === 0}
-	/>
-	<StatCard title="Approved" value={approvedCount.toString()} />
-	<StatCard title="Watched" value={watchedCount.toString()} />
+	<StatCard title="Total Entries" value={totalEntries.toString()} />
+	<StatCard title="Total Votes" value={totalVotes.toString()} />
+	<StatCard title="Most Recent" value={mostRecent} />
+	<StatCard title="Unique Suggesters" value={uniqueSuggesters.toString()} />
 </div>
 
-<div class="grid gap-6 lg:grid-cols-3">
-	<div class="space-y-6 lg:col-span-2">
-		<SectionCard title="Filter & Search">
-			<div class="flex flex-col gap-4 sm:flex-row">
-				<div class="flex-1">
-					<input
-						type="text"
-						placeholder="Search by title or user..."
-						bind:value={searchQuery}
-						class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
-					/>
-				</div>
-				<div class="w-full sm:w-48">
-					<select
-						bind:value={filterStatus}
-						class="block w-full rounded border border-slate-800/80 bg-slate-950/50 px-3 py-2 text-sm text-slate-200 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
-					>
-						<option value="All">All Statuses</option>
-						<option value="pending">Pending</option>
-						<option value="approved">Approved</option>
-						<option value="watched">Watched</option>
-						<option value="rejected">Rejected</option>
-					</select>
-				</div>
-			</div>
-		</SectionCard>
+<!-- Hidden forms -->
+<form
+	id="create-form"
+	method="POST"
+	action="?/create"
+	class="hidden"
+	use:enhance={() => {
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				await invalidateAll();
+				editingId = null;
+				editValues = {};
+			}
+		};
+	}}
+>
+	<input type="hidden" name="title" value={editValues.title ?? ''} />
+	<input type="hidden" name="year" value={editValues.year ?? ''} />
+	<input type="hidden" name="tmdbId" value={editValues.tmdbId ?? ''} />
+	<input type="hidden" name="imdbId" value={editValues.imdbId ?? ''} />
+	<input type="hidden" name="suggestedBy" value={editValues.suggestedBy ?? ''} />
+</form>
 
-		<SectionCard title="Suggestion Queue">
-			{#if filteredSuggestions.length > 0}
-				<DataTable
-					columns={['Movie Title', 'Year', 'Suggested By', 'Date', 'Source', 'Status', 'Actions']}
-					data={filteredSuggestions}
+<form
+	id="update-form"
+	method="POST"
+	action="?/update"
+	class="hidden"
+	use:enhance={() => {
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				await invalidateAll();
+				editingId = null;
+				editValues = {};
+			}
+		};
+	}}
+>
+	<input type="hidden" name="id" value={editValues.id ?? ''} />
+	<input type="hidden" name="title" value={editValues.title ?? ''} />
+	<input type="hidden" name="year" value={editValues.year ?? ''} />
+	<input type="hidden" name="tmdbId" value={editValues.tmdbId ?? ''} />
+	<input type="hidden" name="imdbId" value={editValues.imdbId ?? ''} />
+	<input type="hidden" name="suggestedBy" value={editValues.suggestedBy ?? ''} />
+</form>
+
+<form
+	id="delete-form"
+	method="POST"
+	action="?/delete"
+	class="hidden"
+	use:enhance={() => {
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				await invalidateAll();
+			}
+		};
+	}}
+>
+	<input type="hidden" name="id" id="delete-id" value="" />
+</form>
+
+<SectionCard title="Wheel Candidates">
+	{#snippet headerAction()}
+		<div class="flex items-center gap-3">
+			<input
+				type="text"
+				placeholder="Search by title or user..."
+				bind:value={searchQuery}
+				class="w-56 rounded border border-slate-800/80 bg-slate-950/50 px-3 py-1.5 text-sm text-slate-200 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none"
+			/>
+			{#if editingId !== 'new'}
+				<button
+					onclick={startAdd}
+					class="text-label font-bold tracking-wider text-cyan-500 uppercase transition-colors hover:text-cyan-300 hover:drop-shadow-glow-cyan-xl"
 				>
-					{#snippet rowSnippet(row, _idx)}
-						<td class="px-6 py-4 font-medium whitespace-nowrap text-cyan-400">{row.title}</td>
-						<td class="px-6 py-4 whitespace-nowrap text-slate-400">{row.year || '—'}</td>
-						<td class="px-6 py-4 whitespace-nowrap text-slate-300">{row.suggestedBy}</td>
-						<td class="px-6 py-4 text-xs whitespace-nowrap text-slate-500">{row.date}</td>
-						<td
-							class="px-6 py-4 text-label font-bold tracking-widest whitespace-nowrap text-slate-400 uppercase"
-							>{row.source}</td
-						>
-						<td class="px-6 py-4 whitespace-nowrap">
-							<StatusBadge status={row.status} />
-						</td>
-						<td class="px-6 py-4 text-right whitespace-nowrap">
-							<div class="flex justify-end gap-3">
-								{#if row.status !== 'approved'}
-									<button
-										onclick={() => updateStatus(row.id, 'approved')}
-										class="text-label font-bold tracking-wider text-cyan-500 uppercase transition-colors hover:text-cyan-300 hover:drop-shadow-glow-cyan-xl"
-										>Approve</button
-									>
-								{/if}
-								{#if row.status !== 'rejected'}
-									<button
-										onclick={() => updateStatus(row.id, 'rejected')}
-										class="text-label font-bold tracking-wider text-rose-500 uppercase transition-colors hover:text-rose-400 hover:drop-shadow-glow-rose-lg"
-										>Reject</button
-									>
-								{/if}
-								{#if row.status !== 'watched'}
-									<button
-										onclick={() => updateStatus(row.id, 'watched')}
-										class="text-label font-bold tracking-wider text-emerald-500 uppercase transition-colors hover:text-emerald-400 hover:drop-shadow-glow-emerald-lg"
-										>Watched</button
-									>
-								{/if}
-								<button
-									class="text-label font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
-									>Edit</button
-								>
-								<button
-									onclick={() => removeSuggestion(row.id)}
-									class="text-label font-bold tracking-wider text-slate-600 uppercase transition-colors hover:text-rose-500"
-									>Remove</button
-								>
-							</div>
-						</td>
-					{/snippet}
-				</DataTable>
-			{:else}
-				<EmptyState
-					title="No suggestions found"
-					message={suggestions.length === 0
-						? "No movies in the wheel yet... the chaos hasn't begun."
-						: 'No suggestions match your current filters.'}
-					actionLabel="Clear Filters"
-					onAction={() => {
-						searchQuery = '';
-						filterStatus = 'All';
-					}}
-				/>
-			{/if}
-		</SectionCard>
-	</div>
-
-	<div class="lg:col-span-1">
-		<SectionCard title="Add Suggestion">
-			<form class="space-y-4" onsubmit={handleAddSuggestion}>
-				<div>
-					<label
-						for="movieTitle"
-						class="label-caps"
-						>Movie Title <span class="text-rose-500">*</span></label
-					>
-					<input
-						type="text"
-						id="movieTitle"
-						placeholder="e.g. Sharknado"
-						bind:value={newTitle}
-						required
-						class="input-dark"
-					/>
-				</div>
-				<div>
-					<label
-						for="movieYear"
-						class="label-caps"
-						>Year</label
-					>
-					<input
-						type="number"
-						id="movieYear"
-						placeholder="e.g. 2013"
-						bind:value={newYear}
-						class="input-dark"
-					/>
-				</div>
-				<div>
-					<label
-						for="suggestedBy"
-						class="label-caps"
-						>Suggested By</label
-					>
-					<input
-						type="text"
-						id="suggestedBy"
-						placeholder="e.g. DiscordUser123"
-						bind:value={newSuggestedBy}
-						class="input-dark"
-					/>
-				</div>
-				<div>
-					<label
-						for="notes"
-						class="label-caps"
-						>Notes</label
-					>
-					<textarea
-						id="notes"
-						rows="2"
-						placeholder="Optional context..."
-						bind:value={newNotes}
-						class="input-dark"
-					></textarea>
-				</div>
-			<button type="submit" class="btn-cyan mt-2 w-full">
-					Add to Queue
+					+ Add Entry
 				</button>
-			</form>
-		</SectionCard>
-	</div>
-</div>
+			{/if}
+		</div>
+	{/snippet}
+
+	{#if editingId === 'new' || filteredEntries.length > 0}
+		<DataTable
+			columns={['Title', 'Year', 'Suggested By', 'Date Added', 'Voters', 'TMDb', 'IMDb', 'Actions']}
+			data={editingId === 'new'
+				? [{} as Record<string, unknown>, ...filteredEntries]
+				: filteredEntries}
+		>
+			{#snippet rowSnippet(row, idx)}
+				{@const entry = row as unknown as WheelEntry}
+				{@const isNewRow = editingId === 'new' && idx === 0}
+				{@const isEditRow = !isNewRow && editingId === entry.id}
+
+				{#if isNewRow || isEditRow}
+					<!-- Editable row -->
+					<td class="px-4 py-2">
+						<input
+							type="text"
+							placeholder="Title *"
+							bind:value={editValues.title}
+							class="w-full rounded border border-slate-700 bg-slate-950/60 px-2 py-1 text-sm text-slate-200 focus:border-cyan-500 focus:outline-none"
+						/>
+					</td>
+					<td class="px-4 py-2">
+						<input
+							type="text"
+							placeholder="Year"
+							bind:value={editValues.year}
+							class="w-20 rounded border border-slate-700 bg-slate-950/60 px-2 py-1 text-sm text-slate-200 focus:border-cyan-500 focus:outline-none"
+						/>
+					</td>
+					<td class="px-4 py-2">
+						<input
+							type="text"
+							placeholder="Suggested by"
+							bind:value={editValues.suggestedBy}
+							class="w-full rounded border border-slate-700 bg-slate-950/60 px-2 py-1 text-sm text-slate-200 focus:border-cyan-500 focus:outline-none"
+						/>
+					</td>
+					<td class="px-4 py-2 text-xs text-slate-500">
+						{isNewRow ? new Date().toISOString().split('T')[0] : entry.dateAdded}
+					</td>
+					<td class="px-4 py-2 text-xs text-slate-500">
+						{isNewRow || voterCount(entry.voters) === 0
+							? '—'
+							: `${voterCount(entry.voters)} vote${voterCount(entry.voters) === 1 ? '' : 's'}`}
+					</td>
+					<td class="px-4 py-2">
+						<input
+							type="text"
+							placeholder="TMDb ID"
+							bind:value={editValues.tmdbId}
+							class="w-24 rounded border border-slate-700 bg-slate-950/60 px-2 py-1 text-sm text-slate-200 focus:border-cyan-500 focus:outline-none"
+						/>
+					</td>
+					<td class="px-4 py-2">
+						<input
+							type="text"
+							placeholder="IMDb ID"
+							bind:value={editValues.imdbId}
+							class="w-28 rounded border border-slate-700 bg-slate-950/60 px-2 py-1 text-sm text-slate-200 focus:border-cyan-500 focus:outline-none"
+						/>
+					</td>
+					<td class="px-4 py-2 text-right whitespace-nowrap">
+						<div class="flex justify-end gap-3">
+							<button
+								type="submit"
+								form={isNewRow ? 'create-form' : 'update-form'}
+								disabled={!editValues.title?.trim()}
+								class="text-label font-bold tracking-wider text-cyan-500 uppercase transition-colors hover:text-cyan-300 hover:drop-shadow-glow-cyan-xl disabled:cursor-not-allowed disabled:opacity-40"
+							>
+								Save
+							</button>
+							<button
+								onclick={cancelEdit}
+								class="text-label font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-slate-200"
+							>
+								Cancel
+							</button>
+						</div>
+					</td>
+				{:else}
+					<!-- Display row -->
+					<td class="px-6 py-4 font-medium whitespace-nowrap text-cyan-400">{entry.title}</td>
+					<td class="px-6 py-4 whitespace-nowrap text-slate-400">{entry.year || '—'}</td>
+					<td class="px-6 py-4 whitespace-nowrap text-slate-300">{entry.suggestedBy || '—'}</td>
+					<td class="px-6 py-4 text-xs whitespace-nowrap text-slate-500"
+						>{entry.dateAdded || '—'}</td
+					>
+					<td class="px-6 py-4 whitespace-nowrap text-slate-400">
+						{#if voterCount(entry.voters) > 0}
+							<span title={voterTooltip(entry.voters)} class="cursor-default">
+								{voterCount(entry.voters)} vote{voterCount(entry.voters) === 1 ? '' : 's'}
+							</span>
+						{:else}
+							<span class="text-slate-600">—</span>
+						{/if}
+					</td>
+					<td class="px-6 py-4 whitespace-nowrap">
+						{#if entry.tmdbId}
+							<a
+								href="https://www.themoviedb.org/movie/{entry.tmdbId}"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="font-mono text-xs text-cyan-500 underline underline-offset-2 hover:text-cyan-300"
+							>
+								{entry.tmdbId}
+							</a>
+						{:else}
+							<span class="text-slate-600">—</span>
+						{/if}
+					</td>
+					<td class="px-6 py-4 whitespace-nowrap">
+						{#if entry.imdbId}
+							<a
+								href="https://www.imdb.com/title/{entry.imdbId}"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="font-mono text-xs text-cyan-500 underline underline-offset-2 hover:text-cyan-300"
+							>
+								{entry.imdbId}
+							</a>
+						{:else}
+							<span class="text-slate-600">—</span>
+						{/if}
+					</td>
+					<td class="px-6 py-4 text-right whitespace-nowrap">
+						<div class="flex justify-end gap-3">
+							<button
+								onclick={() => startEdit(entry)}
+								class="text-label font-bold tracking-wider text-slate-400 uppercase transition-colors hover:text-cyan-400"
+							>
+								Edit
+							</button>
+							<button
+								onclick={() => {
+									const input = document.getElementById('delete-id') as HTMLInputElement;
+									if (input) input.value = entry.id;
+									(document.getElementById('delete-form') as HTMLFormElement).requestSubmit();
+								}}
+								class="text-label font-bold tracking-wider text-slate-600 uppercase transition-colors hover:text-rose-500"
+							>
+								Delete
+							</button>
+						</div>
+					</td>
+				{/if}
+			{/snippet}
+		</DataTable>
+	{:else}
+		<EmptyState
+			title="No entries found"
+			message={data.entries.length === 0
+				? 'No movies in the wheel yet. Add one or wait for the bot to sync from Discord.'
+				: 'No entries match your search.'}
+		/>
+		{#if searchQuery}
+			<div class="mt-4 flex justify-center">
+				<button
+					onclick={() => (searchQuery = '')}
+					class="text-sm text-cyan-500 underline underline-offset-2 hover:text-cyan-300"
+				>
+					Clear Search
+				</button>
+			</div>
+		{/if}
+	{/if}
+</SectionCard>

@@ -29,22 +29,10 @@
 <PageHeader title="Analytics" description="Usage statistics and metrics for Mac Bot." />
 
 <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-	<StatCard
-		title="Total LLM Calls"
-		value={data.totalCalls.toLocaleString()}
-		trend="Last 30 days"
-	/>
-	<StatCard
-		title="Total LLM Tokens"
-		value={formatTokens(data.totalTokens)}
-		trend="Last 30 days"
-	/>
+	<StatCard title="Total LLM Calls" value={data.totalCalls.toLocaleString()} trend="Last 30 days" />
+	<StatCard title="Total LLM Tokens" value={formatTokens(data.totalTokens)} trend="Last 30 days" />
 	<StatCard title="Avg. Response Time" value="N/A" />
-	<StatCard
-		title="Active Users"
-		value={data.activeUsers.toLocaleString()}
-		trend="Last 30 days"
-	/>
+	<StatCard title="Active Users" value={data.activeUsers.toLocaleString()} trend="Last 30 days" />
 </div>
 
 <div class="grid gap-6 lg:grid-cols-2">
@@ -87,9 +75,7 @@
 							<span class="truncate text-slate-300" title={item.model}
 								>{item.model.split('/').pop()}</span
 							>
-							<span class="ml-2 shrink-0 text-slate-500"
-								>{formatTokens(item.tokens)} tokens</span
-							>
+							<span class="ml-2 shrink-0 text-slate-500">{formatTokens(item.tokens)} tokens</span>
 						</div>
 						<div class="h-2 w-full overflow-hidden rounded-full bg-slate-800">
 							<div

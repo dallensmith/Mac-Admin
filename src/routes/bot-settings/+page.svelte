@@ -13,19 +13,37 @@
 	let values = $state({ ...data.config });
 
 	const TRACKED = [
-		'bot_name', 'admin_user_ids', 'announcement_channel_names', 'log_level', 'log_dir', 'loki_url',
-		'openrouter_base_url', 'openrouter_model', 'openrouter_free_model', 'openrouter_fallback_model',
-		'free_model_confidence_threshold', 'ai_daily_budget_usd', 'ai_degraded_threshold',
-		'user_cooldown_seconds', 'user_burst_limit', 'instruction_refresh_interval_ms',
-		'reviews_channel_id', 'quotes_channel_id', 'reports_channel_id', 'announcement_channel_id',
-		'game_leaderboard_channel_id', 'daily_event_check_cron', 'wheel_collection_name',
-		'session_inactivity_ms', 'cache_ttl_seconds', 'search_cache_ttl_seconds'
+		'bot_name',
+		'admin_user_ids',
+		'announcement_channel_names',
+		'log_level',
+		'log_dir',
+		'loki_url',
+		'openrouter_base_url',
+		'openrouter_model',
+		'openrouter_free_model',
+		'openrouter_fallback_model',
+		'free_model_confidence_threshold',
+		'ai_daily_budget_usd',
+		'ai_degraded_threshold',
+		'user_cooldown_seconds',
+		'user_burst_limit',
+		'instruction_refresh_interval_ms',
+		'reviews_channel_id',
+		'quotes_channel_id',
+		'reports_channel_id',
+		'announcement_channel_id',
+		'game_leaderboard_channel_id',
+		'daily_event_check_cron',
+		'wheel_collection_name',
+		'session_inactivity_ms',
+		'cache_ttl_seconds',
+		'search_cache_ttl_seconds'
 	] as const;
 
 	let isDirty = $derived(
 		TRACKED.some(
-			(k) =>
-				(values as Record<string, unknown>)[k] !== (data.config as Record<string, unknown>)[k]
+			(k) => (values as Record<string, unknown>)[k] !== (data.config as Record<string, unknown>)[k]
 		)
 	);
 
@@ -101,13 +119,17 @@
 />
 
 {#if form?.error}
-	<div class="mb-4 rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
+	<div
+		class="mb-4 rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-400"
+	>
 		{form.error}
 	</div>
 {/if}
 
 {#if form?.success}
-	<div class="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+	<div
+		class="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400"
+	>
 		Settings saved successfully.
 	</div>
 {/if}
@@ -197,7 +219,7 @@
 						name="loki_url"
 						bind:value={values.loki_url}
 						aria-invalid={!!errors.loki_url}
-						class="input-dark {errors.loki_url ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.loki_url ? 'border-rose-500/60 ring-1 ring-rose-500/50' : ''}"
 					/>
 					{#if errors.loki_url}<p class="mt-1 text-xs text-rose-400">{errors.loki_url}</p>{/if}
 				</div>
@@ -215,9 +237,13 @@
 						name="openrouter_base_url"
 						bind:value={values.openrouter_base_url}
 						aria-invalid={!!errors.openrouter_base_url}
-						class="input-dark {errors.openrouter_base_url ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.openrouter_base_url
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.openrouter_base_url}<p class="mt-1 text-xs text-rose-400">{errors.openrouter_base_url}</p>{/if}
+					{#if errors.openrouter_base_url}<p class="mt-1 text-xs text-rose-400">
+							{errors.openrouter_base_url}
+						</p>{/if}
 				</div>
 				<div>
 					<label for="openrouter_model" class="label-caps">Primary Model</label>
@@ -262,9 +288,13 @@
 						min="0"
 						max="1"
 						aria-invalid={!!errors.free_model_confidence_threshold}
-						class="input-dark {errors.free_model_confidence_threshold ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.free_model_confidence_threshold
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.free_model_confidence_threshold}<p class="mt-1 text-xs text-rose-400">{errors.free_model_confidence_threshold}</p>{/if}
+					{#if errors.free_model_confidence_threshold}<p class="mt-1 text-xs text-rose-400">
+							{errors.free_model_confidence_threshold}
+						</p>{/if}
 				</div>
 			</div>
 		</SectionCard>
@@ -282,14 +312,16 @@
 						step="0.01"
 						min="0"
 						aria-invalid={!!errors.ai_daily_budget_usd}
-						class="input-dark {errors.ai_daily_budget_usd ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.ai_daily_budget_usd
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.ai_daily_budget_usd}<p class="mt-1 text-xs text-rose-400">{errors.ai_daily_budget_usd}</p>{/if}
+					{#if errors.ai_daily_budget_usd}<p class="mt-1 text-xs text-rose-400">
+							{errors.ai_daily_budget_usd}
+						</p>{/if}
 				</div>
 				<div>
-					<label for="ai_degraded_threshold" class="label-caps"
-						>Degraded Mode Threshold (%)</label
-					>
+					<label for="ai_degraded_threshold" class="label-caps">Degraded Mode Threshold (%)</label>
 					<input
 						type="number"
 						id="ai_degraded_threshold"
@@ -298,9 +330,13 @@
 						min="0"
 						max="100"
 						aria-invalid={!!errors.ai_degraded_threshold}
-						class="input-dark {errors.ai_degraded_threshold ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.ai_degraded_threshold
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.ai_degraded_threshold}<p class="mt-1 text-xs text-rose-400">{errors.ai_degraded_threshold}</p>{/if}
+					{#if errors.ai_degraded_threshold}<p class="mt-1 text-xs text-rose-400">
+							{errors.ai_degraded_threshold}
+						</p>{/if}
 				</div>
 				<div>
 					<label for="user_cooldown_seconds" class="label-caps">User Cooldown (s)</label>
@@ -311,9 +347,13 @@
 						bind:value={values.user_cooldown_seconds}
 						min="0"
 						aria-invalid={!!errors.user_cooldown_seconds}
-						class="input-dark {errors.user_cooldown_seconds ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.user_cooldown_seconds
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.user_cooldown_seconds}<p class="mt-1 text-xs text-rose-400">{errors.user_cooldown_seconds}</p>{/if}
+					{#if errors.user_cooldown_seconds}<p class="mt-1 text-xs text-rose-400">
+							{errors.user_cooldown_seconds}
+						</p>{/if}
 				</div>
 				<div>
 					<label for="user_burst_limit" class="label-caps">User Burst Limit</label>
@@ -324,9 +364,13 @@
 						bind:value={values.user_burst_limit}
 						min="0"
 						aria-invalid={!!errors.user_burst_limit}
-						class="input-dark {errors.user_burst_limit ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.user_burst_limit
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.user_burst_limit}<p class="mt-1 text-xs text-rose-400">{errors.user_burst_limit}</p>{/if}
+					{#if errors.user_burst_limit}<p class="mt-1 text-xs text-rose-400">
+							{errors.user_burst_limit}
+						</p>{/if}
 				</div>
 				<div>
 					<label for="instruction_refresh_interval_ms" class="label-caps"
@@ -339,9 +383,13 @@
 						bind:value={values.instruction_refresh_interval_ms}
 						min="0"
 						aria-invalid={!!errors.instruction_refresh_interval_ms}
-						class="input-dark {errors.instruction_refresh_interval_ms ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.instruction_refresh_interval_ms
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.instruction_refresh_interval_ms}<p class="mt-1 text-xs text-rose-400">{errors.instruction_refresh_interval_ms}</p>{/if}
+					{#if errors.instruction_refresh_interval_ms}<p class="mt-1 text-xs text-rose-400">
+							{errors.instruction_refresh_interval_ms}
+						</p>{/if}
 				</div>
 			</div>
 		</SectionCard>
@@ -390,7 +438,9 @@
 					/>
 				</div>
 				<div>
-					<label for="game_leaderboard_channel_id" class="label-caps">Game Leaderboard Channel ID</label>
+					<label for="game_leaderboard_channel_id" class="label-caps"
+						>Game Leaderboard Channel ID</label
+					>
 					<input
 						type="text"
 						id="game_leaderboard_channel_id"
@@ -417,9 +467,13 @@
 						bind:value={values.daily_event_check_cron}
 						placeholder="0 8 * * *"
 						aria-invalid={!!errors.daily_event_check_cron}
-						class="input-dark {errors.daily_event_check_cron ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.daily_event_check_cron
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.daily_event_check_cron}<p class="mt-1 text-xs text-rose-400">{errors.daily_event_check_cron}</p>{/if}
+					{#if errors.daily_event_check_cron}<p class="mt-1 text-xs text-rose-400">
+							{errors.daily_event_check_cron}
+						</p>{/if}
 				</div>
 				<div>
 					<label for="wheel_collection_name" class="label-caps">
@@ -444,9 +498,13 @@
 						bind:value={values.session_inactivity_ms}
 						min="0"
 						aria-invalid={!!errors.session_inactivity_ms}
-						class="input-dark {errors.session_inactivity_ms ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.session_inactivity_ms
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.session_inactivity_ms}<p class="mt-1 text-xs text-rose-400">{errors.session_inactivity_ms}</p>{/if}
+					{#if errors.session_inactivity_ms}<p class="mt-1 text-xs text-rose-400">
+							{errors.session_inactivity_ms}
+						</p>{/if}
 				</div>
 				<div>
 					<label for="cache_ttl_seconds" class="label-caps">
@@ -459,9 +517,13 @@
 						bind:value={values.cache_ttl_seconds}
 						min="0"
 						aria-invalid={!!errors.cache_ttl_seconds}
-						class="input-dark {errors.cache_ttl_seconds ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.cache_ttl_seconds
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.cache_ttl_seconds}<p class="mt-1 text-xs text-rose-400">{errors.cache_ttl_seconds}</p>{/if}
+					{#if errors.cache_ttl_seconds}<p class="mt-1 text-xs text-rose-400">
+							{errors.cache_ttl_seconds}
+						</p>{/if}
 				</div>
 				<div>
 					<label for="search_cache_ttl_seconds" class="label-caps">
@@ -474,9 +536,13 @@
 						bind:value={values.search_cache_ttl_seconds}
 						min="0"
 						aria-invalid={!!errors.search_cache_ttl_seconds}
-						class="input-dark {errors.search_cache_ttl_seconds ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
+						class="input-dark {errors.search_cache_ttl_seconds
+							? 'border-rose-500/60 ring-1 ring-rose-500/50'
+							: ''}"
 					/>
-					{#if errors.search_cache_ttl_seconds}<p class="mt-1 text-xs text-rose-400">{errors.search_cache_ttl_seconds}</p>{/if}
+					{#if errors.search_cache_ttl_seconds}<p class="mt-1 text-xs text-rose-400">
+							{errors.search_cache_ttl_seconds}
+						</p>{/if}
 				</div>
 			</div>
 		</SectionCard>

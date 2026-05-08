@@ -173,11 +173,10 @@
 						class="group relative flex flex-col items-start gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-5 transition-all duration-300 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-sm-soft"
 					>
 						<div
-								class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+							class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 						></div>
 						<div class="relative z-10 flex w-full items-start justify-between">
-							<span
-								class="text-ui font-bold tracking-widest text-cyan-400 uppercase drop-shadow-sm"
+							<span class="text-ui font-bold tracking-widest text-cyan-400 uppercase drop-shadow-sm"
 								>{mode.name}</span
 							>
 							<span
@@ -257,23 +256,14 @@
 		<SectionCard title="Create Question">
 			<form class="space-y-4" onsubmit={handleAddTrivia}>
 				<div>
-					<label
-						for="question"
-						class="label-caps"
+					<label for="question" class="label-caps"
 						>Question <span class="text-rose-500">*</span></label
 					>
-					<textarea
-						id="question"
-						rows="3"
-						bind:value={newQuestion}
-						required
-						class="input-dark"
+					<textarea id="question" rows="3" bind:value={newQuestion} required class="input-dark"
 					></textarea>
 				</div>
 				<div>
-					<label
-						for="answer"
-						class="label-caps"
+					<label for="answer" class="label-caps"
 						>Correct Answer <span class="text-rose-500">*</span></label
 					>
 					<input
@@ -285,11 +275,7 @@
 					/>
 				</div>
 				<div>
-					<label
-						for="wrongAnswers"
-						class="label-caps"
-						>Wrong Answers (comma separated)</label
-					>
+					<label for="wrongAnswers" class="label-caps">Wrong Answers (comma separated)</label>
 					<input
 						id="wrongAnswers"
 						type="text"
@@ -299,16 +285,8 @@
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<div>
-						<label
-							for="category"
-							class="label-caps"
-							>Category</label
-						>
-						<select
-							id="category"
-							bind:value={newCategory}
-							class="input-dark"
-						>
+						<label for="category" class="label-caps">Category</label>
+						<select id="category" bind:value={newCategory} class="input-dark">
 							<option>Movie Trivia</option>
 							<option>Quote Guessing</option>
 							<option>Guess the Bad Movie</option>
@@ -316,16 +294,8 @@
 						</select>
 					</div>
 					<div>
-						<label
-							for="difficulty"
-							class="label-caps"
-							>Difficulty</label
-						>
-						<select
-							id="difficulty"
-							bind:value={newDifficulty}
-							class="input-dark"
-						>
+						<label for="difficulty" class="label-caps">Difficulty</label>
+						<select id="difficulty" bind:value={newDifficulty} class="input-dark">
 							<option>Easy</option>
 							<option>Medium</option>
 							<option>Hard</option>
@@ -334,16 +304,8 @@
 					</div>
 				</div>
 				<div>
-					<label
-						for="source"
-						class="label-caps"
-						>Source Type</label
-					>
-					<select
-						id="source"
-						bind:value={newSource}
-						class="input-dark"
-					>
+					<label for="source" class="label-caps">Source Type</label>
+					<select id="source" bind:value={newSource} class="input-dark">
 						<option>Manual</option>
 						<option>Movie metadata</option>
 						<option>Experiment archive</option>
@@ -352,9 +314,7 @@
 					</select>
 				</div>
 
-				<button type="submit" class="btn-cyan mt-4 w-full">
-					Save to Drafts
-				</button>
+				<button type="submit" class="btn-cyan mt-4 w-full"> Save to Drafts </button>
 			</form>
 		</SectionCard>
 
@@ -399,7 +359,9 @@
 						{idx + 1}
 					</td>
 					<td class="px-6 py-4 font-medium text-slate-200">{row.username}</td>
-					<td class="px-6 py-4 font-bold text-cyan-400">{(row.points as number).toLocaleString()}</td>
+					<td class="px-6 py-4 font-bold text-cyan-400"
+						>{(row.points as number).toLocaleString()}</td
+					>
 					<td class="px-6 py-4 text-slate-300">{row.wins}</td>
 					<td class="px-6 py-4 text-slate-300">{row.games_played}</td>
 					<td class="px-6 py-4 text-xs text-slate-500">
@@ -428,7 +390,7 @@
 					</td>
 					<td class="px-6 py-4 font-mono text-xs text-slate-500">{row.channel_id}</td>
 					<td class="px-6 py-4 font-mono text-xs text-slate-500">{row.started_by}</td>
-					<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+					<td class="px-6 py-4 text-sm whitespace-nowrap text-slate-300">
 						{formatDuration(row.started_at as number, row.ended_at as number | null)}
 					</td>
 					<td class="px-6 py-4 text-xs text-slate-500">

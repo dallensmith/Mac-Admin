@@ -23,18 +23,20 @@ export const load: PageServerLoad = async ({ locals, url, cookies }) => {
 		const avatar = authData.meta?.avatarUrl ?? null;
 
 		// pb_auth holds the token + bare PocketBase record
-		cookies.set(
-			'pb_auth',
-			JSON.stringify({ token: authData.token, record: authData.record }),
-			{ path: '/', httpOnly: true, secure: false, sameSite: 'lax' }
-		);
+		cookies.set('pb_auth', JSON.stringify({ token: authData.token, record: authData.record }), {
+			path: '/',
+			httpOnly: true,
+			secure: false,
+			sameSite: 'lax'
+		});
 
 		// pb_profile holds Discord display info separately — survives authRefresh() overwriting the record
-		cookies.set(
-			'pb_profile',
-			JSON.stringify({ name, avatar }),
-			{ path: '/', httpOnly: true, secure: false, sameSite: 'lax' }
-		);
+		cookies.set('pb_profile', JSON.stringify({ name, avatar }), {
+			path: '/',
+			httpOnly: true,
+			secure: false,
+			sameSite: 'lax'
+		});
 	} catch (e) {
 		console.error('[callback] authWithOAuth2Code failed:', e);
 		redirect(302, '/login');

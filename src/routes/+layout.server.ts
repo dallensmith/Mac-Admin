@@ -48,5 +48,5 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		accessResult.status === 'fulfilled' ? accessResult.value.topRoleName : 'Member';
 	const stats = guildStats.status === 'fulfilled' ? guildStats.value : null;
 
-	return { user: locals.user, discordRole, guildStats: stats };
+	return { user: locals.user, discordRole, guildStats: stats, discordUserId };
 };
