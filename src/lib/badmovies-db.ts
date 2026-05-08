@@ -5,7 +5,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, ilike, sql, desc, asc, gt, and, inArray, isNotNull } from 'drizzle-orm';
 import { CacheManager } from './cache-manager.js';
 import * as schema from '../types/schema.js';
-import {
+import type {
 	NormalizedMovie,
 	NormalizedExperiment,
 	NormalizedStats,
