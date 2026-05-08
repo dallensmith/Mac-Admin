@@ -25,6 +25,28 @@
 	type TabKey = (typeof tabs)[number]['key'];
 	let activeTab = $state<TabKey>('system.md');
 
+	type TriggerPhrase = { action: string; group: string; examples: string; notes: string };
+	type CustomRule = { label: string; rule: string };
+
+	let triggerPhrases = $state<TriggerPhrase[]>([]);
+	let customRules = $state<CustomRule[]>([]);
+
+	// Derived JSON strings — bound to hidden inputs so FormData includes them
+	let triggerPhrasesJson = $derived(
+		JSON.stringify(
+			triggerPhrases.map((tp) => ({
+				action: tp.action,
+				...(tp.group ? { group: tp.group } : {}),
+				examples: tp.examples
+					.split('\n')
+					.map((s) => s.trim())
+					.filter(Boolean),
+				...(tp.notes ? { notes: tp.notes } : {})
+			}))
+		)
+	);
+	let customRulesJson = $derived(JSON.stringify(customRules));
+
 	// Local editable state — synced when selected template changes
 	let edits = $state<Record<string, string>>({
 		name: '',
@@ -33,7 +55,9 @@
 		behavior: '',
 		resources: '',
 		conversation_rules: '',
-		response_templates: ''
+		response_templates: '',
+		output_discipline: '',
+		addendum: ''
 	});
 
 	$effect(() => {
@@ -46,8 +70,31 @@
 			behavior: t.behavior ?? '',
 			resources: t.resources ?? '',
 			conversation_rules: t.conversation_rules ?? '',
-			response_templates: t.response_templates ?? ''
+			response_templates: t.response_templates ?? '',
+			output_discipline: t.output_discipline ?? '',
+			addendum: t.addendum ?? ''
 		};
+		try {
+			const rawTriggers = JSON.parse(t.trigger_phrases || '[]') as Array<{
+				action: string;
+				group?: string;
+				examples?: string[];
+				notes?: string;
+			}>;
+			triggerPhrases = rawTriggers.map((tp) => ({
+				action: tp.action ?? '',
+				group: tp.group ?? '',
+				examples: Array.isArray(tp.examples) ? tp.examples.join('\n') : '',
+				notes: tp.notes ?? ''
+			}));
+		} catch {
+			triggerPhrases = [];
+		}
+		try {
+			customRules = JSON.parse(t.custom_rules || '[]') as Array<{ label: string; rule: string }>;
+		} catch {
+			customRules = [];
+		}
 	});
 
 	// Auto-fix selectedTemplateId if the selected template was deleted
@@ -75,12 +122,41 @@
 	// Is the selected template the bot-managed default (read-only)?
 	let isDefaultProfile = $derived((selectedTemplate as RecordModel)?.is_default === true);
 
+	// Validation
+	let updateNameError = $state('');
+
+	// Structured editor helpers
+	function addRule() {
+		customRules = [...customRules, { label: '', rule: '' }];
+	}
+	function removeRule(i: number) {
+		customRules = customRules.filter((_, idx) => idx !== i);
+	}
+	function addTrigger() {
+		triggerPhrases = [...triggerPhrases, { action: '', group: '', examples: '', notes: '' }];
+	}
+	function removeTrigger(i: number) {
+		triggerPhrases = triggerPhrases.filter((_, idx) => idx !== i);
+	}
+
 	// enhance callbacks
 	const enhanceCreate = () =>
 		async ({ update }: { update: () => Promise<void> }) => {
 			await update();
 			selectedTemplateId = (data.templates[0] as RecordModel)?.id ?? '';
 		};
+
+	const enhanceUpdate = ({ cancel }: { cancel: () => void }) => {
+		if (!edits.name.trim()) {
+			updateNameError = 'Profile name is required';
+			cancel();
+			return;
+		}
+		updateNameError = '';
+		return async ({ update }: { update: () => Promise<void> }) => {
+			await update();
+		};
+	};
 
 	const enhanceDelete = () =>
 		async ({ update }: { update: () => Promise<void> }) => {
@@ -189,7 +265,7 @@
 	<!-- Main Area: Editor -->
 	<div class="space-y-6 xl:col-span-6">
 		{#if selectedTemplate}
-			<form id="updateForm" method="POST" action="?/update" use:enhance>
+			<form id="updateForm" method="POST" action="?/update" use:enhance={enhanceUpdate}>
 				<input type="hidden" name="id" value={selectedTemplate.id} />
 				{#if isDefaultProfile}
 					<div class="mb-4 rounded border border-slate-700/50 bg-slate-800/40 p-4">
@@ -212,8 +288,10 @@
 								type="text"
 								bind:value={edits.name}
 								readonly={isDefaultProfile}
-								class="input-dark {isDefaultProfile ? 'cursor-default opacity-60' : ''}"
+								aria-invalid={!!updateNameError}
+								class="input-dark {isDefaultProfile ? 'cursor-default opacity-60' : ''} {updateNameError ? 'ring-1 ring-rose-500/50 border-rose-500/60' : ''}"
 							/>
+							{#if updateNameError}<p class="mt-1 text-xs text-rose-400">{updateNameError}</p>{/if}
 						</div>
 						<div class="sm:col-span-2">
 							<label for="profileDesc" class="label-caps">Description</label>
@@ -284,6 +362,188 @@
 								: ''} {activeTab !== tab.key ? 'hidden' : ''}"
 						></textarea>
 					{/each}
+				</SectionCard>
+
+				<!-- ── Behavior Extensions ───────────────────────────── -->
+				<SectionCard title="Behavior Extensions">
+					<p class="mb-5 text-xs text-slate-500">
+						These fields layer on top of the file-based instructions. Leave any field empty to use
+						the bot's built-in default for that section.
+					</p>
+
+					<!-- output_discipline -->
+					<div class="mb-6">
+						<label class="label-caps mb-1 block">Output Discipline Override</label>
+						<p class="mb-2 text-xs text-slate-500">
+							Replaces the hardcoded OUTPUT DISCIPLINE block. Empty = use bot default.
+						</p>
+						<textarea
+							name="output_discipline"
+							rows="5"
+							bind:value={edits.output_discipline}
+							readonly={isDefaultProfile}
+							class="input-dark h-auto w-full resize-y font-mono text-sm {isDefaultProfile
+								? 'cursor-default opacity-70'
+								: ''}"
+						></textarea>
+					</div>
+
+					<!-- addendum -->
+					<div class="mb-6">
+						<label class="label-caps mb-1 block">Addendum</label>
+						<p class="mb-2 text-xs text-slate-500">
+							Appended at the very end of the assembled prompt. Empty = nothing added.
+						</p>
+						<textarea
+							name="addendum"
+							rows="3"
+							bind:value={edits.addendum}
+							readonly={isDefaultProfile}
+							class="input-dark h-auto w-full resize-y font-mono text-sm {isDefaultProfile
+								? 'cursor-default opacity-70'
+								: ''}"
+						></textarea>
+					</div>
+
+					<!-- custom_rules -->
+					<div class="mb-6">
+						<label class="label-caps mb-1 block">Custom Rules</label>
+						<p class="mb-3 text-xs text-slate-500">
+							Injected before OUTPUT DISCIPLINE. Each rule needs a short label and the rule text.
+							Empty list = use file default (<code
+								class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400"
+								>promptRules</code
+							>).
+						</p>
+						<input type="hidden" name="custom_rules" value={customRulesJson} />
+						<div class="space-y-3">
+							{#each customRules as rule, i (i)}
+								<div
+									class="rounded border border-slate-800/60 bg-slate-900/40 p-3"
+								>
+									<div class="mb-2 flex items-center gap-2">
+										<input
+											type="text"
+											placeholder="Label (e.g. No spoilers)"
+											bind:value={rule.label}
+											readonly={isDefaultProfile}
+											class="input-dark flex-1 text-sm {isDefaultProfile
+												? 'cursor-default opacity-70'
+												: ''}"
+										/>
+										{#if !isDefaultProfile}
+											<button
+												type="button"
+												onclick={() => removeRule(i)}
+												class="shrink-0 rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400"
+												aria-label="Remove rule"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+											</button>
+										{/if}
+									</div>
+									<textarea
+										rows="2"
+										placeholder="The rule text…"
+										bind:value={rule.rule}
+										readonly={isDefaultProfile}
+										class="input-dark w-full resize-y text-sm {isDefaultProfile
+											? 'cursor-default opacity-70'
+											: ''}"
+									></textarea>
+								</div>
+							{/each}
+						</div>
+						{#if !isDefaultProfile}
+							<button
+								type="button"
+								onclick={addRule}
+								class="mt-3 text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300"
+							>
+								+ Add Rule
+							</button>
+						{/if}
+					</div>
+
+					<!-- trigger_phrases -->
+					<div>
+						<label class="label-caps mb-1 block">Trigger Phrases</label>
+						<p class="mb-3 text-xs text-slate-500">
+							Additive — appended to the bot's hardcoded trigger phrase examples. Each entry needs
+							an action and at least one example (one per line).
+						</p>
+						<input type="hidden" name="trigger_phrases" value={triggerPhrasesJson} />
+						<div class="space-y-3">
+							{#each triggerPhrases as tp, i (i)}
+								<div
+									class="rounded border border-slate-800/60 bg-slate-900/40 p-3"
+								>
+									<div class="mb-2 flex items-start justify-between gap-2">
+										<div class="grid flex-1 gap-2 sm:grid-cols-2">
+											<input
+												type="text"
+												placeholder="Action (e.g. recommend_movie)"
+												bind:value={tp.action}
+												readonly={isDefaultProfile}
+												class="input-dark text-sm {isDefaultProfile
+													? 'cursor-default opacity-70'
+													: ''}"
+											/>
+											<input
+												type="text"
+												placeholder="Group (optional)"
+												bind:value={tp.group}
+												readonly={isDefaultProfile}
+												class="input-dark text-sm {isDefaultProfile
+													? 'cursor-default opacity-70'
+													: ''}"
+											/>
+										</div>
+										{#if !isDefaultProfile}
+											<button
+												type="button"
+												onclick={() => removeTrigger(i)}
+												class="mt-1 shrink-0 rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400"
+												aria-label="Remove trigger"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+											</button>
+										{/if}
+									</div>
+									<div class="mb-2">
+										<label class="mb-1 block text-xs text-slate-500">Examples (one per line)</label>
+										<textarea
+											rows="3"
+											placeholder="can you recommend&#10;what should I watch&#10;suggest something"
+											bind:value={tp.examples}
+											readonly={isDefaultProfile}
+											class="input-dark w-full resize-y font-mono text-sm {isDefaultProfile
+												? 'cursor-default opacity-70'
+												: ''}"
+										></textarea>
+									</div>
+									<input
+										type="text"
+										placeholder="Notes (optional)"
+										bind:value={tp.notes}
+										readonly={isDefaultProfile}
+										class="input-dark w-full text-sm {isDefaultProfile
+											? 'cursor-default opacity-70'
+											: ''}"
+									/>
+								</div>
+							{/each}
+						</div>
+						{#if !isDefaultProfile}
+							<button
+								type="button"
+								onclick={addTrigger}
+								class="mt-3 text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300"
+							>
+								+ Add Trigger
+							</button>
+						{/if}
+					</div>
 				</SectionCard>
 			</form>
 		{:else}

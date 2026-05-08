@@ -1,6 +1,6 @@
 ---
 description: "Use when adding icons to components or pages. Enforces the Lucide SVG string pattern used across this project — covers how to define, pass, and render icons."
-applyTo: ["src/**/*.svelte", "src/**/*.ts"]
+applyTo: "src/**/*.svelte", "src/**/*.ts"
 ---
 
 # Icon Usage
@@ -12,6 +12,7 @@ Icons are **raw SVG strings** sourced from [Lucide](https://lucide.dev/icons/) a
 ### Defining an Icon
 
 Declare SVG strings as `const` variables in `<script>`. Always include:
+
 - `xmlns`, `width`, `height`, `viewBox="0 0 24 24"`
 - `fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`
 - `class="lucide lucide-<name>"` on the `<svg>` element
@@ -40,16 +41,20 @@ Components that accept icons expect `icon?: string`:
 
 ```svelte
 <script lang="ts">
-  let { title, value, icon = undefined } = $props<{
-    title: string;
-    value: string | number;
-    icon?: string;
-  }>();
+	let {
+		title,
+		value,
+		icon = undefined
+	} = $props<{
+		title: string;
+		value: string | number;
+		icon?: string;
+	}>();
 </script>
 
 {#if icon}
-  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-  {@html icon}
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html icon}
 {/if}
 ```
 
@@ -65,20 +70,20 @@ For one-off icons that don't need to be passed as props, write the `<svg>` inlin
 
 ```svelte
 <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
-  class="lucide lucide-ghost text-slate-400"
+	xmlns="http://www.w3.org/2000/svg"
+	width="24"
+	height="24"
+	viewBox="0 0 24 24"
+	fill="none"
+	stroke="currentColor"
+	stroke-width="2"
+	stroke-linecap="round"
+	stroke-linejoin="round"
+	class="lucide lucide-ghost text-slate-400"
 >
-  <path d="M9 10h.01" />
-  <path d="M15 10h.01" />
-  <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z" />
+	<path d="M9 10h.01" />
+	<path d="M15 10h.01" />
+	<path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z" />
 </svg>
 ```
 
@@ -102,8 +107,8 @@ Always use `drop-shadow-glow-*` tokens from `@theme` for glow effects — never 
 
 ## Icon Size Conventions
 
-| Context | `width`/`height` |
-|---|---|
-| Stat card / feature card icons | `20` |
-| Empty state / decorative | `24` |
-| Inline text / badge | `16` |
+| Context                        | `width`/`height` |
+| ------------------------------ | ---------------- |
+| Stat card / feature card icons | `20`             |
+| Empty state / decorative       | `24`             |
+| Inline text / badge            | `16`             |

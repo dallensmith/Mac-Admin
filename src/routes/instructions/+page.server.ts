@@ -24,7 +24,11 @@ export const actions: Actions = {
 			behavior: '',
 			resources: '',
 			conversation_rules: '',
-			response_templates: ''
+			response_templates: '',
+			trigger_phrases: '',
+			custom_rules: '',
+			output_discipline: '',
+			addendum: ''
 		});
 	},
 
@@ -45,7 +49,11 @@ export const actions: Actions = {
 			behavior: data.get('behavior') ?? '',
 			resources: data.get('resources') ?? '',
 			conversation_rules: data.get('conversation_rules') ?? '',
-			response_templates: data.get('response_templates') ?? ''
+			response_templates: data.get('response_templates') ?? '',
+			trigger_phrases: data.get('trigger_phrases') ?? '',
+			custom_rules: data.get('custom_rules') ?? '',
+			output_discipline: data.get('output_discipline') ?? '',
+			addendum: data.get('addendum') ?? ''
 		});
 	},
 
@@ -101,7 +109,11 @@ export const actions: Actions = {
 			behavior: source.behavior ?? '',
 			resources: source.resources ?? '',
 			conversation_rules: source.conversation_rules ?? '',
-			response_templates: source.response_templates ?? ''
+			response_templates: source.response_templates ?? '',
+			trigger_phrases: source.trigger_phrases ?? '',
+			custom_rules: source.custom_rules ?? '',
+			output_discipline: source.output_discipline ?? '',
+			addendum: source.addendum ?? ''
 		});
 	}
 };

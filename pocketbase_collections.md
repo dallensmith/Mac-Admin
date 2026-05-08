@@ -251,6 +251,45 @@ All collections include automatic `id` (string), `created` (datetime), and `upda
 
 ---
 
+## `sm_bot_config`
+
+**Purpose:** Singleton operational settings record. One record ("Default") holds all bot configuration that can be edited from the admin panel without changing env vars or restarting. Seeded from env defaults on first boot; PocketBase is authoritative on all subsequent starts. Polled every `instruction_refresh_interval_ms` milliseconds for hot-reload.
+
+Settings marked **restart-required** are stored here and applied on the next bot restart — they cannot be hot-reloaded because the affected services (cache, session manager) are instantiated once at startup with those values. All other settings, including channel IDs and cron expressions, are hot-reloadable: changes are detected on the next polling cycle and applied live without a restart.
+
+| Field | Type | Restart required? | Notes |
+|---|---|---|---|
+| `bot_name` | text | no | Display name used in responses (default: `Smart Mac`) |
+| `admin_user_ids` | text | no | Comma-separated Discord snowflakes with admin privileges |
+| `announcement_channel_names` | text | no | Comma-separated channel names used for announcement detection |
+| `openrouter_base_url` | text | no | OpenRouter API endpoint |
+| `openrouter_model` | text | no | Primary LLM model ID |
+| `openrouter_free_model` | text | no | Zero-cost model for low-confidence responses |
+| `free_model_confidence_threshold` | number | no | Confidence floor (0–1) to accept free model result |
+| `openrouter_fallback_model` | text | no | LLM used in throttled/degraded mode |
+| `ai_daily_budget_usd` | number | no | Daily spending cap in USD |
+| `ai_degraded_threshold` | number | no | % of daily budget that triggers degraded mode (0–100) |
+| `reviews_channel_id` | text | no | Channel ID for automated review posts |
+| `quotes_channel_id` | text | no | Channel ID for automated quote posts |
+| `reports_channel_id` | text | no | Channel ID for report embeds |
+| `announcement_channel_id` | text | no | Channel ID for daily event announcements |
+| `game_leaderboard_channel_id` | text | no | Channel ID for game leaderboard posts |
+| `daily_event_check_cron` | text | no | Cron schedule for EventsMonitor (default: `0 8 * * *`) |
+| `wheel_collection_name` | text | **yes** | PocketBase collection name for wheel candidates |
+| `user_cooldown_seconds` | number | no | Minimum seconds between messages per user |
+| `user_burst_limit` | number | no | Max messages allowed in a burst window |
+| `session_inactivity_ms` | number | **yes** | Session expiry after inactivity (ms) |
+| `cache_ttl_seconds` | number | **yes** | Default in-memory cache TTL |
+| `search_cache_ttl_seconds` | number | **yes** | Fuse.js fuzzy search cache TTL |
+| `instruction_refresh_interval_ms` | number | no | How often to poll PocketBase for instruction/config changes |
+| `log_level` | text | no | Logging verbosity: `debug`, `info`, `warn`, `error` |
+| `log_dir` | text | no | Directory for log files |
+| `loki_url` | text | no | Grafana Loki endpoint for log shipping |
+
+> **Secrets never stored here.** API keys (`OPENROUTER_API_KEY`, `TMDB_API_KEY`, `OMDB_API_KEY`, `BRAVE_API_KEY`), Discord token/IDs, Postgres credentials, and PocketBase credentials remain env-only.
+
+---
+
 ## `sm_instruction_sets`
 
 **Purpose:** Named AI personality/instruction overrides. The active set (where `is_active=true`) is merged with file-system defaults at runtime, with PocketBase values taking precedence per field. Polled every 15 seconds for hot-reloading without restart.
@@ -266,3 +305,7 @@ All collections include automatic `id` (string), `created` (datetime), and `upda
 | `resources` | text | Overrides `config/instructions/resources.md` — injected reference material. Empty = use file |
 | `conversation_rules` | text | JSON string overriding `conversation-rules.json`. Empty = use file |
 | `response_templates` | text | JSON string overriding `response-templates.json` (formatting templates). Empty = use file |
+| `trigger_phrases` | text | JSON array of `{action, group?, examples[], notes?}`. **Additive** — appended to hardcoded trigger phrase examples. Empty = no additions |
+| `custom_rules` | text | JSON array of `{label, rule}` blocks injected before OUTPUT DISCIPLINE. Empty = use file default (`promptRules` in `conversation-rules.json`) |
+| `output_discipline` | text | **Replaces** the hardcoded OUTPUT DISCIPLINE section when non-empty. Empty = use hardcoded |
+| `addendum` | text | Free-form text appended at the very end of the prompt. Empty = nothing appended |
