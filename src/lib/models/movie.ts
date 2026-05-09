@@ -106,6 +106,7 @@ export interface NormalizedQuoteDetailed {
   context?: string;
   isMemorable: boolean;
   likes: number;
+  status: string;
   createdAt?: string;
 }
 
@@ -113,8 +114,10 @@ export interface NormalizedQuoteDetailed {
 export interface NormalizedReview {
   id: string;
   movieTitle: string;
-  movieSlug: string;  movieYear?: string;
-  posterUrl?: string;  reviewerName: string;
+  movieSlug: string;
+  movieYear?: string;
+  posterUrl?: string;
+  reviewerName: string;
   content: string;
   /** Weighted composite: (soBadItsGood×2) + (entertainment×1.2) + (memePotential×0.8) + (good×−0.5) */
   weightedScore: number;
@@ -122,6 +125,7 @@ export interface NormalizedReview {
   ratingEntertainment: number;
   ratingSoBadItsGood: number;
   ratingMemePotential: number;
+  status: string;
   createdAt: string;
 }
 
