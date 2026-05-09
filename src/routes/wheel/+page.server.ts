@@ -1,9 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
 import type { PageServerLoad, Actions } from './$types';
 
 function wheelCollection(): string {
-	return env.POCKETBASE_WHEEL_COLLECTION ?? 'thewheel';
+	return 'sm_wheel';
 }
 
 export interface WheelEntry {
