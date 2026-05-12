@@ -33,31 +33,18 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		redirect(302, '/login?error=no_discord_link');
 	}
 
-	// Run access check and guild stats in parallel
-	const [accessResult, guildStats] = await Promise.allSettled([
-		checkGuildMemberAccess(discordUserId),
-		getGuildStats()
-	]);
+	// Check access synchronously (whitelist-only), fetch guild stats async
+	const accessResult = checkGuildMemberAccess(discordUserId);
+	const guildStatsResult = await getGuildStats();
 
-	// Deny if role check threw or returned allowed = false
-	if (
-		accessResult.status === 'rejected' ||
-		(accessResult.status === 'fulfilled' && !accessResult.value.allowed)
-	) {
-		const reason =
-			accessResult.status === 'rejected'
-				? String(accessResult.reason)
-				: 'allowed=false (not in whitelist and no ADMINISTRATOR role)';
-		console.warn('[layout] Access denied for discordUserId=%s — %s', discordUserId, reason);
+	// Deny if not in ADMIN_DISCORD_USER_IDS whitelist
+	if (!accessResult.allowed) {
+		console.warn('[layout] Access denied for discordUserId=%s', discordUserId);
 		locals.pb.authStore.clear();
 		cookies.delete('pb_auth', { path: '/' });
 		cookies.delete('pb_profile', { path: '/' });
 		redirect(302, '/login?error=access_denied');
 	}
 
-	const discordRole =
-		accessResult.status === 'fulfilled' ? accessResult.value.topRoleName : 'Member';
-	const stats = guildStats.status === 'fulfilled' ? guildStats.value : null;
-
-	return { user: locals.user, discordRole, guildStats: stats, discordUserId };
+	return { user: locals.user, discordRole: accessResult.topRoleName, guildStats: guildStatsResult, discordUserId };
 };
