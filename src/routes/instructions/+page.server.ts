@@ -44,6 +44,9 @@ export const actions: Actions = {
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
+		const record = await locals.adminPb.collection('sm_instruction_sets').getOne(id);
+		if (record.is_default) return fail(422, { error: 'Cannot edit the default profile' });
+
 		try {
 			await locals.adminPb.collection('sm_instruction_sets').update(id, {
 				name: data.get('name') ?? '',
@@ -184,6 +187,11 @@ export const actions: Actions = {
 		if (!instruction_set_id || typeof instruction_set_id !== 'string')
 			return fail(422, { error: 'instruction_set_id required' });
 
+		const parentRecord = await locals.adminPb
+			.collection('sm_instruction_sets')
+			.getOne(instruction_set_id);
+		if (parentRecord.is_default) return fail(422, { error: 'Cannot edit the default profile' });
+
 		try {
 			await locals.adminPb.collection('sm_prompt_sections').create({
 				instruction_set_id,
@@ -207,6 +215,12 @@ export const actions: Actions = {
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
+		const section = await locals.adminPb.collection('sm_prompt_sections').getOne(id);
+		const parentRecord = await locals.adminPb
+			.collection('sm_instruction_sets')
+			.getOne(section.instruction_set_id);
+		if (parentRecord.is_default) return fail(422, { error: 'Cannot edit the default profile' });
+
 		try {
 			await locals.adminPb.collection('sm_prompt_sections').update(id, {
 				section_id: data.get('section_id') ?? '',
@@ -228,6 +242,12 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
+
+		const section = await locals.adminPb.collection('sm_prompt_sections').getOne(id);
+		const parentRecord = await locals.adminPb
+			.collection('sm_instruction_sets')
+			.getOne(section.instruction_set_id);
+		if (parentRecord.is_default) return fail(422, { error: 'Cannot edit the default profile' });
 
 		try {
 			await locals.adminPb.collection('sm_prompt_sections').delete(id);
