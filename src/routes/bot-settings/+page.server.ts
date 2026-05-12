@@ -24,7 +24,8 @@ export const actions: Actions = {
 
 		const addStr = (key: string) => {
 			const v = data.get(key);
-			if (typeof v === 'string' && v.trim() !== '') payload[key] = v;
+			// Include even if empty — an empty string explicitly clears the field in PocketBase.
+			if (typeof v === 'string') payload[key] = v;
 		};
 
 		const addNum = (key: string) => {
@@ -80,5 +81,19 @@ export const actions: Actions = {
 		}
 
 		return { success: true };
+	},
+
+	testConnection: async ({ locals }) => {
+		if (!locals.user) redirect(302, '/login');
+
+		const start = Date.now();
+		try {
+			await locals.adminPb.health.check();
+			return { testOk: true, testLatencyMs: Date.now() - start };
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : 'Connection failed';
+			console.error('[bot-settings] testConnection failed:', message);
+			return fail(500, { testError: message });
+		}
 	}
 };

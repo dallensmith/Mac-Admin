@@ -5,8 +5,18 @@ import { env } from '$env/dynamic/private';
 
 const CALLBACK_URL = `${env.ORIGIN}/auth/callback`;
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	if (locals.user) redirect(302, '/');
+
+	const error = url.searchParams.get('error');
+	const errorMessage =
+		error === 'access_denied'
+			? 'Access denied. Your Discord account does not have permission to access this panel.'
+			: error === 'no_discord_link'
+				? 'Could not verify your Discord account. Please try signing in again.'
+				: null;
+
+	return { errorMessage };
 };
 
 export const actions: Actions = {

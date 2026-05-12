@@ -1,5 +1,7 @@
 <script lang="ts">
 	import DiscordLoginButton from '$lib/components/auth/DiscordLoginButton.svelte';
+
+	let { data } = $props();
 </script>
 
 <div
@@ -53,6 +55,13 @@
 			</div>
 
 			<div class="space-y-4">
+				{#if data.errorMessage}
+					<div
+						class="rounded border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-center text-sm text-rose-400"
+					>
+						{data.errorMessage}
+					</div>
+				{/if}
 				<DiscordLoginButton />
 			</div>
 

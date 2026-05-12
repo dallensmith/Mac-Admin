@@ -5,7 +5,8 @@
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 
-	let { data } = $props();
+	let { data, form }: { data: import('./$types').PageData; form: import('./$types').ActionData } =
+		$props();
 
 	let selectedTemplateId = $state<string>((data.templates[0] as RecordModel)?.id ?? '');
 
@@ -113,17 +114,48 @@
 		return 'inactive';
 	}
 
-	function activeTabContent(): string {
-		const tab = tabs.find((t) => t.key === activeTab);
-		if (!tab) return '';
-		return edits[tab.field] ?? '';
-	}
 
 	// Is the selected template the bot-managed default (read-only)?
 	let isDefaultProfile = $derived((selectedTemplate as RecordModel)?.is_default === true);
 
 	// Validation
 	let updateNameError = $state('');
+	let saving = $state(false);
+
+	let assembledPrompt = $derived.by(() => {
+		const parts: string[] = [];
+		const sec = (header: string, content: string, fallback: string) => {
+			parts.push(`## ${header}`);
+			parts.push(content.trim() || `[${fallback}]`);
+			parts.push('');
+		};
+		sec('SYSTEM', edits.system, 'using file default');
+		sec('BEHAVIOR', edits.behavior, 'using file default');
+		sec('RESOURCES', edits.resources, 'using file default');
+		sec('CONVERSATION RULES', edits.conversation_rules, 'using file default');
+		sec('RESPONSE TEMPLATES', edits.response_templates, 'using file default');
+		parts.push(`## OUTPUT DISCIPLINE${edits.output_discipline ? ' [override]' : ''}`);
+		parts.push(edits.output_discipline.trim() || '[using bot built-in default]');
+		parts.push('');
+		if (edits.addendum.trim()) {
+			parts.push('## ADDENDUM');
+			parts.push(edits.addendum.trim());
+			parts.push('');
+		}
+		if (customRules.length > 0) {
+			parts.push(`## CUSTOM RULES (${customRules.length})`);
+			customRules.forEach((r, i) => parts.push(`${i + 1}. [${r.label || '—'}] ${r.rule}`));
+			parts.push('');
+		}
+		if (triggerPhrases.length > 0) {
+			parts.push(`## TRIGGER PHRASES (${triggerPhrases.length})`);
+			triggerPhrases.forEach((tp) =>
+				parts.push(`[${tp.action || '?'}]${tp.group ? ` @${tp.group}` : ''}`)
+			);
+			parts.push('');
+		}
+		return parts.join('\n');
+	});
 
 	// Structured editor helpers
 	function addRule() {
@@ -140,12 +172,14 @@
 	}
 
 	// enhance callbacks
-	const enhanceCreate =
-		() =>
-		async ({ update }: { update: () => Promise<void> }) => {
+	const enhanceCreate = () => {
+		saving = true;
+		return async ({ update }: { update: () => Promise<void> }) => {
 			await update();
+			saving = false;
 			selectedTemplateId = (data.templates[0] as RecordModel)?.id ?? '';
 		};
+	};
 
 	const enhanceUpdate = ({ cancel }: { cancel: () => void }) => {
 		if (!edits.name.trim()) {
@@ -154,17 +188,37 @@
 			return;
 		}
 		updateNameError = '';
+		saving = true;
 		return async ({ update }: { update: () => Promise<void> }) => {
 			await update();
+			saving = false;
 		};
 	};
 
-	const enhanceDelete =
-		() =>
-		async ({ update }: { update: () => Promise<void> }) => {
+	const enhanceDelete = () => {
+		saving = true;
+		return async ({ update }: { update: () => Promise<void> }) => {
 			await update();
+			saving = false;
 			selectedTemplateId = (data.templates[0] as RecordModel)?.id ?? '';
 		};
+	};
+
+	const enhanceSetActive = () => {
+		saving = true;
+		return async ({ update }: { update: () => Promise<void> }) => {
+			await update();
+			saving = false;
+		};
+	};
+
+	const enhanceDuplicate = () => {
+		saving = true;
+		return async ({ update }: { update: () => Promise<void> }) => {
+			await update();
+			saving = false;
+		};
+	};
 </script>
 
 <PageHeader
@@ -204,10 +258,10 @@
 
 <!-- Hidden action forms (no nesting — use form= attribute on buttons) -->
 <form id="createForm" method="POST" action="?/create" use:enhance={enhanceCreate}></form>
-<form id="setActiveForm" method="POST" action="?/setActive" use:enhance>
+<form id="setActiveForm" method="POST" action="?/setActive" use:enhance={enhanceSetActive}>
 	<input type="hidden" name="id" value={selectedTemplate?.id} />
 </form>
-<form id="duplicateForm" method="POST" action="?/duplicate" use:enhance>
+<form id="duplicateForm" method="POST" action="?/duplicate" use:enhance={enhanceDuplicate}>
 	<input type="hidden" name="id" value={selectedTemplate?.id} />
 </form>
 <form id="deleteForm" method="POST" action="?/delete" use:enhance={enhanceDelete}>
@@ -278,6 +332,11 @@
 
 	<!-- Main Area: Editor -->
 	<div class="space-y-6 xl:col-span-6">
+		{#if form?.error}
+			<div class="rounded border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
+				{form.error}
+			</div>
+		{/if}
 		{#if selectedTemplate}
 			<form id="updateForm" method="POST" action="?/update" use:enhance={enhanceUpdate}>
 				<input type="hidden" name="id" value={selectedTemplate.id} />
@@ -348,28 +407,32 @@
 							<button
 								type="submit"
 								form="setActiveForm"
-								class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300"
+								disabled={saving}
+								class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
 								>Set Active</button
 							>
 						{/if}
 						{#if !isDefaultProfile}
 							<button
 								type="submit"
-								class="rounded border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-label font-bold tracking-widest text-cyan-400 uppercase shadow-glow-cyan-sm-soft transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-glow-cyan-sm-hover"
-								>Save</button
+								disabled={saving}
+								class="rounded border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-label font-bold tracking-widest text-cyan-400 uppercase shadow-glow-cyan-sm-soft transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 hover:shadow-glow-cyan-sm-hover disabled:cursor-not-allowed disabled:opacity-50"
+								>{saving ? 'Saving…' : 'Save'}</button
 							>
 						{/if}
 						<button
 							type="submit"
 							form="duplicateForm"
-							class="rounded border border-slate-700 bg-slate-800 px-4 py-2 text-label font-bold tracking-widest text-slate-300 uppercase transition-colors hover:bg-slate-700 hover:text-slate-200"
+							disabled={saving}
+							class="rounded border border-slate-700 bg-slate-800 px-4 py-2 text-label font-bold tracking-widest text-slate-300 uppercase transition-colors hover:bg-slate-700 hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
 							>Duplicate</button
 						>
 						<div class="flex-1"></div>
 						<button
 							type="submit"
 							form="deleteForm"
-							disabled={selectedTemplate.is_active ||
+							disabled={saving ||
+								selectedTemplate.is_active ||
 								selectedTemplate.is_default ||
 								(data.templates as RecordModel[]).length <= 1}
 							class="rounded border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-label font-bold tracking-widest text-rose-400 uppercase transition-colors hover:bg-rose-500/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
@@ -620,78 +683,86 @@
 		{/if}
 	</div>
 
-	<!-- Right Sidebar: Preview & Context -->
+	<!-- Right Sidebar: Profile Summary & Assembled Prompt -->
 	<div class="space-y-6 xl:col-span-3">
 		{#if selectedTemplate}
-			<SectionCard title="Bot Preview">
-				<div class="mb-4 text-center">
+			<!-- Profile Summary -->
+			<SectionCard title="Profile Summary">
+				{#if selectedTemplate.is_active}
 					<div
-						class="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 shadow-glow-fuchsia-sm"
+						class="mb-4 rounded border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-center text-label font-bold tracking-widest text-cyan-400 uppercase"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="32"
-							height="32"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="lucide lucide-bot text-fuchsia-400 drop-shadow-glow-fuchsia-xl"
-							><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path
-								d="M2 14h2"
-							/><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg
-						>
+						Active Profile
 					</div>
-					<h4 class="text-sm font-bold tracking-widest text-fuchsia-400 uppercase drop-shadow-sm">
-						{selectedTemplate.name}
-					</h4>
-					<div class="mt-1">
-						<StatusBadge status={statusFromRecord(selectedTemplate)} />
+				{:else if selectedTemplate.is_default}
+					<div
+						class="mb-4 rounded border border-slate-600/50 bg-slate-800/60 px-3 py-2 text-center text-label font-bold tracking-widest text-slate-400 uppercase"
+					>
+						Bot-Managed Default
 					</div>
-					{#if selectedTemplate.description}
-						<p class="mt-2 text-xs text-slate-400">{selectedTemplate.description}</p>
+				{/if}
+
+				<!-- Instruction file coverage -->
+				<div class="mb-4 space-y-2">
+					<p class="label-caps text-slate-500">Instruction Files</p>
+					{#each tabs as tab (tab.key)}
+						{@const content = edits[tab.field] ?? ''}
+						<div class="flex items-center justify-between gap-2">
+							<span class="truncate font-mono text-xs text-slate-400">{tab.key}</span>
+							{#if content.length > 0}
+								<span class="shrink-0 text-label-xs font-bold text-cyan-400"
+									>{content.length.toLocaleString()}</span
+								>
+							{:else}
+								<span class="shrink-0 text-label-xs text-slate-600">empty</span>
+							{/if}
+						</div>
+					{/each}
+				</div>
+
+				<!-- Output Discipline -->
+				<div class="mb-4 border-t border-slate-800/50 pt-4">
+					<p class="label-caps mb-1 text-slate-500">Output Discipline</p>
+					{#if edits.output_discipline}
+						<p class="line-clamp-3 font-mono text-xs text-slate-300">
+							{edits.output_discipline.slice(0, 120)}{edits.output_discipline.length > 120
+								? '…'
+								: ''}
+						</p>
+					{:else}
+						<p class="text-xs italic text-slate-500">Using bot built-in default</p>
 					{/if}
 				</div>
 
-				<div
-					class="group relative overflow-hidden rounded-lg border border-slate-800/80 bg-slate-950/80 p-4"
-				>
-					<div
-						class="pointer-events-none absolute inset-0 bg-linear-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-					></div>
-					<div class="relative z-10 flex items-start gap-3">
-						<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-discord">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="14"
-								height="14"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="text-white"
-								><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path
-									d="M2 14h2"
-								/><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg
-							>
-						</div>
-						<div>
-							<div class="flex items-baseline gap-2">
-								<span class="text-ui font-bold text-white">Smart Mac</span>
-								<span class="text-label-xs text-discord-muted">Today at 4:20 PM</span>
-							</div>
-							<p class="mt-1 text-xs text-discord-text italic">
-								"{activeTabContent()
-									? activeTabContent().slice(0, 160) + (activeTabContent().length > 160 ? '…' : '')
-									: 'No content on this tab yet.'}"
-							</p>
-						</div>
+				<!-- Addendum -->
+				<div class="mb-4 border-t border-slate-800/50 pt-4">
+					<p class="label-caps mb-1 text-slate-500">Addendum</p>
+					{#if edits.addendum}
+						<p class="line-clamp-2 font-mono text-xs text-slate-300">
+							{edits.addendum.slice(0, 80)}{edits.addendum.length > 80 ? '…' : ''}
+						</p>
+					{:else}
+						<p class="text-xs italic text-slate-500">None set</p>
+					{/if}
+				</div>
+
+				<!-- Behavior extensions stats -->
+				<div class="border-t border-slate-800/50 pt-4">
+					<div class="flex gap-4 text-xs text-slate-500">
+						<span>{triggerPhrases.length} trigger phrase{triggerPhrases.length !== 1 ? 's' : ''}</span>
+						<span>{customRules.length} custom rule{customRules.length !== 1 ? 's' : ''}</span>
 					</div>
 				</div>
+			</SectionCard>
+
+			<!-- Assembled Prompt Preview -->
+			<SectionCard title="Assembled Prompt">
+				<p class="mb-3 text-xs text-slate-500">
+					What the bot receives for this profile. Empty sections fall back to file defaults.
+				</p>
+				<pre
+					class="max-h-96 overflow-y-auto rounded border border-slate-800/60 bg-slate-950/80 p-3 font-mono text-xs leading-relaxed text-slate-300 whitespace-pre-wrap"
+				>{assembledPrompt}</pre>
 			</SectionCard>
 		{/if}
 	</div>

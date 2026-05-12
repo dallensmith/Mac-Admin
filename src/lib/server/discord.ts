@@ -58,8 +58,9 @@ export async function checkGuildMemberAccess(discordUserId: string): Promise<Mem
 				.map((id) => id.trim())
 				.filter(Boolean)
 		: [];
-
-	// Fetch member and all guild roles in parallel
+	if (whitelist.includes(discordUserId)) {
+		return { allowed: true, topRoleName: 'Admin' };
+	}
 	const [memberRes, rolesRes] = await Promise.all([
 		fetch(`${DISCORD_API}/guilds/${DISCORD_GUILD_ID}/members/${discordUserId}`, {
 			headers: botHeaders

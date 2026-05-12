@@ -7,6 +7,8 @@
 		$props();
 
 	let saving = $state(false);
+	let testing = $state(false);
+	let testResult = $state<{ ok: boolean; latencyMs?: number; error?: string } | null>(null);
 	let errors = $state<Record<string, string>>({});
 
 	// Reactive mirror of config — used for dirty tracking and two-way binding
@@ -133,6 +135,27 @@
 		Settings saved successfully.
 	</div>
 {/if}
+
+<!-- Standalone test-connection form (no nesting — button uses form= attribute) -->
+<form
+	id="testConnectionForm"
+	method="POST"
+	action="?/testConnection"
+	use:enhance={() => {
+		testing = true;
+		testResult = null;
+		return async ({ result }) => {
+			testing = false;
+			if (result.type === 'success') {
+				const d = result.data as Record<string, unknown>;
+				testResult = { ok: true, latencyMs: d.testLatencyMs as number | undefined };
+			} else {
+				const d = (result as { data?: Record<string, unknown> }).data ?? {};
+				testResult = { ok: false, error: (d.testError as string | undefined) ?? 'Connection failed' };
+			}
+		};
+	}}
+></form>
 
 <form
 	method="POST"
@@ -547,11 +570,46 @@
 			</div>
 		</SectionCard>
 
-		<div class="flex justify-end gap-3">
-			<button type="button" class="btn-ghost" disabled={!isDirty} onclick={reset}>Cancel</button>
-			<button type="submit" class="btn-cyan" disabled={!isDirty || saving}>
-				{saving ? 'Saving…' : 'Save Changes'}
-			</button>
+		<div class="flex items-center justify-between gap-4">
+			<!-- Test Connection -->
+			<div class="flex items-center gap-3">
+				{#if testResult}
+					{#if testResult.ok}
+						<span class="flex items-center gap-1.5 text-xs text-emerald-400">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="13"
+								height="13"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								><path d="M20 6 9 17l-5-5" /></svg
+							>
+							Connected · {testResult.latencyMs}ms
+						</span>
+					{:else}
+						<span class="text-xs text-rose-400">{testResult.error}</span>
+					{/if}
+				{/if}
+				<button
+					type="submit"
+					form="testConnectionForm"
+					class="btn-ghost"
+					disabled={testing}
+				>
+					{testing ? 'Testing…' : 'Test Connection'}
+				</button>
+			</div>
+			<!-- Save / Cancel -->
+			<div class="flex gap-3">
+				<button type="button" class="btn-ghost" disabled={!isDirty} onclick={reset}>Cancel</button>
+				<button type="submit" class="btn-cyan" disabled={!isDirty || saving}>
+					{saving ? 'Saving…' : 'Save Changes'}
+				</button>
+			</div>
 		</div>
 	</div>
 </form>

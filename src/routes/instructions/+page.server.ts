@@ -42,19 +42,25 @@ export const actions: Actions = {
 		const existing = await locals.adminPb.collection('sm_instruction_sets').getOne(id);
 		if (existing.is_default) return fail(403, { error: 'Cannot edit the default profile' });
 
-		await locals.adminPb.collection('sm_instruction_sets').update(id, {
-			name: data.get('name') ?? '',
-			description: data.get('description') ?? '',
-			system: data.get('system') ?? '',
-			behavior: data.get('behavior') ?? '',
-			resources: data.get('resources') ?? '',
-			conversation_rules: data.get('conversation_rules') ?? '',
-			response_templates: data.get('response_templates') ?? '',
-			trigger_phrases: data.get('trigger_phrases') ?? '',
-			custom_rules: data.get('custom_rules') ?? '',
-			output_discipline: data.get('output_discipline') ?? '',
-			addendum: data.get('addendum') ?? ''
-		});
+		try {
+			await locals.adminPb.collection('sm_instruction_sets').update(id, {
+				name: data.get('name') ?? '',
+				description: data.get('description') ?? '',
+				system: data.get('system') ?? '',
+				behavior: data.get('behavior') ?? '',
+				resources: data.get('resources') ?? '',
+				conversation_rules: data.get('conversation_rules') ?? '',
+				response_templates: data.get('response_templates') ?? '',
+				trigger_phrases: data.get('trigger_phrases') ?? '',
+				custom_rules: data.get('custom_rules') ?? '',
+				output_discipline: data.get('output_discipline') ?? '',
+				addendum: data.get('addendum') ?? ''
+			});
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : 'Unknown error';
+			console.error('[instructions] update failed:', message);
+			return fail(500, { error: `Failed to save profile: ${message}` });
+		}
 	},
 
 	delete: async ({ locals, request }) => {
@@ -72,7 +78,12 @@ export const actions: Actions = {
 			return fail(422, { error: 'Cannot delete the active template' });
 		}
 
-		await locals.adminPb.collection('sm_instruction_sets').delete(id);
+		try {
+			await locals.adminPb.collection('sm_instruction_sets').delete(id);
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : 'Unknown error';
+			return fail(500, { error: `Failed to delete profile: ${message}` });
+		}
 	},
 
 	setActive: async ({ locals, request }) => {
@@ -83,12 +94,25 @@ export const actions: Actions = {
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
 
 		const all = await locals.adminPb.collection('sm_instruction_sets').getFullList();
-		for (const t of all) {
-			if (t.id === id) {
-				await locals.adminPb.collection('sm_instruction_sets').update(t.id, { is_active: true });
-			} else if (t.is_active) {
-				await locals.adminPb.collection('sm_instruction_sets').update(t.id, { is_active: false });
+		try {
+			for (const t of all) {
+				if (t.id === id) {
+					await locals.adminPb
+						.collection('sm_instruction_sets')
+						.update(t.id, { is_active: true });
+				} else if (t.is_active) {
+					await locals.adminPb
+						.collection('sm_instruction_sets')
+						.update(t.id, { is_active: false });
+				}
 			}
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : 'Unknown error';
+			console.error('[instructions] setActive failed:', message);
+			return fail(500, {
+				error:
+					'Failed to update active profile. The bot may be in an inconsistent state — please reload and try again.'
+			});
 		}
 	},
 
