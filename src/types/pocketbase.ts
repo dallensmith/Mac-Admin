@@ -44,13 +44,14 @@ export interface PBMessageRecord {
 }
 
 export interface PBSessionRecord {
-  id:             string;
-  user_id:        string;
-  channel_id:     string;
-  is_terminated:  boolean;
-  last_active:    string;
-  created:        string;
-  updated:        string;
+  id:              string;
+  user_id:         string;
+  channel_id:      string;
+  is_terminated:   boolean;
+  last_active:     string;
+  conversation_id: string;
+  created:         string;
+  updated:         string;
 }
 
 export interface PBUsageLogRecord {
@@ -263,10 +264,43 @@ export interface PBInstructionSetRecord {
   trigger_phrases:    string;
   /** JSON array of {label, rule}. Replaces file promptRules when non-empty. */
   custom_rules:       string;
-  /** Replaces hardcoded OUTPUT DISCIPLINE section when non-empty. */
+  /**
+   * Escape hatch — replaces entire OUTPUT DISCIPLINE section when non-empty.
+   * When non-empty, all od_* fields are ignored.
+   */
   output_discipline:  string;
+  /** Plain text override for the VERBATIM paragraph in OUTPUT DISCIPLINE. Empty = use seeded default. */
+  od_verbatim_rule:   string;
+  /** JSON string[] of banned response opener phrases. Empty = use seeded default. */
+  od_banned_starters: string;
+  /** JSON {wrong, right}[] illustrative example pairs. Empty = use seeded default. */
+  od_examples:        string;
+  /** JSON {label, rule}[] extra output rules appended after examples. Empty = none appended. */
+  od_extra_rules:     string;
   /** Free-form text appended at end of prompt when non-empty. */
   addendum:           string;
+  created:            string;
+  updated:            string;
+}
+
+// ─── Prompt sections ─────────────────────────────────────────────────────────
+
+/** A single ordered, condition-aware prompt section for an instruction set. */
+export interface PBPromptSectionRecord {
+  id:                 string;
+  instruction_set_id: string;
+  /** Stable identifier within the profile (e.g. 'first_person', 'trigger_phrases'). */
+  section_id:         string;
+  /** Human-readable label shown in admin. */
+  label:              string;
+  /** Full prompt text for this section. Supports {ANNOUNCEMENT_CHANNELS} token. */
+  content:            string;
+  /** Sort order — lower numbers render first. */
+  order:              number;
+  /** When false, section is excluded from the assembled prompt without deleting it. */
+  enabled:            boolean;
+  /** When this section is injected: 'always' | 'session_active' | 'session_new' */
+  condition:          'always' | 'session_active' | 'session_new';
   created:            string;
   updated:            string;
 }
