@@ -4,12 +4,13 @@ import type { PageServerLoad, Actions } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) redirect(302, '/login');
 
-	const [templates, sections] = await Promise.all([
+	const [templates, sections, discordTemplates] = await Promise.all([
 		locals.adminPb.collection('sm_instruction_sets').getFullList({ sort: '-updated' }),
-		locals.adminPb.collection('sm_prompt_sections').getFullList({ sort: 'instruction_set_id,order' })
+		locals.adminPb.collection('sm_prompt_sections').getFullList({ sort: 'instruction_set_id,order' }),
+		locals.adminPb.collection('sm_discord_templates').getFullList({ sort: 'name' })
 	]);
 
-	return { templates, sections };
+	return { templates, sections, discordTemplates };
 };
 
 export const actions: Actions = {

@@ -46,8 +46,6 @@ type CustomRule = { label: string; rule: string };
 type PromptRule = { label: string; rule: string };
 type OdExample = { wrong: string; right: string };
 type OdExtraRule = { label: string; rule: string };
-type ResponseTemplate = { structure: string; sections: string[] };
-type ResponseTemplates = Record<string, ResponseTemplate>;
 
 // ── Editable state ──────────────────────────────────────────────────────────
 
@@ -63,11 +61,19 @@ addendum: ''
 });
 
 let convNameTriggers = $state<string[]>([]);
-let convNameRegex = $state('');
 let convTermTriggers = $state<string[]>([]);
-let convTermRegex = $state('');
+let convNameInput = $state('');
+let convTermInput = $state('');
 let convPromptRules = $state<PromptRule[]>([]);
-let responseTemplates = $state<ResponseTemplates>({});
+
+function makeTriggersRegex(triggers: string[]): string {
+if (triggers.length === 0) return '';
+const escaped = triggers.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+return `\\b(${escaped.join('|')})\\b`;
+}
+let convNameRegex = $derived(makeTriggersRegex(convNameTriggers));
+let convTermRegex = $derived(makeTriggersRegex(convTermTriggers));
+let enabledTemplateKeys = $state<string[]>([]);
 
 let triggerPhrases = $state<TriggerPhrase[]>([]);
 let customRules = $state<CustomRule[]>([]);
@@ -101,12 +107,7 @@ terminationSignals: { triggers: convTermTriggers, regex: convTermRegex },
 promptRules: convPromptRules
 })
 );
-let responseTemplatesJson = $derived(JSON.stringify(responseTemplates));
-let responseTemplateKeys = $derived(Object.keys(responseTemplates));
-
-function sectionsFromStructure(structure: string): string[] {
-return [...structure.matchAll(/\{([^}]+)\}/g)].map((m) => m[1]);
-}
+let enabledTemplateKeysJson = $derived(JSON.stringify(enabledTemplateKeys));
 
 // Sync state when template changes
 $effect(() => {
@@ -127,24 +128,18 @@ useOdOverride = !!(t.output_discipline as string);
 try {
 const cr = JSON.parse((t.conversation_rules as string) || '{}');
 convNameTriggers = cr?.nameDetection?.triggers ?? [];
-convNameRegex = cr?.nameDetection?.regex ?? '';
 convTermTriggers = cr?.terminationSignals?.triggers ?? [];
-convTermRegex = cr?.terminationSignals?.regex ?? '';
 convPromptRules = cr?.promptRules ?? [];
 } catch {
 convNameTriggers = [];
-convNameRegex = '';
 convTermTriggers = [];
-convTermRegex = '';
 convPromptRules = [];
 }
 
 try {
-responseTemplates = JSON.parse(
-(t.response_templates as string) || '{}'
-) as ResponseTemplates;
+enabledTemplateKeys = JSON.parse((t.response_templates as string) || '[]') as string[];
 } catch {
-responseTemplates = {};
+enabledTemplateKeys = [];
 }
 
 try {
@@ -224,45 +219,20 @@ condition: s.condition as string
 }
 });
 
-// ── Response template helpers ───────────────────────────────────────────────
 
-function addResponseTemplate() {
-const key = `template_${Date.now()}`;
-responseTemplates = { ...responseTemplates, [key]: { structure: '', sections: [] } };
-}
-
-function removeResponseTemplate(key: string) {
-const copy = { ...responseTemplates };
-delete copy[key];
-responseTemplates = copy;
-}
-
-function updateResponseTemplateKey(oldKey: string, newKey: string) {
-if (oldKey === newKey || !newKey.trim()) return;
-const copy: ResponseTemplates = {};
-for (const k of Object.keys(responseTemplates)) {
-copy[k === oldKey ? newKey.trim() : k] = responseTemplates[k];
-}
-responseTemplates = copy;
-}
-
-function updateResponseTemplateStructure(key: string, structure: string) {
-responseTemplates = {
-...responseTemplates,
-[key]: { ...responseTemplates[key], structure, sections: sectionsFromStructure(structure) }
-};
-}
 
 // ── Conversation helpers ────────────────────────────────────────────────────
 
-function addConvNameTrigger() {
-convNameTriggers = [...convNameTriggers, ''];
+function addConvNameTrigger(value: string) {
+const v = value.trim();
+if (v && !convNameTriggers.includes(v)) convNameTriggers = [...convNameTriggers, v];
 }
 function removeConvNameTrigger(i: number) {
 convNameTriggers = convNameTriggers.filter((_, idx) => idx !== i);
 }
-function addConvTermTrigger() {
-convTermTriggers = [...convTermTriggers, ''];
+function addConvTermTrigger(value: string) {
+const v = value.trim();
+if (v && !convTermTriggers.includes(v)) convTermTriggers = [...convTermTriggers, v];
 }
 function removeConvTermTrigger(i: number) {
 convTermTriggers = convTermTriggers.filter((_, idx) => idx !== i);
@@ -350,12 +320,11 @@ parts.push('## CONVERSATION SETTINGS');
 parts.push(crSummary.length > 0 ? crSummary.join('\n') : '[using file default]');
 parts.push('');
 
-const rtKeys = Object.keys(responseTemplates);
 parts.push('## RESPONSE TEMPLATES');
 parts.push(
-rtKeys.length > 0
-? `${rtKeys.length} template(s): ${rtKeys.join(', ')}`
-: '[using file default]'
+enabledTemplateKeys.length > 0
+? `${enabledTemplateKeys.length} template(s) enabled: ${enabledTemplateKeys.join(', ')}`
+: '[all templates enabled]'
 );
 parts.push('');
 
@@ -613,88 +582,110 @@ onclick={() => (selectedTemplateId = t.id)}
 <div class="mb-6">
 <span class="label-caps block">Name Detection</span>
 <p class="mt-0.5 mb-3 text-xs text-slate-500">Phrases that signal the user is addressing the bot by name.</p>
-<div class="mb-3 flex flex-wrap gap-2">
-{#each convNameTriggers as _t, i (i)}
-<div class="flex items-center gap-1 rounded border border-slate-700/60 bg-slate-900/50 px-2 py-1">
-<input type="text" bind:value={convNameTriggers[i]} readonly={isReadonly} class="w-24 bg-transparent font-mono text-xs text-slate-300 outline-none {isReadonly ? 'cursor-default' : ''}" />
+<div class="flex flex-wrap items-center gap-2">
+{#each convNameTriggers as trigger, i (i)}
+<span class="flex items-center gap-1 rounded border border-slate-700/60 bg-slate-900/50 px-2.5 py-1">
+<span class="font-mono text-xs text-slate-300">{trigger}</span>
 {#if !isReadonly}
-<button type="button" onclick={() => removeConvNameTrigger(i)} class="ml-0.5 text-slate-500 transition-colors hover:text-rose-400" aria-label="Remove">
+<button type="button" onclick={() => removeConvNameTrigger(i)} class="ml-1 text-slate-500 transition-colors hover:text-rose-400" aria-label="Remove">
 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
 </button>
 {/if}
-</div>
+</span>
 {/each}
 {#if !isReadonly}
-<button type="button" onclick={addConvNameTrigger} class="rounded border border-dashed border-slate-700 px-2 py-1 text-label-xs font-bold tracking-widest text-slate-500 uppercase transition-colors hover:border-cyan-500/50 hover:text-cyan-400">+ Add</button>
+<input
+type="text"
+bind:value={convNameInput}
+placeholder="Type and press Enter…"
+class="min-w-32 flex-1 rounded border border-dashed border-slate-700 bg-transparent px-2.5 py-1 font-mono text-xs text-slate-300 placeholder:text-slate-600 outline-none transition-colors hover:border-slate-600 focus:border-cyan-500/60"
+onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addConvNameTrigger(convNameInput); convNameInput = ''; } }}
+/>
 {/if}
 </div>
-<div>
-<label class="label-caps mb-1 block">Regex Pattern</label>
-<input type="text" bind:value={convNameRegex} readonly={isReadonly} placeholder="e.g. /bot|moviebot/i" class="input-dark w-full font-mono text-sm {isReadonly ? 'cursor-default opacity-60' : ''}" />
+{#if convNameRegex}
+<div class="mt-3">
+<span class="label-caps mb-1 block text-slate-500">Generated Regex</span>
+<div class="select-all rounded border border-slate-800/60 bg-slate-950/50 px-3 py-2 font-mono text-xs text-slate-500">{convNameRegex}</div>
 </div>
+{/if}
 </div>
 
 <!-- Termination Signals -->
 <div class="border-t border-slate-800/50 pt-6">
 <span class="label-caps block">Termination Signals</span>
 <p class="mt-0.5 mb-3 text-xs text-slate-500">Phrases that end an active conversation session.</p>
-<div class="mb-3 flex flex-wrap gap-2">
-{#each convTermTriggers as _t, i (i)}
-<div class="flex items-center gap-1 rounded border border-slate-700/60 bg-slate-900/50 px-2 py-1">
-<input type="text" bind:value={convTermTriggers[i]} readonly={isReadonly} class="w-24 bg-transparent font-mono text-xs text-slate-300 outline-none {isReadonly ? 'cursor-default' : ''}" />
+<div class="flex flex-wrap items-center gap-2">
+{#each convTermTriggers as trigger, i (i)}
+<span class="flex items-center gap-1 rounded border border-slate-700/60 bg-slate-900/50 px-2.5 py-1">
+<span class="font-mono text-xs text-slate-300">{trigger}</span>
 {#if !isReadonly}
-<button type="button" onclick={() => removeConvTermTrigger(i)} class="ml-0.5 text-slate-500 transition-colors hover:text-rose-400" aria-label="Remove">
+<button type="button" onclick={() => removeConvTermTrigger(i)} class="ml-1 text-slate-500 transition-colors hover:text-rose-400" aria-label="Remove">
 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
 </button>
 {/if}
-</div>
+</span>
 {/each}
 {#if !isReadonly}
-<button type="button" onclick={addConvTermTrigger} class="rounded border border-dashed border-slate-700 px-2 py-1 text-label-xs font-bold tracking-widest text-slate-500 uppercase transition-colors hover:border-cyan-500/50 hover:text-cyan-400">+ Add</button>
+<input
+type="text"
+bind:value={convTermInput}
+placeholder="Type and press Enter…"
+class="min-w-32 flex-1 rounded border border-dashed border-slate-700 bg-transparent px-2.5 py-1 font-mono text-xs text-slate-300 placeholder:text-slate-600 outline-none transition-colors hover:border-slate-600 focus:border-cyan-500/60"
+onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addConvTermTrigger(convTermInput); convTermInput = ''; } }}
+/>
 {/if}
 </div>
-<div>
-<label class="label-caps mb-1 block">Regex Pattern</label>
-<input type="text" bind:value={convTermRegex} readonly={isReadonly} placeholder="e.g. /bye|goodbye|stop/i" class="input-dark w-full font-mono text-sm {isReadonly ? 'cursor-default opacity-60' : ''}" />
+{#if convTermRegex}
+<div class="mt-3">
+<span class="label-caps mb-1 block text-slate-500">Generated Regex</span>
+<div class="select-all rounded border border-slate-800/60 bg-slate-950/50 px-3 py-2 font-mono text-xs text-slate-500">{convTermRegex}</div>
 </div>
+{/if}
 </div>
 </SectionCard>
 
 <!-- ── 4. Response Templates ───────────────────────────────────────── -->
 <SectionCard title="Response Templates">
-<p class="mb-4 text-xs text-slate-500">Named templates that define response structure. Use <code class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400">{'{token}'}</code> placeholders in the structure — sections are auto-detected.</p>
-<input type="hidden" name="response_templates" value={responseTemplatesJson} />
-<div class="space-y-3">
-{#each responseTemplateKeys as key (key)}
-{@const tpl = responseTemplates[key]}
-<div class="rounded border border-slate-800/60 bg-slate-900/40 p-3">
-<div class="mb-2 flex items-center gap-2">
-<input type="text" value={key} readonly={isReadonly} onchange={(e) => updateResponseTemplateKey(key, (e.currentTarget as HTMLInputElement).value)} class="input-dark flex-1 font-mono text-sm {isReadonly ? 'cursor-default opacity-60' : ''}" placeholder="template_id" />
-{#if !isReadonly}
-<button type="button" onclick={() => removeResponseTemplate(key)} class="shrink-0 rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400" aria-label="Remove template">
-<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-</button>
+<p class="mb-4 text-xs text-slate-500">
+Select which Discord embed templates are active for this profile. Leave all unchecked to enable every template.
+</p>
+<input type="hidden" name="response_templates" value={enabledTemplateKeysJson} />
+{#if (data.discordTemplates as RecordModel[]).length === 0}
+<p class="text-xs italic text-slate-500">No Discord templates found. <a href="/discord-templates" class="text-cyan-400 hover:text-cyan-300 underline">Create one →</a></p>
+{:else}
+<div class="space-y-2">
+{#each data.discordTemplates as dt (dt.id)}
+{@const rec = dt as RecordModel}
+{@const isEnabled = enabledTemplateKeys.includes(String(rec.template_key))}
+<label class="flex cursor-pointer items-center gap-3 rounded border border-slate-800/60 bg-slate-900/40 px-3 py-2.5 transition-colors hover:border-slate-700 {isReadonly ? 'cursor-default' : ''}">
+<input
+type="checkbox"
+class="h-3.5 w-3.5 rounded border-slate-600 bg-slate-800 accent-cyan-500"
+checked={isEnabled}
+disabled={isReadonly}
+onchange={() => {
+const key = String(rec.template_key);
+if (enabledTemplateKeys.includes(key)) {
+enabledTemplateKeys = enabledTemplateKeys.filter((k) => k !== key);
+} else {
+enabledTemplateKeys = [...enabledTemplateKeys, key];
+}
+}}
+/>
+<div class="flex-1 min-w-0">
+<span class="block text-sm font-medium text-slate-200">{rec.name}</span>
+{#if rec.description}
+<span class="block truncate text-xs text-slate-500">{rec.description}</span>
 {/if}
 </div>
-<div class="mb-2">
-<label class="label-caps mb-1 block">Structure</label>
-<textarea rows="3" value={tpl.structure} readonly={isReadonly} oninput={(e) => updateResponseTemplateStructure(key, (e.currentTarget as HTMLTextAreaElement).value)} class="input-dark h-auto w-full resize-y font-mono text-sm {isReadonly ? 'cursor-default opacity-70' : ''}" placeholder="e.g. {'{intro}'} {'{body}'} {'{outro}'}"></textarea>
-</div>
-{#if tpl.sections.length > 0}
-<div>
-<span class="label-caps mb-1 block text-slate-500">Detected Sections</span>
-<div class="flex flex-wrap gap-1.5">
-{#each tpl.sections as section (section)}
-<span class="rounded bg-slate-800/80 px-2 py-0.5 font-mono text-xs text-slate-400">{'{' + section + '}'}</span>
+<span class="shrink-0 font-mono text-[10px] text-slate-600">{rec.template_key}</span>
+</label>
 {/each}
 </div>
+<div class="mt-4 border-t border-slate-800/50 pt-3">
+<a href="/discord-templates" class="text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300">Manage template designs →</a>
 </div>
-{/if}
-</div>
-{/each}
-</div>
-{#if !isReadonly}
-<button type="button" onclick={addResponseTemplate} class="mt-3 text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300">+ Add Template</button>
 {/if}
 </SectionCard>
 
@@ -1073,14 +1064,14 @@ onclick={() => (selectedTemplateId = t.id)}
 
 <div class="mb-4 border-t border-slate-800/50 pt-4">
 <p class="label-caps mb-1 text-slate-500">Response Templates</p>
-{#if responseTemplateKeys.length > 0}
+{#if enabledTemplateKeys.length > 0}
 <div class="flex flex-wrap gap-1">
-{#each responseTemplateKeys as k (k)}
+{#each enabledTemplateKeys as k (k)}
 <span class="rounded bg-slate-800/80 px-1.5 py-0.5 font-mono text-xs text-slate-400">{k}</span>
 {/each}
 </div>
 {:else}
-<p class="text-xs italic text-slate-500">None set</p>
+<p class="text-xs italic text-slate-500">All enabled</p>
 {/if}
 </div>
 

@@ -30,6 +30,7 @@ All collections include automatic `id` (string), `created` (datetime), and `upda
 | [`sm_bot_config`](#sm_bot_config) | Singleton operational settings (hot-reloadable) |
 | [`sm_instruction_sets`](#sm_instruction_sets) | Named AI personality profiles |
 | [`sm_prompt_sections`](#sm_prompt_sections) | Ordered prompt section records per profile |
+| [`sm_discord_templates`](#sm_discord_templates) | Global Discord embed template designs |
 
 ---
 
@@ -374,3 +375,34 @@ Each `sm_instruction_sets` record has zero or more associated sections. **Zero s
 > | `core_rule_new` | `session_new` | 20 | CORE RULE — new session routing |
 > | `trigger_phrases` | `always` | 30 | Full TRIGGER PHRASES block (all action types) |
 > | `response_formats` | `always` | 40 | Full RESPONSE FORMAT OPTIONS block |
+
+---
+
+## `sm_discord_templates`
+
+**Purpose:** Global Discord embed template designs. One record per named template type (e.g. Movie Lookup, Experiment Lookup). Templates are shared across all instruction set profiles. Each instruction set record's `response_templates` field stores a JSON `string[]` of enabled `template_key` values for that profile — empty array means all templates are enabled.
+
+| Field | Type | Notes |
+|---|---|---|
+| `template_key` | text | Unique machine-readable key used in `sm_instruction_sets.response_templates` (e.g. `movie-lookup`) |
+| `name` | text | Human-readable display name (e.g. "Movie Lookup") |
+| `description` | text | Optional notes shown in the admin UI |
+| `title_format` | text | Embed title format string — supports `{{movie.title}}`, `{{movie.year}}` etc. |
+| `description_format` | text (longtext) | Embed body format string |
+| `accent_color` | text | Hex color for the embed accent bar (e.g. `#0ea5e9`) |
+| `footer_text` | text | Footer line — supports `{{user}}` token |
+| `thumbnail_enabled` | bool | Show small poster thumbnail |
+| `image_enabled` | bool | Show large image in body |
+| `timestamp_enabled` | bool | Append Discord timestamp to footer |
+| `show_director` | bool | Include Director field in embed |
+| `show_actors` | bool | Include Cast field in embed |
+| `show_rating` | bool | Include Rating field in embed |
+| `show_genres` | bool | Include Genres field in embed |
+| `buttons_enabled` | bool | Show action buttons (BadMovies.co, IMDb links) |
+| `button_labels` | text | JSON string `{ badmovies: string; imdb: string }` — button label overrides. Default: `{"badmovies":"View on BadMovies.co","imdb":"IMDb Page"}` |
+
+> **How `sm_instruction_sets.response_templates` relates:**
+> - Previously stored the full JSON structure for response templates. Now stores a JSON `string[]` of enabled `template_key` values for that profile.
+> - `[]` (empty array) = all global templates are enabled for this profile.
+> - `["movie-lookup", "experiment-lookup"]` = only those two templates are active.
+> - The bot reads `sm_discord_templates` records at runtime and filters by this list.

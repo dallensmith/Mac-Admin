@@ -332,6 +332,39 @@ export interface PBWheelCleanupDeletionRecord {
   updated:             string;
 }
 
+// ─── Discord templates ────────────────────────────────────────────────────────
+
+/** A single record from the `sm_discord_templates` collection. One record per named template type. */
+export interface PBDiscordTemplateRecord {
+  id:                  string;
+  /** Unique machine key used in `sm_instruction_sets.response_templates` JSON array (e.g. 'movie-lookup'). */
+  template_key:        string;
+  /** Human-readable display name (e.g. 'Movie Lookup'). */
+  name:                string;
+  /** Optional description shown in the admin UI. */
+  description:         string;
+  /** Embed title format string. Supports `{{movie.title}}` etc. */
+  title_format:        string;
+  /** Embed description/body format string. */
+  description_format:  string;
+  /** Hex color string for the embed accent bar (e.g. '#0ea5e9'). */
+  accent_color:        string;
+  /** Footer text. Supports `{{user}}` token. */
+  footer_text:         string;
+  thumbnail_enabled:   boolean;
+  image_enabled:       boolean;
+  timestamp_enabled:   boolean;
+  show_director:       boolean;
+  show_actors:         boolean;
+  show_rating:         boolean;
+  show_genres:         boolean;
+  buttons_enabled:     boolean;
+  /** JSON string: `{ badmovies: string; imdb: string }` — button label overrides. */
+  button_labels:       string;
+  created:             string;
+  updated:             string;
+}
+
 // ─── Type guards ──────────────────────────────────────────────────────────────
 
 export function isPocketBaseWheelRecord(row: unknown): row is PocketBaseWheelRecord {
