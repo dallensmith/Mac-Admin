@@ -335,7 +335,7 @@ Settings marked **restart-required** are applied only on the next bot restart �
 | `conversation_rules` | text (longtext) | JSON string overriding `conversation-rules.json` (termination signals, name detection). **Empty = use file** |
 | `response_templates` | text (longtext) | JSON string overriding `response-templates.json` (Discord embed formatting templates). **Empty = use file** |
 | `trigger_phrases` | text (longtext) | JSON array of `{action, group?, examples[], notes?}`. **Additive** — these examples are appended to the trigger phrases section (works in both the PB-sections path and the hardcoded fallback path). **Empty = no additions** |
-| `custom_rules` | text (longtext) | JSON array of `{label, rule}` blocks injected before OUTPUT DISCIPLINE. **Empty = use file default** (`promptRules` in `conversation-rules.json`) |
+| `rules` | text (longtext) | JSON array of `{label, rule}` blocks injected before OUTPUT DISCIPLINE. **Empty = use file default** (`rules` in `default_profile.json`) |
 | `output_discipline` | text (longtext) | **Escape hatch** — fully replaces the OUTPUT DISCIPLINE section when non-empty, bypassing all `od_*` fields. **Empty = use granular `od_*` fields** |
 | `od_verbatim_rule` | text (longtext) | Plain text override for the "response is sent VERBATIM" paragraph in OUTPUT DISCIPLINE. **Empty = use seeded default** |
 | `od_banned_starters` | text (longtext) | JSON `string[]` of banned response opener phrases (e.g. `["Okay,", "Hmm,"]`). **Empty = use seeded default** |
