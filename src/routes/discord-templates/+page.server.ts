@@ -2,15 +2,17 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
 const COLLECTION = 'sm_discord_templates';
-
-const DEFAULT_BUTTON_LABELS = JSON.stringify({ badmovies: 'View on BadMovies.co', imdb: 'IMDb Page' });
+const ACTIONS_COLLECTION = 'sm_button_actions';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) redirect(302, '/login');
 
-	const templates = await locals.adminPb.collection(COLLECTION).getFullList({ sort: 'name' });
+	const [templates, buttonActions] = await Promise.all([
+		locals.adminPb.collection(COLLECTION).getFullList({ sort: 'name' }),
+		locals.adminPb.collection(ACTIONS_COLLECTION).getFullList({ sort: 'name' })
+	]);
 
-	return { templates };
+	return { templates, buttonActions };
 };
 
 export const actions: Actions = {
@@ -33,8 +35,7 @@ export const actions: Actions = {
 				show_actors: true,
 				show_rating: true,
 				show_genres: false,
-				buttons_enabled: true,
-				button_labels: DEFAULT_BUTTON_LABELS
+				buttons: '[]'
 			});
 		} catch (e: unknown) {
 			const message = e instanceof Error ? e.message : 'Unknown error';
@@ -48,11 +49,6 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const id = data.get('id');
 		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
-
-		const buttonLabels = JSON.stringify({
-			badmovies: data.get('button_label_badmovies') ?? 'View on BadMovies.co',
-			imdb: data.get('button_label_imdb') ?? 'IMDb Page'
-		});
 
 		try {
 			await locals.adminPb.collection(COLLECTION).update(id, {
@@ -70,8 +66,7 @@ export const actions: Actions = {
 				show_actors: data.get('show_actors') === 'true',
 				show_rating: data.get('show_rating') === 'true',
 				show_genres: data.get('show_genres') === 'true',
-				buttons_enabled: data.get('buttons_enabled') === 'true',
-				button_labels: buttonLabels
+				buttons: data.get('buttons') ?? '[]'
 			});
 		} catch (e: unknown) {
 			const message = e instanceof Error ? e.message : 'Unknown error';

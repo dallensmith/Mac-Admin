@@ -1,5 +1,26 @@
 <script lang="ts">
+	import type { TemplateButtonConfig } from '../../../types/pocketbase.js';
+
 	let { templateData } = $props<{ templateData: Record<string, unknown> }>();
+
+	const buttonStyleClasses: Record<string, string> = {
+		primary: 'bg-[#5865F2] hover:bg-[#4752c4]',
+		secondary: 'bg-[#4e5058] hover:bg-[#6d6f78]',
+		success: 'bg-[#248046] hover:bg-[#1a6334]',
+		danger: 'bg-[#d83c3e] hover:bg-[#a12d2f]'
+	};
+
+	let buttons = $derived((templateData.buttons as TemplateButtonConfig[] | undefined) ?? []);
+
+	// Group buttons by row number
+	let buttonRows = $derived(
+		buttons.reduce<Map<number, TemplateButtonConfig[]>>((acc, btn) => {
+			const row = btn.row ?? 0;
+			if (!acc.has(row)) acc.set(row, []);
+			acc.get(row)!.push(btn);
+			return acc;
+		}, new Map())
+	);
 </script>
 
 <!-- Mock Discord Message Layout -->
@@ -110,53 +131,26 @@
 				</div>
 			</div>
 
-			<!-- Mock Interactive Buttons -->
-			{#if templateData.buttonsEnabled}
-				<div class="mt-2 flex flex-wrap gap-2">
-					{#if templateData.buttonLabels.badmovies}
-						<button
-							class="flex h-8 items-center gap-2 rounded bg-[#4e5058] px-4 text-sm font-medium text-white transition-colors hover:bg-[#6d6f78]"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="lucide lucide-external-link"
-								><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path
-									d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-								/></svg
-							>
-							{templateData.buttonLabels.badmovies}
-						</button>
-					{/if}
-					{#if templateData.buttonLabels.imdb}
-						<button
-							class="flex h-8 items-center gap-2 rounded bg-[#4e5058] px-4 text-sm font-medium text-white transition-colors hover:bg-[#6d6f78]"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="lucide lucide-external-link"
-								><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path
-									d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-								/></svg
-							>
-							{templateData.buttonLabels.imdb}
-						</button>
-					{/if}
+			<!-- Buttons (grouped by row) -->
+			{#if buttons.length > 0}
+				<div class="mt-2 flex flex-col gap-1.5">
+					{#each [...buttonRows.entries()].sort(([a], [b]) => a - b) as [, rowBtns]}
+						<div class="flex flex-wrap gap-2">
+							{#each rowBtns as btn}
+								<button
+									type="button"
+									class="flex h-8 items-center gap-1.5 rounded px-4 text-sm font-medium text-white transition-colors {buttonStyleClasses[btn.style] ?? buttonStyleClasses.secondary}"
+								>
+									{#if btn.type === 'action'}
+										<span class="text-xs opacity-75">⚡</span>
+									{:else}
+										<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+									{/if}
+									{btn.emoji ? `${btn.emoji} ` : ''}{btn.label || '(no label)'}
+								</button>
+							{/each}
+						</div>
+					{/each}
 				</div>
 			{/if}
 		</div>

@@ -92,9 +92,5 @@ export const defaultTemplateData = {
 	showActors: true,
 	showRating: true,
 	showGenres: false,
-	buttonLabels: {
-		badmovies: 'View on BadMovies.co',
-		imdb: 'IMDb Page'
-	},
-	buttonsEnabled: true
+	buttons: []
 };

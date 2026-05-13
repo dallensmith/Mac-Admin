@@ -332,6 +332,50 @@ export interface PBWheelCleanupDeletionRecord {
   updated:             string;
 }
 
+// ─── Button interaction templates ───────────────────────────────────────────
+
+/**
+ * A single button entry in `sm_discord_templates.buttons` (stored as a JSON array).
+ * `type` determines which conditional fields apply:
+ * - `link`   → requires `url` (supports `{{token}}` substitution)
+ * - `action` → requires `action_key`; optionally `ctx_template`
+ */
+export interface TemplateButtonConfig {
+  type:           'link' | 'action';
+  label:          string;
+  /** Discord button style. `link` type always renders as a link-style button. */
+  style:          'primary' | 'secondary' | 'success' | 'danger';
+  emoji?:         string;
+  /** Row index 0–4. Buttons with the same row are grouped in one action row. */
+  row:            number;
+  /** Token key — button is omitted if the resolved token value is empty/missing. */
+  condition?:     string;
+  /** Link button: URL string. Supports `{{token}}` substitution. */
+  url?:           string;
+  /** Action button: references `sm_button_actions.action_key`. */
+  action_key?:    string;
+  /** Action button: token-substituted value encoded in the Discord `customId`. */
+  ctx_template?:  string;
+}
+
+/** A single record from the `sm_button_actions` collection. */
+export interface PBButtonActionRecord {
+  id:                     string;
+  /** Unique key referenced by `TemplateButtonConfig.action_key`. */
+  action_key:             string;
+  name:                   string;
+  description:            string;
+  /** The `AIAction.type` value to dispatch (e.g. `find_experiment_by_movie`). */
+  action_type:            string;
+  /** JSON object template. Use `{{button.ctx}}` as a placeholder. */
+  params_template:        string;
+  /** Optional `template_key` override for the bot response. Empty = router default. */
+  response_template_key:  string;
+  enabled:                boolean;
+  created:                string;
+  updated:                string;
+}
+
 // ─── Discord templates ────────────────────────────────────────────────────────
 
 /** A single record from the `sm_discord_templates` collection. One record per named template type. */
@@ -358,9 +402,8 @@ export interface PBDiscordTemplateRecord {
   show_actors:         boolean;
   show_rating:         boolean;
   show_genres:         boolean;
-  buttons_enabled:     boolean;
-  /** JSON string: `{ badmovies: string; imdb: string }` — button label overrides. */
-  button_labels:       string;
+  /** JSON-serialised `TemplateButtonConfig[]`. Empty array = no buttons. */
+  buttons:             string;
   created:             string;
   updated:             string;
 }

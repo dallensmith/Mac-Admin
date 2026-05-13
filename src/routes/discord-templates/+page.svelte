@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { RecordModel } from 'pocketbase';
+	import type { TemplateButtonConfig } from '../../types/pocketbase.js';
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import DiscordTemplatePreview from '$lib/components/ui/DiscordTemplatePreview.svelte';
@@ -48,9 +49,8 @@
 	let showActors = $state(defaultTemplateData.showActors);
 	let showRating = $state(defaultTemplateData.showRating);
 	let showGenres = $state(defaultTemplateData.showGenres);
-	let buttonsEnabled = $state(defaultTemplateData.buttonsEnabled);
-	let buttonLabelBadmovies = $state(defaultTemplateData.buttonLabels.badmovies);
-	let buttonLabelImdb = $state(defaultTemplateData.buttonLabels.imdb);
+	let buttons = $state<TemplateButtonConfig[]>([]);
+	let expandedButtonIdx = $state<number | null>(null);
 
 	// Sync editing fields when the selected template changes
 	$effect(() => {
@@ -70,16 +70,11 @@
 		showActors = Boolean(t.show_actors ?? defaultTemplateData.showActors);
 		showRating = Boolean(t.show_rating ?? defaultTemplateData.showRating);
 		showGenres = Boolean(t.show_genres ?? defaultTemplateData.showGenres);
-		buttonsEnabled = Boolean(t.buttons_enabled ?? defaultTemplateData.buttonsEnabled);
+		expandedButtonIdx = null;
 		try {
-			const labels = JSON.parse(String(t.button_labels || '{}'));
-			buttonLabelBadmovies = String(
-				labels.badmovies ?? defaultTemplateData.buttonLabels.badmovies
-			);
-			buttonLabelImdb = String(labels.imdb ?? defaultTemplateData.buttonLabels.imdb);
+			buttons = JSON.parse(String(t.buttons || '[]'));
 		} catch {
-			buttonLabelBadmovies = defaultTemplateData.buttonLabels.badmovies;
-			buttonLabelImdb = defaultTemplateData.buttonLabels.imdb;
+			buttons = [];
 		}
 	});
 
@@ -96,9 +91,20 @@
 		showActors,
 		showRating,
 		showGenres,
-		buttonsEnabled,
-		buttonLabels: { badmovies: buttonLabelBadmovies, imdb: buttonLabelImdb }
+		buttons
 	});
+
+	// ── Button builder helpers ─────────────────────────────────────────────────
+	function addButton() {
+		buttons.push({ type: 'link', label: 'New Button', style: 'secondary', row: 0 });
+		expandedButtonIdx = buttons.length - 1;
+	}
+
+	function removeButton(idx: number) {
+		buttons.splice(idx, 1);
+		if (expandedButtonIdx === idx) expandedButtonIdx = null;
+		else if (expandedButtonIdx !== null && expandedButtonIdx > idx) expandedButtonIdx--;
+	}
 </script>
 
 <!-- Hoisted forms (cannot be nested inside the editor form) -->
@@ -162,8 +168,7 @@
 				<input type="hidden" name="show_actors" value={String(showActors)} />
 				<input type="hidden" name="show_rating" value={String(showRating)} />
 				<input type="hidden" name="show_genres" value={String(showGenres)} />
-				<input type="hidden" name="buttons_enabled" value={String(buttonsEnabled)} />
-
+				<input type="hidden" name="buttons" value={JSON.stringify(buttons)} />
 				<div class="space-y-6">
 					<SectionCard title="Template Info">
 						<div class="space-y-4">
@@ -300,58 +305,134 @@
 								checked={showGenres}
 								onChange={(val) => (showGenres = val)}
 							/>
-							<TemplateFieldToggle
-								id="toggle-buttons"
-								label="Show Action Buttons"
-								checked={buttonsEnabled}
-								onChange={(val) => (buttonsEnabled = val)}
-							/>
-						</div>
-					</SectionCard>
-
-					{#if buttonsEnabled}
-						<SectionCard title="Button Labels">
-							<div class="grid gap-4 sm:grid-cols-2">
-								<div>
-									<label for="btnBadmovies" class="label-caps">BadMovies.co Button</label>
-									<input
-										id="btnBadmovies"
-										name="button_label_badmovies"
-										type="text"
-										bind:value={buttonLabelBadmovies}
-										class="input-dark"
-									/>
-								</div>
-								<div>
-									<label for="btnImdb" class="label-caps">IMDb Button</label>
-									<input
-										id="btnImdb"
-										name="button_label_imdb"
-										type="text"
-										bind:value={buttonLabelImdb}
-										class="input-dark"
-									/>
-								</div>
-							</div>
-						</SectionCard>
-					{/if}
-
-					<div class="flex items-center justify-between gap-3">
-						<button type="submit" form="deleteForm" class="btn-ghost">Delete Template</button>
-						<button type="submit" class="btn-cyan">Save Template</button>
 					</div>
-				</div>
-			</form>
+				</SectionCard>
 
-			<SectionCard title="Variables & References">
-				<div class="grid gap-6 md:grid-cols-2">
-					<TemplateVariableList title="Movie Variables" variables={mockVariables['Movie Lookup']} />
-					<TemplateVariableList
-						title="Experiment Variables"
-						variables={mockVariables['Experiment Lookup']}
-					/>
+				<SectionCard title="Buttons">
+					{#if buttons.length === 0}
+						<p class="py-1 text-xs text-slate-500">No buttons configured. Buttons appear beneath the embed.</p>
+					{:else}
+						<div class="space-y-2">
+							{#each buttons as btn, idx (idx)}
+								{@const isExpanded = expandedButtonIdx === idx}
+								<div class="rounded border {isExpanded ? 'border-cyan-500/30 bg-slate-900/60' : 'border-slate-800/60 bg-slate-900/40'} transition-all duration-200">
+									<!-- Collapsed row -->
+									<div
+										role="button"
+										tabindex="0"
+										class="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5"
+										onclick={() => (expandedButtonIdx = isExpanded ? null : idx)}
+										onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') expandedButtonIdx = isExpanded ? null : idx; }}
+									>
+										<span class="shrink-0 rounded px-1.5 py-0.5 font-bold uppercase {btn.type === 'link' ? 'bg-sky-500/15 text-sky-400' : 'bg-fuchsia-500/15 text-fuchsia-400'}" style="font-size: var(--text-label)">{btn.type}</span>
+										<span class="shrink-0 rounded px-1.5 py-0.5 font-bold uppercase {btn.style === 'primary' ? 'bg-indigo-500/20 text-indigo-300' : btn.style === 'success' ? 'bg-emerald-500/20 text-emerald-400' : btn.style === 'danger' ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-700/50 text-slate-400'}" style="font-size: var(--text-label)">{btn.style}</span>
+										<span class="flex-1 truncate text-sm text-slate-200">{btn.emoji ? `${btn.emoji} ` : ''}{btn.label || '(no label)'}</span>
+										<span class="shrink-0 text-xs text-slate-500">row {btn.row}</span>
+										<button
+											type="button"
+											class="ml-1 shrink-0 rounded p-0.5 text-slate-600 transition-colors hover:text-rose-400"
+											onclick={(e) => { e.stopPropagation(); removeButton(idx); }}
+											aria-label="Remove button"
+										>
+											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+											{@html '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'}
+										</button>
+									</div>
+									<!-- Expanded editor -->
+									{#if isExpanded}
+										<div class="space-y-3 border-t border-slate-800/60 p-3">
+											<div class="grid gap-3 sm:grid-cols-3">
+												<div>
+													<label for="btn-type-{idx}" class="label-caps">Type</label>
+													<select id="btn-type-{idx}" bind:value={buttons[idx].type} class="input-dark">
+														<option value="link">Link</option>
+														<option value="action">Action</option>
+													</select>
+												</div>
+												<div>
+													<label for="btn-style-{idx}" class="label-caps">Style</label>
+													<select id="btn-style-{idx}" bind:value={buttons[idx].style} class="input-dark">
+														<option value="primary">Primary</option>
+														<option value="secondary">Secondary</option>
+														<option value="success">Success</option>
+														<option value="danger">Danger</option>
+													</select>
+												</div>
+												<div>
+													<label for="btn-row-{idx}" class="label-caps">Row <span class="normal-case text-slate-500">(0–4)</span></label>
+													<input id="btn-row-{idx}" type="number" min="0" max="4" class="input-dark" bind:value={buttons[idx].row} />
+												</div>
+											</div>
+											<div class="grid gap-3 sm:grid-cols-2">
+												<div>
+													<label for="btn-label-{idx}" class="label-caps">Label</label>
+													<input id="btn-label-{idx}" type="text" class="input-dark" bind:value={buttons[idx].label} />
+												</div>
+												<div>
+													<label for="btn-emoji-{idx}" class="label-caps">Emoji <span class="normal-case text-slate-500">(optional)</span></label>
+													<input id="btn-emoji-{idx}" type="text" class="input-dark" placeholder="🎬" bind:value={buttons[idx].emoji} />
+												</div>
+											</div>
+											<div>
+												<label for="btn-condition-{idx}" class="label-caps">Condition <span class="normal-case text-slate-500">(optional token key)</span></label>
+												<input id="btn-condition-{idx}" type="text" class="input-dark font-mono text-xs" placeholder="movie.badmoviesUrl" bind:value={buttons[idx].condition} />
+												<p class="mt-1.5 text-xs text-slate-500">Button is omitted if this token resolves to an empty string.</p>
+											</div>
+											{#if btn.type === 'link'}
+												<div>
+													<label for="btn-url-{idx}" class="label-caps">URL</label>
+													<input id="btn-url-{idx}" type="text" class="input-dark font-mono text-xs" placeholder="&#123;&#123;movie.badmoviesUrl&#125;&#125;" bind:value={buttons[idx].url} />
+												</div>
+											{:else}
+												<div class="grid gap-3 sm:grid-cols-2">
+													<div>
+														<label for="btn-actionkey-{idx}" class="label-caps">Action Key</label>
+														{#if data.buttonActions.length > 0}
+															<select id="btn-actionkey-{idx}" class="input-dark font-mono text-xs" bind:value={buttons[idx].action_key}>
+																<option value="">— select action —</option>
+																{#each data.buttonActions as action (action.id)}
+																	<option value={action.action_key}>{action.name}</option>
+																{/each}
+															</select>
+														{:else}
+															<p class="mt-2 text-xs italic text-slate-500">No actions defined yet. Create one on the <a href="/button-actions" class="text-cyan-400 hover:underline">Button Actions</a> page.</p>
+														{/if}
+													</div>
+													<div>
+														<label for="btn-ctx-{idx}" class="label-caps">Context Template</label>
+														<input id="btn-ctx-{idx}" type="text" class="input-dark font-mono text-xs" placeholder="&#123;&#123;movie.title&#125;&#125;" bind:value={buttons[idx].ctx_template} />
+													</div>
+												</div>
+											{/if}
+										</div>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					{/if}
+					<div class="mt-4 border-t border-slate-800/60 pt-4">
+						<button type="button" class="btn-cyan w-full text-sm" onclick={addButton}>
+							+ Add Button
+						</button>
+					</div>
+				</SectionCard>
+
+				<div class="flex items-center justify-between gap-3">
+					<button type="submit" form="deleteForm" class="btn-ghost">Delete Template</button>
+					<button type="submit" class="btn-cyan">Save Template</button>
 				</div>
-			</SectionCard>
+			</div>
+		</form>
+
+		<SectionCard title="Variables & References">
+			<div class="grid gap-6 md:grid-cols-2">
+				<TemplateVariableList title="Movie Variables" variables={mockVariables['Movie Lookup']} />
+				<TemplateVariableList
+					title="Experiment Variables"
+					variables={mockVariables['Experiment Lookup']}
+				/>
+			</div>
+		</SectionCard>
 		{:else}
 			<div
 				class="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-700 py-16 text-center"
