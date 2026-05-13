@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 import { enhance } from '$app/forms';
 import type { RecordModel } from 'pocketbase';
 import PageHeader from '$lib/components/ui/PageHeader.svelte';
@@ -17,7 +17,6 @@ let selectedTemplate = $derived<RecordModel>(
 (data.templates[0] as RecordModel)
 );
 
-// Auto-fix selectedTemplateId if the selected template was deleted
 $effect(() => {
 if (
 (data.templates as RecordModel[]).length > 0 &&
@@ -36,25 +35,19 @@ return 'inactive';
 let isDefaultProfile = $derived((selectedTemplate as RecordModel)?.is_default === true);
 let isReadonly = $derived(isDefaultProfile);
 
-// ── Instruction file tabs ───────────────────────────────────────────────────
+// ── Personality tabs ────────────────────────────────────────────────────────
 
-const tabs = [
-{ key: 'system.md', field: 'system' },
-{ key: 'behavior.md', field: 'behavior' },
-{ key: 'resources.md', field: 'resources' },
-{ key: 'conversation-rules.json', field: 'conversation_rules' },
-{ key: 'response-templates.json', field: 'response_templates' }
-] as const;
-
-type TabKey = (typeof tabs)[number]['key'];
-let activeTab = $state<TabKey>('system.md');
+let personalityTab = $state<'system' | 'behavior' | 'resources'>('system');
 
 // ── Structured field types ──────────────────────────────────────────────────
 
 type TriggerPhrase = { action: string; group: string; examples: string; notes: string };
 type CustomRule = { label: string; rule: string };
+type PromptRule = { label: string; rule: string };
 type OdExample = { wrong: string; right: string };
 type OdExtraRule = { label: string; rule: string };
+type ResponseTemplate = { structure: string; sections: string[] };
+type ResponseTemplates = Record<string, ResponseTemplate>;
 
 // ── Editable state ──────────────────────────────────────────────────────────
 
@@ -64,12 +57,17 @@ description: '',
 system: '',
 behavior: '',
 resources: '',
-conversation_rules: '',
-response_templates: '',
 output_discipline: '',
 od_verbatim_rule: '',
 addendum: ''
 });
+
+let convNameTriggers = $state<string[]>([]);
+let convNameRegex = $state('');
+let convTermTriggers = $state<string[]>([]);
+let convTermRegex = $state('');
+let convPromptRules = $state<PromptRule[]>([]);
+let responseTemplates = $state<ResponseTemplates>({});
 
 let triggerPhrases = $state<TriggerPhrase[]>([]);
 let customRules = $state<CustomRule[]>([]);
@@ -78,7 +76,7 @@ let odExamples = $state<OdExample[]>([]);
 let odExtraRules = $state<OdExtraRule[]>([]);
 let useOdOverride = $state(false);
 
-// Derived JSON strings for hidden inputs
+// Derived JSON for hidden inputs
 let triggerPhrasesJson = $derived(
 JSON.stringify(
 triggerPhrases.map((tp) => ({
@@ -96,6 +94,19 @@ let customRulesJson = $derived(JSON.stringify(customRules));
 let odBannedStartersJson = $derived(JSON.stringify(odBannedStarters));
 let odExamplesJson = $derived(JSON.stringify(odExamples));
 let odExtraRulesJson = $derived(JSON.stringify(odExtraRules));
+let convRulesJson = $derived(
+JSON.stringify({
+nameDetection: { triggers: convNameTriggers, regex: convNameRegex },
+terminationSignals: { triggers: convTermTriggers, regex: convTermRegex },
+promptRules: convPromptRules
+})
+);
+let responseTemplatesJson = $derived(JSON.stringify(responseTemplates));
+let responseTemplateKeys = $derived(Object.keys(responseTemplates));
+
+function sectionsFromStructure(structure: string): string[] {
+return [...structure.matchAll(/\{([^}]+)\}/g)].map((m) => m[1]);
+}
 
 // Sync state when template changes
 $effect(() => {
@@ -107,13 +118,35 @@ description: t.description ?? '',
 system: t.system ?? '',
 behavior: t.behavior ?? '',
 resources: t.resources ?? '',
-conversation_rules: t.conversation_rules ?? '',
-response_templates: t.response_templates ?? '',
 output_discipline: t.output_discipline ?? '',
 od_verbatim_rule: t.od_verbatim_rule ?? '',
 addendum: t.addendum ?? ''
 };
 useOdOverride = !!(t.output_discipline as string);
+
+try {
+const cr = JSON.parse((t.conversation_rules as string) || '{}');
+convNameTriggers = cr?.nameDetection?.triggers ?? [];
+convNameRegex = cr?.nameDetection?.regex ?? '';
+convTermTriggers = cr?.terminationSignals?.triggers ?? [];
+convTermRegex = cr?.terminationSignals?.regex ?? '';
+convPromptRules = cr?.promptRules ?? [];
+} catch {
+convNameTriggers = [];
+convNameRegex = '';
+convTermTriggers = [];
+convTermRegex = '';
+convPromptRules = [];
+}
+
+try {
+responseTemplates = JSON.parse(
+(t.response_templates as string) || '{}'
+) as ResponseTemplates;
+} catch {
+responseTemplates = {};
+}
+
 try {
 const rawTriggers = JSON.parse((t.trigger_phrases as string) || '[]') as Array<{
 action: string;
@@ -130,6 +163,7 @@ notes: tp.notes ?? ''
 } catch {
 triggerPhrases = [];
 }
+
 try {
 customRules = JSON.parse((t.custom_rules as string) || '[]') as CustomRule[];
 } catch {
@@ -160,13 +194,11 @@ let templateSections = $derived(
 .sort((a, b) => (a.order as number) - (b.order as number))
 );
 
-// Inline section editing: map of section id → expanded boolean
 let expandedSections = $state<Record<string, boolean>>({});
 function toggleSection(id: string) {
 expandedSections[id] = !expandedSections[id];
 }
 
-// Track local section edits
 type SectionEdit = {
 section_id: string;
 label: string;
@@ -191,6 +223,89 @@ condition: s.condition as string
 }
 }
 });
+
+// ── Response template helpers ───────────────────────────────────────────────
+
+function addResponseTemplate() {
+const key = `template_${Date.now()}`;
+responseTemplates = { ...responseTemplates, [key]: { structure: '', sections: [] } };
+}
+
+function removeResponseTemplate(key: string) {
+const copy = { ...responseTemplates };
+delete copy[key];
+responseTemplates = copy;
+}
+
+function updateResponseTemplateKey(oldKey: string, newKey: string) {
+if (oldKey === newKey || !newKey.trim()) return;
+const copy: ResponseTemplates = {};
+for (const k of Object.keys(responseTemplates)) {
+copy[k === oldKey ? newKey.trim() : k] = responseTemplates[k];
+}
+responseTemplates = copy;
+}
+
+function updateResponseTemplateStructure(key: string, structure: string) {
+responseTemplates = {
+...responseTemplates,
+[key]: { ...responseTemplates[key], structure, sections: sectionsFromStructure(structure) }
+};
+}
+
+// ── Conversation helpers ────────────────────────────────────────────────────
+
+function addConvNameTrigger() {
+convNameTriggers = [...convNameTriggers, ''];
+}
+function removeConvNameTrigger(i: number) {
+convNameTriggers = convNameTriggers.filter((_, idx) => idx !== i);
+}
+function addConvTermTrigger() {
+convTermTriggers = [...convTermTriggers, ''];
+}
+function removeConvTermTrigger(i: number) {
+convTermTriggers = convTermTriggers.filter((_, idx) => idx !== i);
+}
+function addConvPromptRule() {
+convPromptRules = [...convPromptRules, { label: '', rule: '' }];
+}
+function removeConvPromptRule(i: number) {
+convPromptRules = convPromptRules.filter((_, idx) => idx !== i);
+}
+
+// ── Field helpers ───────────────────────────────────────────────────────────
+
+function addRule() {
+customRules = [...customRules, { label: '', rule: '' }];
+}
+function removeRule(i: number) {
+customRules = customRules.filter((_, idx) => idx !== i);
+}
+function addTrigger() {
+triggerPhrases = [...triggerPhrases, { action: '', group: '', examples: '', notes: '' }];
+}
+function removeTrigger(i: number) {
+triggerPhrases = triggerPhrases.filter((_, idx) => idx !== i);
+}
+function addBannedStarter() {
+odBannedStarters = [...odBannedStarters, ''];
+}
+function removeBannedStarter(i: number) {
+odBannedStarters = odBannedStarters.filter((_, idx) => idx !== i);
+}
+function addOdExample() {
+odExamples = [...odExamples, { wrong: '', right: '' }];
+}
+function removeOdExample(i: number) {
+odExamples = odExamples.filter((_, idx) => idx !== i);
+}
+function addOdExtraRule() {
+odExtraRules = [...odExtraRules, { label: '', rule: '' }];
+}
+function removeOdExtraRule(i: number) {
+odExtraRules = odExtraRules.filter((_, idx) => idx !== i);
+}
 
 // ── Assembled prompt preview ────────────────────────────────────────────────
 
@@ -217,11 +332,32 @@ parts.push(`## ${header}`);
 parts.push(content.trim() || `[${fallback}]`);
 parts.push('');
 };
-sec('SYSTEM', edits.system, 'using file default');
-sec('BEHAVIOR', edits.behavior, 'using file default');
+sec('PERSONA', edits.system, 'using file default');
+sec('CONDUCT', edits.behavior, 'using file default');
 sec('RESOURCES', edits.resources, 'using file default');
-sec('CONVERSATION RULES', edits.conversation_rules, 'using file default');
-sec('RESPONSE TEMPLATES', edits.response_templates, 'using file default');
+
+const crSummary = [
+convNameTriggers.length > 0
+? `name triggers: ${convNameTriggers.slice(0, 2).join(', ')}${convNameTriggers.length > 2 ? '…' : ''}`
+: null,
+convNameRegex ? `name regex: ${convNameRegex}` : null,
+convTermTriggers.length > 0
+? `term signals: ${convTermTriggers.slice(0, 2).join(', ')}${convTermTriggers.length > 2 ? '…' : ''}`
+: null,
+convPromptRules.length > 0 ? `prompt rules: ${convPromptRules.length}` : null
+].filter(Boolean);
+parts.push('## CONVERSATION SETTINGS');
+parts.push(crSummary.length > 0 ? crSummary.join('\n') : '[using file default]');
+parts.push('');
+
+const rtKeys = Object.keys(responseTemplates);
+parts.push('## RESPONSE TEMPLATES');
+parts.push(
+rtKeys.length > 0
+? `${rtKeys.length} template(s): ${rtKeys.join(', ')}`
+: '[using file default]'
+);
+parts.push('');
 
 if (useOdOverride) {
 parts.push('## OUTPUT DISCIPLINE [full override]');
@@ -239,7 +375,9 @@ odBannedStarters.length > 0
 : '[banned starters: seeded default]'
 );
 parts.push(
-odExamples.length > 0 ? `examples: ${odExamples.length} pair(s)` : '[examples: seeded default]'
+odExamples.length > 0
+? `examples: ${odExamples.length} pair(s)`
+: '[examples: seeded default]'
 );
 parts.push(
 odExtraRules.length > 0
@@ -252,6 +390,11 @@ parts.push('');
 if (edits.addendum.trim()) {
 parts.push('## ADDENDUM');
 parts.push(edits.addendum.trim());
+parts.push('');
+}
+if (convPromptRules.length > 0) {
+parts.push(`## PROMPT RULES (${convPromptRules.length})`);
+convPromptRules.forEach((r, i) => parts.push(`${i + 1}. [${r.label || '—'}] ${r.rule}`));
 parts.push('');
 }
 if (customRules.length > 0) {
@@ -268,19 +411,6 @@ parts.push('');
 }
 return parts.join('\n');
 });
-
-// ── Field helpers ───────────────────────────────────────────────────────────
-
-function addRule() { customRules = [...customRules, { label: '', rule: '' }]; }
-function removeRule(i: number) { customRules = customRules.filter((_, idx) => idx !== i); }
-function addTrigger() { triggerPhrases = [...triggerPhrases, { action: '', group: '', examples: '', notes: '' }]; }
-function removeTrigger(i: number) { triggerPhrases = triggerPhrases.filter((_, idx) => idx !== i); }
-function addBannedStarter() { odBannedStarters = [...odBannedStarters, '']; }
-function removeBannedStarter(i: number) { odBannedStarters = odBannedStarters.filter((_, idx) => idx !== i); }
-function addOdExample() { odExamples = [...odExamples, { wrong: '', right: '' }]; }
-function removeOdExample(i: number) { odExamples = odExamples.filter((_, idx) => idx !== i); }
-function addOdExtraRule() { odExtraRules = [...odExtraRules, { label: '', rule: '' }]; }
-function removeOdExtraRule(i: number) { odExtraRules = odExtraRules.filter((_, idx) => idx !== i); }
 
 // ── Saving state + enhance callbacks ───────────────────────────────────────
 
@@ -433,8 +563,8 @@ onclick={() => (selectedTemplateId = t.id)}
 <form id="updateForm" method="POST" action="?/update" use:enhance={enhanceUpdate}>
 <input type="hidden" name="id" value={selectedTemplate.id} />
 
-<!-- ── Profile Metadata ──────────────────────────────────────────── -->
-<SectionCard title="Template Metadata">
+<!-- ── 1. Profile ────────────────────────────────────────────────── -->
+<SectionCard title="Profile">
 <div class="grid gap-4 sm:grid-cols-2">
 <div>
 <label for="profileName" class="label-caps">Profile Name</label>
@@ -447,7 +577,7 @@ onclick={() => (selectedTemplateId = t.id)}
 </div>
 </div>
 <div class="mt-6 flex flex-wrap gap-3 border-t border-slate-800/50 pt-4">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            {#if !isReadonly && !selectedTemplate.is_active}
+{#if !isReadonly && !selectedTemplate.is_active}
 <button type="submit" form="setActiveForm" disabled={saving} class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-50">Set Active</button>
 {/if}
 {#if !isReadonly}
@@ -459,32 +589,121 @@ onclick={() => (selectedTemplateId = t.id)}
 </div>
 </SectionCard>
 
-<!-- ── Instruction Files ─────────────────────────────────────────── -->
-<SectionCard title="Instruction Files">
-<p class="mb-4 text-xs text-slate-500">Each file overrides the bot's filesystem default. Leave empty to use the file-based fallback.</p>
+<!-- ── 2. Personality ────────────────────────────────────────────── -->
+<SectionCard title="Personality">
+<p class="mb-4 text-xs text-slate-500">Define the bot's persona, conduct rules, and resource knowledge. Each tab overrides the bot's filesystem default — leave empty to use the file-based fallback.</p>
 <div class="mb-4 flex flex-wrap gap-1 border-b border-slate-800/80 pb-px">
-{#each tabs as tab (tab.key)}
-<button type="button" class="border-b-2 px-3 py-2 text-ui font-bold tracking-widest uppercase transition-all {activeTab === tab.key ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-slate-500 hover:text-slate-300'}" onclick={() => (activeTab = tab.key)}>
-{tab.key}
+{#each [{ key: 'system' as const, label: 'Persona' }, { key: 'behavior' as const, label: 'Conduct' }, { key: 'resources' as const, label: 'Resources' }] as tab (tab.key)}
+<button type="button" class="border-b-2 px-3 py-2 text-ui font-bold tracking-widest uppercase transition-all {personalityTab === tab.key ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-slate-500 hover:text-slate-300'}" onclick={() => (personalityTab = tab.key)}>
+{tab.label}
 </button>
 {/each}
 </div>
-{#each tabs as tab (tab.key)}
-<textarea name={tab.field} bind:value={edits[tab.field]} readonly={isReadonly} class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none {isReadonly ? 'cursor-default opacity-70 focus:border-slate-800/80 focus:ring-0' : ''} {activeTab !== tab.key ? 'hidden' : ''}"></textarea>
-{/each}
+<textarea name="system" bind:value={edits.system} readonly={isReadonly} class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none {isReadonly ? 'cursor-default opacity-70 focus:border-slate-800/80 focus:ring-0' : ''} {personalityTab !== 'system' ? 'hidden' : ''}"></textarea>
+<textarea name="behavior" bind:value={edits.behavior} readonly={isReadonly} class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none {isReadonly ? 'cursor-default opacity-70 focus:border-slate-800/80 focus:ring-0' : ''} {personalityTab !== 'behavior' ? 'hidden' : ''}"></textarea>
+<textarea name="resources" bind:value={edits.resources} readonly={isReadonly} class="h-100 w-full resize-none rounded border border-slate-800/80 bg-slate-950/50 p-4 font-mono text-sm text-slate-300 shadow-inset-form transition-all duration-300 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none {isReadonly ? 'cursor-default opacity-70 focus:border-slate-800/80 focus:ring-0' : ''} {personalityTab !== 'resources' ? 'hidden' : ''}"></textarea>
 </SectionCard>
 
-<!-- ── Behavior Extensions ───────────────────────────────────────── -->
-<SectionCard title="Behavior Extensions">
-<p class="mb-5 text-xs text-slate-500">These fields layer on top of the file-based instructions. Leave any field empty to use the bot's built-in default for that section.</p>
+<!-- ── 3. Conversation Settings ───────────────────────────────────── -->
+<SectionCard title="Conversation Settings">
+<p class="mb-5 text-xs text-slate-500">Configure how the bot tracks conversation state, detects its name, and recognizes termination signals.</p>
+<input type="hidden" name="conversation_rules" value={convRulesJson} />
 
-<!-- Output Discipline -->
+<!-- Name Detection -->
 <div class="mb-6">
-<div class="mb-3 flex items-center justify-between">
-<div>
-<span class="label-caps block">Output Discipline</span>
-<p class="mt-0.5 text-xs text-slate-500">Controls how the bot formats its responses.</p>
+<span class="label-caps block">Name Detection</span>
+<p class="mt-0.5 mb-3 text-xs text-slate-500">Phrases that signal the user is addressing the bot by name.</p>
+<div class="mb-3 flex flex-wrap gap-2">
+{#each convNameTriggers as _t, i (i)}
+<div class="flex items-center gap-1 rounded border border-slate-700/60 bg-slate-900/50 px-2 py-1">
+<input type="text" bind:value={convNameTriggers[i]} readonly={isReadonly} class="w-24 bg-transparent font-mono text-xs text-slate-300 outline-none {isReadonly ? 'cursor-default' : ''}" />
+{#if !isReadonly}
+<button type="button" onclick={() => removeConvNameTrigger(i)} class="ml-0.5 text-slate-500 transition-colors hover:text-rose-400" aria-label="Remove">
+<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+</button>
+{/if}
 </div>
+{/each}
+{#if !isReadonly}
+<button type="button" onclick={addConvNameTrigger} class="rounded border border-dashed border-slate-700 px-2 py-1 text-label-xs font-bold tracking-widest text-slate-500 uppercase transition-colors hover:border-cyan-500/50 hover:text-cyan-400">+ Add</button>
+{/if}
+</div>
+<div>
+<label class="label-caps mb-1 block">Regex Pattern</label>
+<input type="text" bind:value={convNameRegex} readonly={isReadonly} placeholder="e.g. /bot|moviebot/i" class="input-dark w-full font-mono text-sm {isReadonly ? 'cursor-default opacity-60' : ''}" />
+</div>
+</div>
+
+<!-- Termination Signals -->
+<div class="border-t border-slate-800/50 pt-6">
+<span class="label-caps block">Termination Signals</span>
+<p class="mt-0.5 mb-3 text-xs text-slate-500">Phrases that end an active conversation session.</p>
+<div class="mb-3 flex flex-wrap gap-2">
+{#each convTermTriggers as _t, i (i)}
+<div class="flex items-center gap-1 rounded border border-slate-700/60 bg-slate-900/50 px-2 py-1">
+<input type="text" bind:value={convTermTriggers[i]} readonly={isReadonly} class="w-24 bg-transparent font-mono text-xs text-slate-300 outline-none {isReadonly ? 'cursor-default' : ''}" />
+{#if !isReadonly}
+<button type="button" onclick={() => removeConvTermTrigger(i)} class="ml-0.5 text-slate-500 transition-colors hover:text-rose-400" aria-label="Remove">
+<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+</button>
+{/if}
+</div>
+{/each}
+{#if !isReadonly}
+<button type="button" onclick={addConvTermTrigger} class="rounded border border-dashed border-slate-700 px-2 py-1 text-label-xs font-bold tracking-widest text-slate-500 uppercase transition-colors hover:border-cyan-500/50 hover:text-cyan-400">+ Add</button>
+{/if}
+</div>
+<div>
+<label class="label-caps mb-1 block">Regex Pattern</label>
+<input type="text" bind:value={convTermRegex} readonly={isReadonly} placeholder="e.g. /bye|goodbye|stop/i" class="input-dark w-full font-mono text-sm {isReadonly ? 'cursor-default opacity-60' : ''}" />
+</div>
+</div>
+</SectionCard>
+
+<!-- ── 4. Response Templates ───────────────────────────────────────── -->
+<SectionCard title="Response Templates">
+<p class="mb-4 text-xs text-slate-500">Named templates that define response structure. Use <code class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400">{'{token}'}</code> placeholders in the structure — sections are auto-detected.</p>
+<input type="hidden" name="response_templates" value={responseTemplatesJson} />
+<div class="space-y-3">
+{#each responseTemplateKeys as key (key)}
+{@const tpl = responseTemplates[key]}
+<div class="rounded border border-slate-800/60 bg-slate-900/40 p-3">
+<div class="mb-2 flex items-center gap-2">
+<input type="text" value={key} readonly={isReadonly} onchange={(e) => updateResponseTemplateKey(key, (e.currentTarget as HTMLInputElement).value)} class="input-dark flex-1 font-mono text-sm {isReadonly ? 'cursor-default opacity-60' : ''}" placeholder="template_id" />
+{#if !isReadonly}
+<button type="button" onclick={() => removeResponseTemplate(key)} class="shrink-0 rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400" aria-label="Remove template">
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+</button>
+{/if}
+</div>
+<div class="mb-2">
+<label class="label-caps mb-1 block">Structure</label>
+<textarea rows="3" value={tpl.structure} readonly={isReadonly} oninput={(e) => updateResponseTemplateStructure(key, (e.currentTarget as HTMLTextAreaElement).value)} class="input-dark h-auto w-full resize-y font-mono text-sm {isReadonly ? 'cursor-default opacity-70' : ''}" placeholder="e.g. {'{intro}'} {'{body}'} {'{outro}'}"></textarea>
+</div>
+{#if tpl.sections.length > 0}
+<div>
+<span class="label-caps mb-1 block text-slate-500">Detected Sections</span>
+<div class="flex flex-wrap gap-1.5">
+{#each tpl.sections as section (section)}
+<span class="rounded bg-slate-800/80 px-2 py-0.5 font-mono text-xs text-slate-400">{'{' + section + '}'}</span>
+{/each}
+</div>
+</div>
+{/if}
+</div>
+{/each}
+</div>
+{#if !isReadonly}
+<button type="button" onclick={addResponseTemplate} class="mt-3 text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300">+ Add Template</button>
+{/if}
+</SectionCard>
+
+<!-- ── 5. Output Discipline ────────────────────────────────────────── -->
+<SectionCard title="Output Discipline">
+<p class="mb-5 text-xs text-slate-500">Controls how the bot formats its responses. Leave any field empty to use the bot's built-in default for that section.</p>
+
+<div class="mb-2 flex items-center justify-between">
+<p class="text-xs text-slate-500">Full override replaces the entire OUTPUT DISCIPLINE block; granular fields are ignored when a full override is set.</p>
 <label class="flex items-center gap-2 rounded border border-slate-700/60 bg-slate-900/40 px-3 py-1.5 {isReadonly ? 'cursor-default' : 'cursor-pointer'}">
 <input type="checkbox" bind:checked={useOdOverride} disabled={isReadonly} class="h-3.5 w-3.5 rounded border-slate-600 bg-slate-800 accent-cyan-500" />
 <span class="text-label font-bold tracking-widest text-slate-400 uppercase">Full override</span>
@@ -502,7 +721,7 @@ onclick={() => (selectedTemplateId = t.id)}
 <input type="hidden" name="od_extra_rules" value={odExtraRulesJson} />
 {:else}
 <input type="hidden" name="output_discipline" value="" />
-<div class="space-y-5">
+<div class="space-y-5 mt-4">
 <!-- od_verbatim_rule -->
 <div>
 <label class="label-caps mb-1 block">Verbatim Rule</label>
@@ -589,19 +808,40 @@ onclick={() => (selectedTemplateId = t.id)}
 </div>
 </div>
 {/if}
-</div>
+</SectionCard>
 
-<!-- Addendum -->
-<div class="mb-6 border-t border-slate-800/50 pt-6">
-<label class="label-caps mb-1 block">Addendum</label>
-<p class="mb-2 text-xs text-slate-500">Appended at the very end of the assembled prompt. Empty = nothing added.</p>
-<textarea name="addendum" rows="3" bind:value={edits.addendum} readonly={isReadonly} class="input-dark h-auto w-full resize-y font-mono text-sm {isReadonly ? 'cursor-default opacity-70' : ''}"></textarea>
+<!-- ── 6. Rules & Triggers ─────────────────────────────────────────── -->
+<SectionCard title="Rules & Triggers">
+<p class="mb-5 text-xs text-slate-500">Layered rules and trigger phrases that modify bot behavior. Prompt rules are serialized into <code class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400">conversation_rules</code>; custom rules and trigger phrases are stored separately.</p>
+
+<!-- Prompt Rules -->
+<div class="mb-6">
+<label class="label-caps mb-1 block">Prompt Rules</label>
+<p class="mb-3 text-xs text-slate-500">Injected before OUTPUT DISCIPLINE. Stored in <code class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400">conversation_rules.promptRules</code>.</p>
+<div class="space-y-3">
+{#each convPromptRules as rule, i (i)}
+<div class="rounded border border-slate-800/60 bg-slate-900/40 p-3">
+<div class="mb-2 flex items-center gap-2">
+<input type="text" placeholder="Label (e.g. No spoilers)" bind:value={rule.label} readonly={isReadonly} class="input-dark flex-1 text-sm {isReadonly ? 'cursor-default opacity-70' : ''}" />
+{#if !isReadonly}
+<button type="button" onclick={() => removeConvPromptRule(i)} class="shrink-0 rounded p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400" aria-label="Remove rule">
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+</button>
+{/if}
+</div>
+<textarea rows="2" placeholder="The rule text…" bind:value={rule.rule} readonly={isReadonly} class="input-dark w-full resize-y text-sm {isReadonly ? 'cursor-default opacity-70' : ''}"></textarea>
+</div>
+{/each}
+</div>
+{#if !isReadonly}
+<button type="button" onclick={addConvPromptRule} class="mt-3 text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300">+ Add Prompt Rule</button>
+{/if}
 </div>
 
 <!-- Custom Rules -->
 <div class="mb-6 border-t border-slate-800/50 pt-6">
 <label class="label-caps mb-1 block">Custom Rules</label>
-<p class="mb-3 text-xs text-slate-500">Injected before OUTPUT DISCIPLINE. Empty list = use file default (<code class="rounded bg-slate-700/60 px-1 py-0.5 font-mono text-slate-400">promptRules</code>).</p>
+<p class="mb-3 text-xs text-slate-500">Additional rules stored independently. Empty list = use file default.</p>
 <input type="hidden" name="custom_rules" value={customRulesJson} />
 <div class="space-y-3">
 {#each customRules as rule, i (i)}
@@ -624,7 +864,7 @@ onclick={() => (selectedTemplateId = t.id)}
 </div>
 
 <!-- Trigger Phrases -->
-<div class="border-t border-slate-800/50 pt-6">
+<div class="mb-6 border-t border-slate-800/50 pt-6">
 <label class="label-caps mb-1 block">Trigger Phrases</label>
 <p class="mb-3 text-xs text-slate-500">Additive — appended to the bot's hardcoded trigger phrase examples. Each entry needs an action and at least one example (one per line).</p>
 <input type="hidden" name="trigger_phrases" value={triggerPhrasesJson} />
@@ -654,10 +894,17 @@ onclick={() => (selectedTemplateId = t.id)}
 <button type="button" onclick={addTrigger} class="mt-3 text-label font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300">+ Add Trigger</button>
 {/if}
 </div>
+
+<!-- Addendum -->
+<div class="border-t border-slate-800/50 pt-6">
+<label class="label-caps mb-1 block">Addendum</label>
+<p class="mb-2 text-xs text-slate-500">Appended at the very end of the assembled prompt. Empty = nothing added.</p>
+<textarea name="addendum" rows="3" bind:value={edits.addendum} readonly={isReadonly} class="input-dark h-auto w-full resize-y font-mono text-sm {isReadonly ? 'cursor-default opacity-70' : ''}"></textarea>
+</div>
 </SectionCard>
 </form>
 
-<!-- ── Prompt Sections ─────────────────────────────────────────────── -->
+<!-- ── 7. Prompt Sections ────────────────────────────────────────────── -->
 <SectionCard title="Prompt Sections">
 <p class="mb-4 text-xs text-slate-500">Ordered prompt section records that fully replace the hardcoded TypeScript builders when present. Zero sections = fall back to hardcoded behavior.</p>
 
@@ -679,7 +926,6 @@ onclick={() => (selectedTemplateId = t.id)}
 <div class="rounded border {(edit?.enabled ?? section.enabled) ? 'border-slate-700/60 bg-slate-900/40' : 'border-slate-800/40 bg-slate-900/20 opacity-60'} overflow-hidden">
 <!-- Header row -->
 <div class="flex items-center gap-3 px-3 py-2.5">
-<!-- Enable toggle (submitted as its own mini-form to avoid nesting) -->
 {#if !isReadonly}
 <form method="POST" action="?/updateSection" use:enhance={enhanceSection} class="contents">
 <input type="hidden" name="id" value={section.id} />
@@ -724,7 +970,6 @@ onclick={() => (selectedTemplateId = t.id)}
 </button>
 </div>
 
-<!-- Inline editor -->
 {#if isExpanded && edit}
 <div class="border-t border-slate-800/50 p-3">
 <form method="POST" action="?/updateSection" use:enhance={enhanceSection}>
@@ -784,6 +1029,7 @@ onclick={() => (selectedTemplateId = t.id)}
 </form>
 {/if}
 </SectionCard>
+
 {:else}
 <div class="flex h-64 items-center justify-center rounded-lg border border-slate-800/60 bg-slate-900/40">
 <p class="text-sm text-slate-500">No templates found. Create one to get started.</p>
@@ -802,11 +1048,11 @@ onclick={() => (selectedTemplateId = t.id)}
 {/if}
 
 <div class="mb-4 space-y-2">
-<p class="label-caps text-slate-500">Instruction Files</p>
-{#each tabs as tab (tab.key)}
-{@const content = edits[tab.field] ?? ''}
+<p class="label-caps text-slate-500">Personality</p>
+{#each [{ key: 'system', label: 'Persona' }, { key: 'behavior', label: 'Conduct' }, { key: 'resources', label: 'Resources' }] as f (f.key)}
+{@const content = edits[f.key] ?? ''}
 <div class="flex items-center justify-between gap-2">
-<span class="truncate font-mono text-xs text-slate-400">{tab.key}</span>
+<span class="truncate font-mono text-xs text-slate-400">{f.label}</span>
 {#if content.length > 0}
 <span class="shrink-0 text-label-xs font-bold text-cyan-400">{content.length.toLocaleString()}</span>
 {:else}
@@ -814,6 +1060,28 @@ onclick={() => (selectedTemplateId = t.id)}
 {/if}
 </div>
 {/each}
+</div>
+
+<div class="mb-4 border-t border-slate-800/50 pt-4">
+<p class="label-caps mb-1 text-slate-500">Conversation</p>
+<div class="space-y-0.5 text-xs text-slate-500">
+<div>{convNameTriggers.length} name trigger{convNameTriggers.length !== 1 ? 's' : ''}</div>
+<div>{convTermTriggers.length} term signal{convTermTriggers.length !== 1 ? 's' : ''}</div>
+<div>{convPromptRules.length} prompt rule{convPromptRules.length !== 1 ? 's' : ''}</div>
+</div>
+</div>
+
+<div class="mb-4 border-t border-slate-800/50 pt-4">
+<p class="label-caps mb-1 text-slate-500">Response Templates</p>
+{#if responseTemplateKeys.length > 0}
+<div class="flex flex-wrap gap-1">
+{#each responseTemplateKeys as k (k)}
+<span class="rounded bg-slate-800/80 px-1.5 py-0.5 font-mono text-xs text-slate-400">{k}</span>
+{/each}
+</div>
+{:else}
+<p class="text-xs italic text-slate-500">None set</p>
+{/if}
 </div>
 
 <div class="mb-4 border-t border-slate-800/50 pt-4">
@@ -828,15 +1096,6 @@ onclick={() => (selectedTemplateId = t.id)}
 <div>{odExamples.length} example pair{odExamples.length !== 1 ? 's' : ''}</div>
 <div>{odExtraRules.length} extra rule{odExtraRules.length !== 1 ? 's' : ''}</div>
 </div>
-{/if}
-</div>
-
-<div class="mb-4 border-t border-slate-800/50 pt-4">
-<p class="label-caps mb-1 text-slate-500">Addendum</p>
-{#if edits.addendum}
-<p class="line-clamp-2 font-mono text-xs text-slate-300">{edits.addendum.slice(0, 80)}{edits.addendum.length > 80 ? '…' : ''}</p>
-{:else}
-<p class="text-xs italic text-slate-500">None set</p>
 {/if}
 </div>
 
@@ -856,4 +1115,5 @@ onclick={() => (selectedTemplateId = t.id)}
 </SectionCard>
 {/if}
 </div>
+
 </div>
