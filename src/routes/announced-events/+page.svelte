@@ -1,54 +1,49 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
-	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
 	let { data } = $props<{ data: import('./$types').PageData }>();
 
-	let experiments = $derived(data.experiments as Record<string, unknown>[]);
+	let events = $derived(data.events as Record<string, unknown>[]);
 
 	function formatDate(ts: string): string {
-		return ts?.replace('T', ' ').slice(0, 10) ?? '—';
+		return ts?.replace('T', ' ').slice(0, 19) ?? '—';
 	}
 </script>
 
 <PageHeader
-	title="Bot Experiments"
-	description="Past and current Bad Movies VR screening events."
+	title="Announced Events"
+	description="Deduplication log for Discord scheduled event announcements."
 />
 
-<SectionCard title="Experiments ({experiments.length})">
-	{#if experiments.length > 0}
+<SectionCard title="Announced Events ({events.length})">
+	{#if events.length > 0}
 		<div class="overflow-x-auto">
 			<table class="w-full text-left text-sm text-slate-400">
 				<thead
 					class="border-b-2 border-slate-700 bg-slate-950/80 text-label font-bold tracking-widest text-slate-300 uppercase"
 				>
 					<tr>
-						<th scope="col" class="px-4 py-3">Name</th>
-						<th scope="col" class="px-4 py-3">Date</th>
-						<th scope="col" class="px-4 py-3">Slug</th>
-						<th scope="col" class="px-4 py-3">Synced</th>
+						<th scope="col" class="px-4 py-3">Event Name</th>
+						<th scope="col" class="px-4 py-3">Event ID</th>
+						<th scope="col" class="px-4 py-3">Announced At</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-slate-800/50">
-					{#each experiments as exp (exp.id)}
-						{@const e = exp as Record<string, unknown>}
+					{#each events as event (event.id)}
+						{@const e = event as Record<string, unknown>}
 						<tr
 							class="border-b border-slate-700/50 transition-all duration-200 last:border-0 hover:bg-slate-800/80"
 						>
 							<td class="px-4 py-3 font-medium whitespace-nowrap text-slate-200">
-								{e.name ?? '—'}
+								{e.event_name ?? '—'}
 							</td>
-							<td class="px-4 py-3 whitespace-nowrap text-slate-400">
-								{formatDate(e.date as string)}
-							</td>
-							<td class="px-4 py-3 whitespace-nowrap font-mono text-xs text-cyan-400">
-								{e.slug ?? '—'}
+							<td class="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-500">
+								{e.event_id ?? '—'}
 							</td>
 							<td class="px-4 py-3 whitespace-nowrap text-xs text-slate-500">
-								{formatDate(e.synced_at as string)}
+								{formatDate(e.announced_at as string)}
 							</td>
 						</tr>
 					{/each}
@@ -57,8 +52,8 @@
 		</div>
 	{:else}
 		<EmptyState
-			title="No experiments yet"
-			message="Experiments are synced from BadMovies.co and will appear here when available."
+			title="No announced events"
+			message="Event announcements will appear here as the monitor service posts them."
 		/>
 	{/if}
 </SectionCard>

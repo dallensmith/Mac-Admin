@@ -6,20 +6,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const today = new Date().toISOString().slice(0, 10);
 
-	const [dailyCostRecord, botStatusRecord] = await Promise.allSettled([
-		locals.adminPb
-			.collection('sm_global_usage')
-			.getFirstListItem(`date='${today}'`, { requestKey: null }),
-		locals.adminPb
-			.collection('sm_monitor_state')
-			.getFirstListItem("key='status'", { requestKey: null })
-	]);
+	const [dailyCostRecord, botStatusRecord, moviesCache, experimentsCache, peopleCache] =
+		await Promise.allSettled([
+			locals.adminPb
+				.collection('sm_global_usage')
+				.getFirstListItem(`date='${today}'`, { requestKey: null }),
+			locals.adminPb
+				.collection('sm_monitor_state')
+				.getFirstListItem("key='status'", { requestKey: null }),
+			locals.adminPb.collection('sm_movies_search_cache').getList(1, 1),
+			locals.adminPb.collection('sm_experiments_search_cache').getList(1, 1),
+			locals.adminPb.collection('sm_people_search_cache').getList(1, 1)
+		]);
 
 	return {
 		dailyCost:
 			dailyCostRecord.status === 'fulfilled' ? (dailyCostRecord.value.total_cost as number) : null,
 		botStatus:
-			botStatusRecord.status === 'fulfilled' ? (botStatusRecord.value.value as string) : null
+			botStatusRecord.status === 'fulfilled' ? (botStatusRecord.value.value as string) : null,
+		cacheStats: {
+			movies: moviesCache.status === 'fulfilled' ? moviesCache.value.totalItems : null,
+			experiments: experimentsCache.status === 'fulfilled' ? experimentsCache.value.totalItems : null,
+			people: peopleCache.status === 'fulfilled' ? peopleCache.value.totalItems : null
+		}
 	};
 };
 

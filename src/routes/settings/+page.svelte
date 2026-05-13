@@ -1,48 +1,57 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
+
+	let { data } = $props<{ data: import('./$types').PageData }>();
+
+	let pbHealth = $derived(data.pbHealth as string);
+	let cacheStats = $derived(data.cacheStats as { movies: number | null; experiments: number | null; people: number | null });
 </script>
 
 <PageHeader
 	title="System Settings"
-	description="Configure environment, integrations, and admin panel properties."
+	description="Environment status, cache health, and deployment info."
 />
 
 <div class="max-w-4xl space-y-6">
-	<SectionCard title="Environment Details">
+	<SectionCard title="Service Health">
 		<div class="space-y-4">
 			<div class="flex items-center justify-between border-b border-slate-800 pb-4">
 				<div>
-					<p class="text-sm font-medium text-slate-200">Current Environment</p>
-					<p class="text-xs text-slate-500">Development (Local)</p>
+					<p class="text-sm font-medium text-slate-200">PocketBase Connection</p>
+					<p class="text-xs text-slate-500">Admin panel + Bot backend database</p>
 				</div>
-				<span
-					class="inline-flex items-center rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-400 ring-1 ring-amber-500/20 ring-inset"
-				>
-					development
-				</span>
+				{#if pbHealth === 'Connected'}
+					<span class="inline-flex items-center rounded-none border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-label font-bold tracking-wider text-emerald-400 uppercase shadow-glow-cyan-xs">Connected</span>
+				{:else}
+					<span class="inline-flex items-center rounded-none border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-label font-bold tracking-wider text-rose-400 uppercase">Disconnected</span>
+				{/if}
+			</div>
+		</div>
+	</SectionCard>
+
+	<SectionCard title="Search Cache Health">
+		<div class="space-y-4">
+			<div class="flex items-center justify-between border-b border-slate-800 pb-4">
+				<div>
+					<p class="text-sm font-medium text-slate-200">Movies Cache</p>
+					<p class="text-xs text-slate-500">Fuse.js fuzzy search index for movies</p>
+				</div>
+				<span class="text-sm font-mono text-cyan-400">{cacheStats.movies !== null ? `${cacheStats.movies} records` : '—'}</span>
 			</div>
 			<div class="flex items-center justify-between border-b border-slate-800 pb-4">
 				<div>
-					<p class="text-sm font-medium text-slate-200">Database Connection</p>
-					<p class="text-xs text-slate-500">PocketBase</p>
+					<p class="text-sm font-medium text-slate-200">Experiments Cache</p>
+					<p class="text-xs text-slate-500">Fuse.js search index for screening events</p>
 				</div>
-				<span
-					class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 ring-1 ring-emerald-500/20 ring-inset"
-				>
-					Connected
-				</span>
+				<span class="text-sm font-mono text-cyan-400">{cacheStats.experiments !== null ? `${cacheStats.experiments} records` : '—'}</span>
 			</div>
 			<div class="flex items-center justify-between">
 				<div>
-					<p class="text-sm font-medium text-slate-200">Deployment Status</p>
-					<p class="text-xs text-slate-500">Coolify / Docker</p>
+					<p class="text-sm font-medium text-slate-200">People Cache</p>
+					<p class="text-xs text-slate-500">Fuse.js search index for directors/actors</p>
 				</div>
-				<span
-					class="inline-flex items-center rounded-md bg-slate-500/10 px-2 py-1 text-xs font-medium text-slate-400 ring-1 ring-slate-500/20 ring-inset"
-				>
-					N/A locally
-				</span>
+				<span class="text-sm font-mono text-cyan-400">{cacheStats.people !== null ? `${cacheStats.people} records` : '—'}</span>
 			</div>
 		</div>
 	</SectionCard>

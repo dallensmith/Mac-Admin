@@ -2,14 +2,16 @@
 	import PageHeader from '$lib/components/ui/PageHeader.svelte';
 	import StatCard from '$lib/components/ui/StatCard.svelte';
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
-	import { mockRecentActivity } from '$lib/mock/admin';
 
 	let { data } = $props();
+
+	let cacheStats = $derived(data.cacheStats as { movies: number | null; experiments: number | null; people: number | null } | undefined);
 
 	const activityIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>`;
 	const serverIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-server"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>`;
 	const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>`;
 	const dollarIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
+	const databaseIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>`;
 </script>
 
 <PageHeader title="Dashboard" description="Overview of Mac Bot's current status and activity." />
@@ -35,43 +37,29 @@
 	/>
 </div>
 
-<div class="grid gap-6 lg:grid-cols-2">
-	<SectionCard title="Recent Activity" description="Latest actions from users and system.">
-		<div class="space-y-4">
-			{#each mockRecentActivity as activity (activity.id)}
-				<div
-					class="flex items-start gap-4 border-b border-slate-800/40 pb-4 last:border-0 last:pb-0"
-				>
-					<div
-						class="mt-1 rounded border border-cyan-500/30 bg-cyan-500/10 p-1.5 text-cyan-400 shadow-glow-cyan-xs"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="lucide lucide-info"
-							><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg
-						>
-					</div>
-					<div>
-						<p class="text-sm font-medium text-slate-200">{activity.action}</p>
-						<p class="mt-0.5 text-xs text-slate-500">{activity.user} • {activity.time}</p>
-					</div>
-				</div>
-			{/each}
-		</div>
-	</SectionCard>
+<div class="mb-8 grid gap-6 sm:grid-cols-3">
+	<StatCard
+		title="Movies Cache"
+		value={cacheStats?.movies !== null && cacheStats?.movies !== undefined ? `${cacheStats.movies}` : '—'}
+		icon={databaseIcon}
+	/>
+	<StatCard
+		title="Experiments Cache"
+		value={cacheStats?.experiments !== null && cacheStats?.experiments !== undefined ? `${cacheStats.experiments}` : '—'}
+		icon={databaseIcon}
+	/>
+	<StatCard
+		title="People Cache"
+		value={cacheStats?.people !== null && cacheStats?.people !== undefined ? `${cacheStats.people}` : '—'}
+		icon={databaseIcon}
+	/>
+</div>
 
+<div class="grid gap-6 lg:grid-cols-1">
 	<SectionCard title="Quick Actions">
 		<div class="grid gap-4 sm:grid-cols-2">
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
 			>
 				<div
 					class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -95,7 +83,7 @@
 				>
 			</button>
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:bg-slate-800/80 hover:shadow-glow-fuchsia-md"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/50 hover:bg-slate-800/80 hover:shadow-glow-fuchsia-md"
 			>
 				<div
 					class="pointer-events-none absolute inset-0 bg-linear-to-b from-fuchsia-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -123,7 +111,7 @@
 				>
 			</button>
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/50 hover:bg-slate-800/80 hover:shadow-glow-purple-md"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/50 hover:bg-slate-800/80 hover:shadow-glow-purple-md"
 			>
 				<div
 					class="pointer-events-none absolute inset-0 bg-linear-to-b from-purple-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -147,7 +135,7 @@
 				>
 			</button>
 			<button
-				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-slate-800/60 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
+				class="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-none border-2 border-slate-700 bg-slate-900/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-glow-cyan-md"
 			>
 				<div
 					class="pointer-events-none absolute inset-0 bg-linear-to-b from-cyan-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
