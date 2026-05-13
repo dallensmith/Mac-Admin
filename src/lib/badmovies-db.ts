@@ -409,19 +409,18 @@ export class BadMoviesDbClient {
 		}[]
 	> {
 		const cacheKey = 'db:movies:searchcache';
-		const cached =
-			this.cache.get<
-				{
-					id: string;
-					slug: string;
-					title: string;
-					year: string;
-					tmdbId?: string;
-					director: string;
-					actors: string;
-					genres: string;
-				}[]
-			>(cacheKey);
+		const cached = this.cache.get<
+			{
+				id: string;
+				slug: string;
+				title: string;
+				year: string;
+				tmdbId?: string;
+				director: string;
+				actors: string;
+				genres: string;
+			}[]
+		>(cacheKey);
 		if (cached) return cached;
 
 		try {

@@ -151,7 +151,10 @@
 				testResult = { ok: true, latencyMs: d.testLatencyMs as number | undefined };
 			} else {
 				const d = (result as { data?: Record<string, unknown> }).data ?? {};
-				testResult = { ok: false, error: (d.testError as string | undefined) ?? 'Connection failed' };
+				testResult = {
+					ok: false,
+					error: (d.testError as string | undefined) ?? 'Connection failed'
+				};
 			}
 		};
 	}}
@@ -585,8 +588,7 @@
 								stroke="currentColor"
 								stroke-width="2.5"
 								stroke-linecap="round"
-								stroke-linejoin="round"
-								><path d="M20 6 9 17l-5-5" /></svg
+								stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg
 							>
 							Connected · {testResult.latencyMs}ms
 						</span>
@@ -594,12 +596,7 @@
 						<span class="text-xs text-rose-400">{testResult.error}</span>
 					{/if}
 				{/if}
-				<button
-					type="submit"
-					form="testConnectionForm"
-					class="btn-ghost"
-					disabled={testing}
-				>
+				<button type="submit" form="testConnectionForm" class="btn-ghost" disabled={testing}>
 					{testing ? 'Testing…' : 'Test Connection'}
 				</button>
 			</div>

@@ -31,9 +31,7 @@
 	let mostRecent = $derived(
 		data.entries.length > 0
 			? data.entries
-					.reduce((latest: WheelEntry, e: WheelEntry) =>
-						e.created > latest.created ? e : latest
-					)
+					.reduce((latest: WheelEntry, e: WheelEntry) => (e.created > latest.created ? e : latest))
 					.created.split('T')[0]
 			: '—'
 	);
@@ -165,12 +163,7 @@
 	{#if editingId === 'new' || filteredEntries.length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#if editingId === 'new'}
-				<WheelCard
-					isNew={true}
-					bind:editValues
-					saveFormId="create-form"
-					onCancel={cancelEdit}
-				/>
+				<WheelCard isNew={true} bind:editValues saveFormId="create-form" onCancel={cancelEdit} />
 			{/if}
 			{#each filteredEntries as entry (entry.id)}
 				<WheelCard

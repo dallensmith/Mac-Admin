@@ -79,12 +79,20 @@
 						<div class="flex items-center justify-between gap-2">
 							<span class="block font-medium">{rec.name}</span>
 							{#if rec.enabled}
-								<span class="rounded bg-emerald-500/15 px-1.5 py-0.5 font-bold text-emerald-400 uppercase" style="font-size: var(--text-label)">on</span>
+								<span
+									class="rounded bg-emerald-500/15 px-1.5 py-0.5 font-bold text-emerald-400 uppercase"
+									style="font-size: var(--text-label)">on</span
+								>
 							{:else}
-								<span class="rounded bg-slate-700/50 px-1.5 py-0.5 font-bold text-slate-500 uppercase" style="font-size: var(--text-label)">off</span>
+								<span
+									class="rounded bg-slate-700/50 px-1.5 py-0.5 font-bold text-slate-500 uppercase"
+									style="font-size: var(--text-label)">off</span
+								>
 							{/if}
 						</div>
-						<span class="mt-0.5 block truncate font-mono text-[10px] opacity-50">{rec.action_key}</span>
+						<span class="mt-0.5 block truncate font-mono text-[10px] opacity-50"
+							>{rec.action_key}</span
+						>
 					</button>
 				{:else}
 					<p class="py-2 text-xs text-slate-500">No button actions yet.</p>
@@ -158,10 +166,16 @@
 									class="input-dark font-mono text-xs"
 									placeholder="find_experiment_by_movie"
 								/>
-								<p class="mt-1.5 text-xs text-slate-500">The <code class="rounded bg-slate-800 px-1 py-0.5 text-slate-300">AIAction.type</code> value dispatched when this button is clicked.</p>
+								<p class="mt-1.5 text-xs text-slate-500">
+									The <code class="rounded bg-slate-800 px-1 py-0.5 text-slate-300"
+										>AIAction.type</code
+									> value dispatched when this button is clicked.
+								</p>
 							</div>
 							<div>
-								<label for="paramsTemplate" class="label-caps">Params Template <span class="normal-case text-slate-500">(JSON)</span></label>
+								<label for="paramsTemplate" class="label-caps"
+									>Params Template <span class="text-slate-500 normal-case">(JSON)</span></label
+								>
 								<textarea
 									id="paramsTemplate"
 									name="params_template"
@@ -170,10 +184,19 @@
 									class="input-dark font-mono text-xs"
 									placeholder={'{"query": "{{button.ctx}}"}'}
 								></textarea>
-								<p class="mt-1.5 text-xs text-slate-500">JSON object. Use <code class="rounded bg-slate-800 px-1 py-0.5 text-slate-300">{"{{button.ctx}}"}</code> as a placeholder for the value encoded in the button's <code class="rounded bg-slate-800 px-1 py-0.5 text-slate-300">customId</code>.</p>
+								<p class="mt-1.5 text-xs text-slate-500">
+									JSON object. Use <code class="rounded bg-slate-800 px-1 py-0.5 text-slate-300"
+										>{'{{button.ctx}}'}</code
+									>
+									as a placeholder for the value encoded in the button's
+									<code class="rounded bg-slate-800 px-1 py-0.5 text-slate-300">customId</code>.
+								</p>
 							</div>
 							<div>
-								<label for="responseTemplateKey" class="label-caps">Response Template Key <span class="normal-case text-slate-500">(optional)</span></label>
+								<label for="responseTemplateKey" class="label-caps"
+									>Response Template Key <span class="text-slate-500 normal-case">(optional)</span
+									></label
+								>
 								<input
 									id="responseTemplateKey"
 									name="response_template_key"
@@ -182,7 +205,10 @@
 									class="input-dark font-mono text-xs"
 									placeholder="experiment-lookup"
 								/>
-								<p class="mt-1.5 text-xs text-slate-500">Override the Discord embed template used for this action's response. Leave empty to use the router's default.</p>
+								<p class="mt-1.5 text-xs text-slate-500">
+									Override the Discord embed template used for this action's response. Leave empty
+									to use the router's default.
+								</p>
 							</div>
 						</div>
 					</SectionCard>
@@ -194,7 +220,10 @@
 							checked={enabled}
 							onChange={(val) => (enabled = val)}
 						/>
-						<p class="mt-3 text-xs text-slate-500">Disabled actions are not loaded into the bot's ButtonActionService. Disable to deactivate a button without deleting its definition.</p>
+						<p class="mt-3 text-xs text-slate-500">
+							Disabled actions are not loaded into the bot's ButtonActionService. Disable to
+							deactivate a button without deleting its definition.
+						</p>
 					</SectionCard>
 
 					<div class="flex items-center justify-between gap-3">
@@ -204,7 +233,9 @@
 				</div>
 			</form>
 		{:else}
-			<div class="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-700 py-16 text-center">
+			<div
+				class="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-700 py-16 text-center"
+			>
 				<p class="text-sm text-slate-400">No action selected.</p>
 				<p class="mt-1 text-xs text-slate-500">Create an action to get started.</p>
 			</div>

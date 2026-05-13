@@ -6,7 +6,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const [templates, sections, discordTemplates] = await Promise.all([
 		locals.adminPb.collection('sm_instruction_sets').getFullList({ sort: '-updated' }),
-		locals.adminPb.collection('sm_prompt_sections').getFullList({ sort: 'instruction_set_id,order' }),
+		locals.adminPb
+			.collection('sm_prompt_sections')
+			.getFullList({ sort: 'instruction_set_id,order' }),
 		locals.adminPb.collection('sm_discord_templates').getFullList({ sort: 'name' })
 	]);
 
@@ -114,13 +116,9 @@ export const actions: Actions = {
 		try {
 			for (const t of all) {
 				if (t.id === id) {
-					await locals.adminPb
-						.collection('sm_instruction_sets')
-						.update(t.id, { is_active: true });
+					await locals.adminPb.collection('sm_instruction_sets').update(t.id, { is_active: true });
 				} else if (t.is_active) {
-					await locals.adminPb
-						.collection('sm_instruction_sets')
-						.update(t.id, { is_active: false });
+					await locals.adminPb.collection('sm_instruction_sets').update(t.id, { is_active: false });
 				}
 			}
 		} catch (e: unknown) {

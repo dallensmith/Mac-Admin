@@ -26,9 +26,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			: null;
 
 	const posterPath: string | null =
-		typeof data.poster_path === 'string' && data.poster_path.length > 0
-			? data.poster_path
-			: null;
+		typeof data.poster_path === 'string' && data.poster_path.length > 0 ? data.poster_path : null;
 
 	return json({ imdbId, posterPath, watched });
 };

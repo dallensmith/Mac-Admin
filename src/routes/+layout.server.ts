@@ -46,5 +46,10 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		redirect(302, '/login?error=access_denied');
 	}
 
-	return { user: locals.user, discordRole: accessResult.topRoleName, guildStats: guildStatsResult, discordUserId };
+	return {
+		user: locals.user,
+		discordRole: accessResult.topRoleName,
+		guildStats: guildStatsResult,
+		discordUserId
+	};
 };

@@ -27,9 +27,9 @@ const url = process.env.DATABASE_URL;
 - `+page.ts` or `+layout.ts` (run on both server and client)
 - Any module that may be imported client-side
 
-## Auth Guard (better-auth)
+## Auth Guard (PocketBase)
 
-`locals.user` is set by the better-auth hook in `hooks.server.ts`. Check it at the top of every `load()` and action that requires authentication.
+`locals.user` is set by the PocketBase cookie handler in `hooks.server.ts`. A PocketBase RecordModel is attached to every request via `event.locals.pb` (user-scoped) and `event.locals.adminPb` (superuser-scoped). Check `locals.user` at the top of every `load()` and action that requires authentication.
 
 ```ts
 import { redirect } from '@sveltejs/kit';
@@ -41,26 +41,34 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 ```
 
-For admin-only routes, also check `locals.user.role`:
+For admin-only routes, verify the Discord user ID against the `ADMIN_DISCORD_USER_IDS` whitelist using `checkGuildMemberAccess()` from `$lib/server/discord`.
 
 ```ts
-if (!locals.user || locals.user.role !== 'admin') redirect(302, '/');
+import { checkGuildMemberAccess } from '$lib/server/discord';
+
+if (!locals.user) redirect(302, '/login');
+const discordId = locals.user.discord_id;
+if (!discordId || !checkGuildMemberAccess(discordId).allowed) redirect(302, '/');
 ```
 
-## Drizzle Queries
+Use `locals.adminPb` for PocketBase admin operations (e.g., managing wheel candidates, bot reports) — it authenticates as the superuser configured in `POCKETBASE_SUPERUSER_EMAIL`/`POCKETBASE_SUPERUSER_PASSWORD`.
 
-Import `db` from `$lib/server/db` and schema tables from `$lib/server/db/schema`.
+## Drizzle Queries (badmovies.co read-only)
+
+Import the `badMoviesDb` singleton from `$lib/server/badmovies-db` and schema tables from `$types/schema`. The badmovies database is **read-only** — only `SELECT` queries are supported.
 
 ```ts
-import { db } from '$lib/server/db';
-import { movies } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { badMoviesDb } from '$lib/server/badmovies-db';
+import * as schema from '$types/schema';
+import { eq, ilike, sql } from 'drizzle-orm';
 
-const movie = await db.query.movies.findFirst({ where: eq(movies.id, params.id) });
+const movie = await badMoviesDb.getMovie(params.slug);
 ```
 
-- Prefer `db.query.*` (relational API) over raw `db.select()` for readability
-- Always type-check query results — Drizzle infers types from schema
+- Use the `BadMoviesDbClient` methods (e.g. `getMovie()`, `searchMovies()`, `getExperiments()`) — they include built-in caching
+- For direct Drizzle queries, use `badMoviesDb['db']` (the underlying `NodePgDatabase`) with `db.select()`, `db.execute()`, or `db.query.*`
+- Schema tables live in `src/types/schema.ts` (28 tables mirroring the badmovies.co archive)
+- No write operations, no migrations — the database is frozen and externally managed
 
 ## Form Actions
 

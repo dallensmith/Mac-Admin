@@ -3,7 +3,13 @@
 
 	let badgeClass = $derived.by(() => {
 		const s = status.toLowerCase();
-		if (s === 'online' || s === 'completed' || s === 'active' || s === 'enabled' || s === 'approved') {
+		if (
+			s === 'online' ||
+			s === 'completed' ||
+			s === 'active' ||
+			s === 'enabled' ||
+			s === 'approved'
+		) {
 			return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-glow-cyan-xs';
 		} else if (s === 'pending' || s === 'in progress') {
 			return 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30 shadow-glow-fuchsia-xs';

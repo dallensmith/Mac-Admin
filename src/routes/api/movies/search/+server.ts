@@ -28,9 +28,10 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		.map((m: Record<string, unknown>) => ({
 			tmdbId: m.id as number,
 			title: m.title as string,
-			year: typeof m.release_date === 'string' && m.release_date.length >= 4
-				? m.release_date.slice(0, 4)
-				: '',
+			year:
+				typeof m.release_date === 'string' && m.release_date.length >= 4
+					? m.release_date.slice(0, 4)
+					: '',
 			overview: typeof m.overview === 'string' ? m.overview : '',
 			posterPath: typeof m.poster_path === 'string' ? m.poster_path : null
 		}));
