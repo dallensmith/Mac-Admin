@@ -31,6 +31,7 @@ All collections include automatic `id` (string), `created` (datetime), and `upda
 | [`sm_instruction_sets`](#sm_instruction_sets) | Named AI personality profiles |
 | [`sm_prompt_sections`](#sm_prompt_sections) | Ordered prompt section records per profile |
 | [`sm_discord_templates`](#sm_discord_templates) | Global Discord embed template designs |
+| [`sm_button_actions`](#sm_button_actions) | Database-driven interactive button action definitions |
 
 ---
 
@@ -398,11 +399,30 @@ Each `sm_instruction_sets` record has zero or more associated sections. **Zero s
 | `show_actors` | bool | Include Cast field in embed |
 | `show_rating` | bool | Include Rating field in embed |
 | `show_genres` | bool | Include Genres field in embed |
-| `buttons_enabled` | bool | Show action buttons (BadMovies.co, IMDb links) |
-| `button_labels` | text | JSON string `{ badmovies: string; imdb: string }` — button label overrides. Default: `{"badmovies":"View on BadMovies.co","imdb":"IMDb Page"}` |
+| `buttons` | text (longtext) | JSON-serialised `TemplateButtonConfig[]` array. Each entry declares one button: `type` (`link` or `action`), `label`, `style`, `emoji`, `row` (0–4), `condition` (token key — button omitted if token is empty or missing), and either `url` (link buttons, supports `{{token}}`) or `action_key` + `ctx_template` (action buttons). **Empty array = no buttons.** |
+
+> **Button types:**
+> - **`link`** — opens a URL. Required: `url` (supports `{{token}}` substitution). Renders as a `ButtonStyle.Link` component.
+> - **`action`** — dispatches a bot action when clicked. Required: `action_key` (references `sm_button_actions.action_key`). Optional: `ctx_template` (token-substituted value encoded in the Discord `customId` as `tpb_{action_key}|{ctx}`). Handled by `InteractionHandler` → `ButtonActionService` → `ToolRouter`.
 
 > **How `sm_instruction_sets.response_templates` relates:**
 > - Previously stored the full JSON structure for response templates. Now stores a JSON `string[]` of enabled `template_key` values for that profile.
 > - `[]` (empty array) = all global templates are enabled for this profile.
 > - `["movie-lookup", "experiment-lookup"]` = only those two templates are active.
 > - The bot reads `sm_discord_templates` records at runtime and filters by this list.
+
+---
+
+## `sm_button_actions`
+
+**Purpose:** Definitions for interactive template buttons (type: `action`). Each record maps a unique `action_key` to an `AIAction` type and a parameterised template. When a user clicks an action button on an embed, `InteractionHandler` looks up the `action_key` here, substitutes `{{button.ctx}}` with the value encoded in the button's `customId`, builds the `AIAction`, and routes it through `ToolRouter`. Hot-reloaded via PocketBase realtime subscription — no restart required.
+
+| Field | Type | Notes |
+|---|---|---|
+| `action_key` | text | Unique key referenced by `TemplateButtonConfig.action_key` (e.g. `show_experiment_for_movie`) |
+| `name` | text | Human-readable name shown in the admin UI |
+| `description` | text | Optional notes about what this action does |
+| `action_type` | text | The `AIAction.type` value to dispatch (e.g. `find_experiment_by_movie`, `get_movie_reviews`) |
+| `params_template` | text (longtext) | JSON object template for the AIAction params. Use `{{button.ctx}}` as a placeholder for the value encoded in the button's `customId` (e.g. `{"query": "{{button.ctx}}"}`) |
+| `response_template_key` | text | Optional `template_key` override — when set, the result is rendered with this discord template instead of the router's default |
+| `enabled` | bool | Only enabled actions are loaded into `ButtonActionService`. Disable to deactivate a button without deleting its definition |
