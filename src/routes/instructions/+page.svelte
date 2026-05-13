@@ -546,7 +546,7 @@ onclick={() => (selectedTemplateId = t.id)}
 </div>
 </div>
 <div class="mt-6 flex flex-wrap gap-3 border-t border-slate-800/50 pt-4">
-{#if !isReadonly && !selectedTemplate.is_active}
+{#if !selectedTemplate.is_active}
 <button type="submit" form="setActiveForm" disabled={saving} class="rounded border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-label font-bold tracking-widest text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-50">Set Active</button>
 {/if}
 {#if !isReadonly}
