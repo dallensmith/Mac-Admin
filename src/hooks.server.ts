@@ -1,5 +1,8 @@
 import type { Handle } from '@sveltejs/kit';
 import { createPb, createAdminPb, USERS_COLLECTION } from '$lib/server/auth';
+import { ensureAllCollections, seedDefaultData } from '$lib/server/pocketbase-setup';
+
+let initialized = false;
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const pb = createPb();
@@ -28,6 +31,21 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	event.locals.pb = pb;
 	event.locals.adminPb = await createAdminPb();
+
+	// One-time PocketBase collection setup + seeding on first request
+	if (!initialized) {
+		initialized = true;
+		const adminPb = event.locals.adminPb;
+		// Fire-and-forget: ensure collections first, then seed (order matters)
+		(async () => {
+			try {
+				await ensureAllCollections(adminPb);
+				await seedDefaultData(adminPb);
+			} catch (err) {
+				console.error('[hooks] PocketBase setup failed:', err);
+			}
+		})();
+	}
 
 	if (pb.authStore.isValid) {
 		// Restore display fields from the separate profile cookie

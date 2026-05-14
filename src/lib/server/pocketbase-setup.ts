@@ -8,7 +8,7 @@
  */
 import { env } from '$env/dynamic/private';
 import PocketBase from 'pocketbase';
-import { logger } from '$utils/logger';
+import { logger } from '../../utils/logger';
 
 // ── Prefix helpers ──────────────────────────────────────────────────────────
 
@@ -85,12 +85,7 @@ const collections: CollectionDef[] = [
 	// ── Conversation ───────────────────────────────────────────────────────
 	{
 		name: col('messages'),
-		fields: [
-			text('user_id', true),
-			text('channel_id', true),
-			text('role', true),
-			text('content')
-		]
+		fields: [text('user_id', true), text('channel_id', true), text('role', true), text('content')]
 	},
 	{
 		name: col('sessions'),
@@ -303,17 +298,16 @@ export async function ensureAllCollections(adminPb: PocketBase): Promise<void> {
 	logger.info('[pb-setup] Ensuring PocketBase collections exist...');
 
 	// Fetch existing collections once
-	let existing: { id: string; name: string }[] = [];
+	let existingNames: Set<string>;
 	try {
 		const result = await adminPb.collections.getFullList({ fields: 'id,name' });
-		existing = result.map((c) => ({ id: c.id, name: c.name }));
+		existingNames = new Set(result.map((c: { name: string }) => c.name));
 	} catch (err) {
-		logger.error('[pb-setup] Failed to list existing collections');
-		logger.error(err);
+		logger.error(
+			`[pb-setup] Failed to list existing collections: ${err instanceof Error ? err.message : String(err)}`
+		);
 		return;
 	}
-
-	const existingNames = new Set(existing.map((c) => c.name));
 
 	for (const def of collections) {
 		if (existingNames.has(def.name)) {
@@ -325,12 +319,14 @@ export async function ensureAllCollections(adminPb: PocketBase): Promise<void> {
 			await adminPb.collections.create({
 				name: def.name,
 				type: 'base',
-				fields: def.fields as Record<string, unknown>[]
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				fields: def.fields as any[]
 			});
 			logger.info(`[pb-setup] Created collection "${def.name}" with ${def.fields.length} fields`);
 		} catch (err) {
-			logger.error(`[pb-setup] Failed to create collection "${def.name}"`);
-			logger.error(err);
+			logger.error(
+				`[pb-setup] Failed to create collection "${def.name}": ${err instanceof Error ? err.message : String(err)}`
+			);
 		}
 	}
 
@@ -362,8 +358,9 @@ async function seedBotConfig(adminPb: PocketBase): Promise<void> {
 			return;
 		}
 	} catch (err) {
-		logger.error(`[pb-setup] Failed to check "${collectionName}" for existing records`);
-		logger.error(err);
+		logger.error(
+			`[pb-setup] Failed to check "${collectionName}" for existing records: ${err instanceof Error ? err.message : String(err)}`
+		);
 		return;
 	}
 
@@ -373,8 +370,9 @@ async function seedBotConfig(adminPb: PocketBase): Promise<void> {
 		await adminPb.collection(collectionName).create({});
 		logger.info(`[pb-setup] Seeded "${collectionName}" with empty singleton record`);
 	} catch (err) {
-		logger.error(`[pb-setup] Failed to seed "${collectionName}"`);
-		logger.error(err);
+		logger.error(
+			`[pb-setup] Failed to seed "${collectionName}": ${err instanceof Error ? err.message : String(err)}`
+		);
 	}
 }
 
@@ -390,8 +388,9 @@ async function seedInstructionSets(adminPb: PocketBase): Promise<void> {
 			return;
 		}
 	} catch (err) {
-		logger.error(`[pb-setup] Failed to check "${collectionName}" for existing records`);
-		logger.error(err);
+		logger.error(
+			`[pb-setup] Failed to check "${collectionName}" for existing records: ${err instanceof Error ? err.message : String(err)}`
+		);
 		return;
 	}
 
@@ -400,13 +399,15 @@ async function seedInstructionSets(adminPb: PocketBase): Promise<void> {
 	try {
 		await adminPb.collection(collectionName).create({
 			name: 'Default',
-			description: 'File-system defaults. Edit fields here to override; empty fields fall back to files.',
+			description:
+				'File-system defaults. Edit fields here to override; empty fields fall back to files.',
 			is_active: true,
 			is_default: true
 		});
 		logger.info(`[pb-setup] Seeded "${collectionName}" with "Default" record`);
 	} catch (err) {
-		logger.error(`[pb-setup] Failed to seed "${collectionName}"`);
-		logger.error(err);
+		logger.error(
+			`[pb-setup] Failed to seed "${collectionName}": ${err instanceof Error ? err.message : String(err)}`
+		);
 	}
 }
