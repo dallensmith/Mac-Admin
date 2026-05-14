@@ -784,7 +784,7 @@
 			{/if}
 
 			<div class="mt-4">
-				<h3 class="mb-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">Common Variables</h3>
+				<h3 class="mb-2 text-ui font-bold tracking-widest text-slate-400 uppercase">Common Variables</h3>
 				<div class="rounded border border-slate-800/80 bg-slate-900/50 p-4">
 					<ul class="space-y-2">
 						{#each data.commonVariables as v (v.name)}
