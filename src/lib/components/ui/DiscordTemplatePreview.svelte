@@ -67,6 +67,24 @@
 								{templateData.descriptionFormat || 'No description provided.'}
 							</div>
 
+							<!-- Tagline -->
+							{#if templateData.showTagline}
+								<div class="mt-1 text-[12px] italic text-[#949ba4]">
+									"A mock tagline for this movie"
+								</div>
+							{/if}
+
+							<!-- Meta Row -->
+							{#if templateData.showMeta}
+								<div class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#949ba4]">
+									<span>Released: 2024</span>
+									<span>•</span>
+									<span>120 min</span>
+									<span>•</span>
+									<span>PG-13</span>
+								</div>
+							{/if}
+
 							<!-- Fake Fields (Controlled by Toggles) -->
 							<div class="mt-4 flex flex-wrap gap-x-4 gap-y-3">
 								{#if templateData.showDirector}
@@ -87,10 +105,46 @@
 										<div class="text-[13px] text-[#dbdee1]">PG-13</div>
 									</div>
 								{/if}
+								{#if templateData.showImdbRating}
+									<div class="min-w-[45%]">
+										<div class="text-[11px] font-bold text-white">IMDb</div>
+										<div class="text-[13px] text-[#f5c518]">⭐ 7.4/10</div>
+									</div>
+								{/if}
 								{#if templateData.showGenres}
 									<div class="min-w-[45%]">
 										<div class="text-[11px] font-bold text-white">Genres</div>
 										<div class="text-[13px] text-[#dbdee1]">Action, Sci-Fi</div>
+									</div>
+								{/if}
+								{#if templateData.showWriters}
+									<div class="min-w-[45%]">
+										<div class="text-[11px] font-bold text-white">Writers</div>
+										<div class="text-[13px] text-[#dbdee1]">Writer One, Writer Two</div>
+									</div>
+								{/if}
+								{#if templateData.showStudio}
+									<div class="min-w-[45%]">
+										<div class="text-[11px] font-bold text-white">Studio</div>
+										<div class="text-[13px] text-[#dbdee1]">Mock Studios</div>
+									</div>
+								{/if}
+								{#if templateData.showBudget}
+									<div class="min-w-[45%]">
+										<div class="text-[11px] font-bold text-white">Budget</div>
+										<div class="text-[13px] text-[#dbdee1]">$80M / $250M</div>
+									</div>
+								{/if}
+								{#if templateData.showExternalLinks}
+									<div class="min-w-[100%]">
+										<div class="text-[11px] font-bold text-white">Links</div>
+										<div class="flex flex-wrap gap-2 text-[12px] text-[#00a8fc]">
+											<span class="cursor-pointer hover:underline">BadMovies.co</span>
+											<span class="text-[#949ba4]">•</span>
+											<span class="cursor-pointer hover:underline">TMDb</span>
+											<span class="text-[#949ba4]">•</span>
+											<span class="cursor-pointer hover:underline">IMDb</span>
+										</div>
 									</div>
 								{/if}
 							</div>
@@ -121,6 +175,15 @@
 
 					<!-- Footer -->
 					<div class="mt-3 flex items-center gap-2">
+						{#if templateData.footerIconEnabled}
+							<div class="h-5 w-5 shrink-0 overflow-hidden rounded-full bg-[#5865F2]">
+								<img
+									src="https://placehold.co/20x20/5865F2/fff?text=B"
+									alt="icon"
+									class="h-full w-full object-cover"
+								/>
+							</div>
+						{/if}
 						<div class="text-[11px] text-[#dbdee1]">
 							{templateData.footerText || ''}
 							{#if templateData.timestampEnabled}

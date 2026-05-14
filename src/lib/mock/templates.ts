@@ -88,9 +88,18 @@ export const defaultTemplateData = {
 	imageEnabled: false,
 	footerText: 'Smart Mac Archive Lookup | Requested by {{user}}',
 	timestampEnabled: true,
+	embedUrlEnabled: false,
+	footerIconEnabled: false,
 	showDirector: true,
 	showActors: true,
 	showRating: true,
+	showImdbRating: false,
 	showGenres: false,
+	showTagline: false,
+	showMeta: false,
+	showStudio: false,
+	showBudget: false,
+	showWriters: false,
+	showExternalLinks: false,
 	buttons: []
 };

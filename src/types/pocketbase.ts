@@ -263,7 +263,7 @@ export interface PBInstructionSetRecord {
 	/** JSON array of {action, group?, examples[], notes?}. Additive — appended to hardcoded trigger phrases. Empty = no additions. */
 	trigger_phrases: string;
 	/** JSON array of {label, rule}. Replaces file promptRules when non-empty. */
-	custom_rules: string;
+	rules: string;
 	/**
 	 * Escape hatch — replaces entire OUTPUT DISCIPLINE section when non-empty.
 	 * When non-empty, all od_* fields are ignored.
@@ -395,13 +395,26 @@ export interface PBDiscordTemplateRecord {
 	accent_color: string;
 	/** Footer text. Supports `{{user}}` token. */
 	footer_text: string;
+	/** Dispatch category: movie, experiment, wheel, stats, server, or generic. */
+	template_category: string;
+	embed_url_enabled: boolean;
+	footer_icon_enabled: boolean;
 	thumbnail_enabled: boolean;
 	image_enabled: boolean;
 	timestamp_enabled: boolean;
+	show_tagline: boolean;
+	show_meta: boolean;
+	show_studio: boolean;
+	show_budget: boolean;
 	show_director: boolean;
+	show_writers: boolean;
 	show_actors: boolean;
 	show_rating: boolean;
+	show_imdb_rating: boolean;
 	show_genres: boolean;
+	show_external_links: boolean;
+	/** Per-item format string for list templates. Uses `{{item.field}}` tokens separated by `|`. */
+	list_item_format: string;
 	/** JSON-serialised `TemplateButtonConfig[]`. Empty array = no buttons. */
 	buttons: string;
 	created: string;

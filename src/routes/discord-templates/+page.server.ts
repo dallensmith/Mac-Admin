@@ -22,19 +22,30 @@ export const actions: Actions = {
 		try {
 			await locals.adminPb.collection(COLLECTION).create({
 				template_key: `template_${Date.now()}`,
+				template_category: 'movie',
 				name: 'New Template',
 				description: '',
 				title_format: '{{movie.title}} ({{movie.year}})',
 				description_format: '{{movie.overview}}',
 				accent_color: '#0ea5e9',
 				footer_text: 'Smart Mac Archive Lookup | Requested by {{user}}',
+				embed_url_enabled: false,
+				footer_icon_enabled: false,
 				thumbnail_enabled: true,
 				image_enabled: false,
 				timestamp_enabled: true,
+				show_tagline: false,
+				show_meta: true,
+				show_studio: false,
+				show_budget: false,
 				show_director: true,
+				show_writers: false,
 				show_actors: true,
 				show_rating: true,
+				show_imdb_rating: false,
 				show_genres: false,
+				show_external_links: true,
+				list_item_format: '',
 				buttons: '[]'
 			});
 		} catch (e: unknown) {
@@ -53,19 +64,30 @@ export const actions: Actions = {
 		try {
 			await locals.adminPb.collection(COLLECTION).update(id, {
 				template_key: data.get('template_key') ?? '',
+				template_category: data.get('template_category') ?? 'movie',
 				name: data.get('name') ?? '',
 				description: data.get('description') ?? '',
 				title_format: data.get('title_format') ?? '',
 				description_format: data.get('description_format') ?? '',
 				accent_color: data.get('accent_color') ?? '#0ea5e9',
 				footer_text: data.get('footer_text') ?? '',
+				embed_url_enabled: data.get('embed_url_enabled') === 'true',
+				footer_icon_enabled: data.get('footer_icon_enabled') === 'true',
 				thumbnail_enabled: data.get('thumbnail_enabled') === 'true',
 				image_enabled: data.get('image_enabled') === 'true',
 				timestamp_enabled: data.get('timestamp_enabled') === 'true',
+				show_tagline: data.get('show_tagline') === 'true',
+				show_meta: data.get('show_meta') === 'true',
+				show_studio: data.get('show_studio') === 'true',
+				show_budget: data.get('show_budget') === 'true',
 				show_director: data.get('show_director') === 'true',
+				show_writers: data.get('show_writers') === 'true',
 				show_actors: data.get('show_actors') === 'true',
 				show_rating: data.get('show_rating') === 'true',
+				show_imdb_rating: data.get('show_imdb_rating') === 'true',
 				show_genres: data.get('show_genres') === 'true',
+				show_external_links: data.get('show_external_links') === 'true',
+				list_item_format: data.get('list_item_format') ?? '',
 				buttons: data.get('buttons') ?? '[]'
 			});
 		} catch (e: unknown) {

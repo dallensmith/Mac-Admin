@@ -160,7 +160,7 @@
 		}
 
 		try {
-			customRules = JSON.parse((t.custom_rules as string) || '[]') as CustomRule[];
+			customRules = JSON.parse((t.rules as string) || '[]') as CustomRule[];
 		} catch {
 			customRules = [];
 		}
@@ -1261,7 +1261,7 @@
 						<p class="mb-3 text-xs text-slate-500">
 							Additional rules stored independently. Empty list = use file default.
 						</p>
-						<input type="hidden" name="custom_rules" value={customRulesJson} />
+						<input type="hidden" name="rules" value={customRulesJson} />
 						<div class="space-y-3">
 							{#each customRules as rule, i (i)}
 								<div class="rounded border border-slate-800/60 bg-slate-900/40 p-3">

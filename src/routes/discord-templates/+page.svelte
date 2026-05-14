@@ -47,6 +47,17 @@
 	let showActors = $state(defaultTemplateData.showActors);
 	let showRating = $state(defaultTemplateData.showRating);
 	let showGenres = $state(defaultTemplateData.showGenres);
+	let templateCategory = $state('movie');
+	let embedUrlEnabled = $state(false);
+	let footerIconEnabled = $state(false);
+	let showTagline = $state(false);
+	let showMeta = $state(false);
+	let showStudio = $state(false);
+	let showBudget = $state(false);
+	let showWriters = $state(false);
+	let showImdbRating = $state(false);
+	let showExternalLinks = $state(false);
+	let listItemFormat = $state('');
 	let buttons = $state<TemplateButtonConfig[]>([]);
 	let expandedButtonIdx = $state<number | null>(null);
 
@@ -68,6 +79,17 @@
 		showActors = Boolean(t.show_actors ?? defaultTemplateData.showActors);
 		showRating = Boolean(t.show_rating ?? defaultTemplateData.showRating);
 		showGenres = Boolean(t.show_genres ?? defaultTemplateData.showGenres);
+		templateCategory = String(t.template_category ?? 'movie');
+		embedUrlEnabled = Boolean(t.embed_url_enabled ?? false);
+		footerIconEnabled = Boolean(t.footer_icon_enabled ?? false);
+		showTagline = Boolean(t.show_tagline ?? false);
+		showMeta = Boolean(t.show_meta ?? false);
+		showStudio = Boolean(t.show_studio ?? false);
+		showBudget = Boolean(t.show_budget ?? false);
+		showWriters = Boolean(t.show_writers ?? false);
+		showImdbRating = Boolean(t.show_imdb_rating ?? false);
+		showExternalLinks = Boolean(t.show_external_links ?? false);
+		listItemFormat = String(t.list_item_format ?? '');
 		expandedButtonIdx = null;
 		try {
 			buttons = JSON.parse(String(t.buttons || '[]'));
@@ -82,13 +104,22 @@
 		descriptionFormat,
 		accentColor,
 		footerText,
+		embedUrlEnabled,
+		footerIconEnabled,
 		thumbnailEnabled,
 		imageEnabled,
 		timestampEnabled,
+		showTagline,
+		showMeta,
+		showStudio,
+		showBudget,
 		showDirector,
+		showWriters,
 		showActors,
 		showRating,
+		showImdbRating,
 		showGenres,
+		showExternalLinks,
 		buttons
 	});
 
@@ -166,6 +197,17 @@
 				<input type="hidden" name="show_actors" value={String(showActors)} />
 				<input type="hidden" name="show_rating" value={String(showRating)} />
 				<input type="hidden" name="show_genres" value={String(showGenres)} />
+				<input type="hidden" name="template_category" value={templateCategory} />
+				<input type="hidden" name="embed_url_enabled" value={String(embedUrlEnabled)} />
+				<input type="hidden" name="footer_icon_enabled" value={String(footerIconEnabled)} />
+				<input type="hidden" name="show_tagline" value={String(showTagline)} />
+				<input type="hidden" name="show_meta" value={String(showMeta)} />
+				<input type="hidden" name="show_studio" value={String(showStudio)} />
+				<input type="hidden" name="show_budget" value={String(showBudget)} />
+				<input type="hidden" name="show_writers" value={String(showWriters)} />
+				<input type="hidden" name="show_imdb_rating" value={String(showImdbRating)} />
+				<input type="hidden" name="show_external_links" value={String(showExternalLinks)} />
+				<input type="hidden" name="list_item_format" value={listItemFormat} />
 				<input type="hidden" name="buttons" value={JSON.stringify(buttons)} />
 				<div class="space-y-6">
 					<SectionCard title="Template Info">
@@ -201,6 +243,25 @@
 									bind:value={templateDescription}
 									class="input-dark"
 								/>
+							</div>
+							<div>
+								<label for="templateCategory" class="label-caps">Category</label>
+								<select
+									id="templateCategory"
+									name="template_category"
+									bind:value={templateCategory}
+									class="input-dark"
+								>
+									<option value="movie">Movie</option>
+									<option value="experiment">Experiment</option>
+									<option value="wheel">Wheel</option>
+									<option value="stats">Stats</option>
+									<option value="server">Server</option>
+									<option value="generic">Generic</option>
+								</select>
+								<p class="mt-1 text-xs text-slate-500">
+									Determines which renderer builds the embed.
+								</p>
 							</div>
 						</div>
 					</SectionCard>
@@ -257,52 +318,130 @@
 								</div>
 							</div>
 						</div>
+						<div>
+							<label for="listItemFormat" class="label-caps">List Item Format</label>
+							<textarea
+								id="listItemFormat"
+								name="list_item_format"
+								rows="3"
+								bind:value={listItemFormat}
+								class="input-dark font-mono text-xs"
+								placeholder="title=&#123;&#123;item.title&#125;&#125; | year=&#123;&#123;item.year&#125;&#125;"
+							></textarea>
+							<p class="mt-1 text-xs text-slate-500">
+								Per-item format for list templates. Use <code>&#123;&#123;item.field&#125;&#125;</code> tokens separated by <code>|</code>.
+							</p>
+						</div>
 					</SectionCard>
 
 					<SectionCard title="Visibility Toggles">
-						<div class="grid gap-y-4 sm:grid-cols-2">
-							<TemplateFieldToggle
-								id="toggle-thumbnail"
-								label="Show Thumbnail"
-								checked={thumbnailEnabled}
-								onChange={(val) => (thumbnailEnabled = val)}
-							/>
-							<TemplateFieldToggle
-								id="toggle-image"
-								label="Show Large Image"
-								checked={imageEnabled}
-								onChange={(val) => (imageEnabled = val)}
-							/>
-							<TemplateFieldToggle
-								id="toggle-timestamp"
-								label="Show Timestamp"
-								checked={timestampEnabled}
-								onChange={(val) => (timestampEnabled = val)}
-							/>
-							<TemplateFieldToggle
-								id="toggle-director"
-								label="Show Director Field"
-								checked={showDirector}
-								onChange={(val) => (showDirector = val)}
-							/>
-							<TemplateFieldToggle
-								id="toggle-actors"
-								label="Show Cast Field"
-								checked={showActors}
-								onChange={(val) => (showActors = val)}
-							/>
-							<TemplateFieldToggle
-								id="toggle-rating"
-								label="Show Rating Field"
-								checked={showRating}
-								onChange={(val) => (showRating = val)}
-							/>
-							<TemplateFieldToggle
-								id="toggle-genres"
-								label="Show Genres Field"
-								checked={showGenres}
-								onChange={(val) => (showGenres = val)}
-							/>
+						<div class="space-y-6">
+							<div>
+								<h4 class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">Embed Display</h4>
+								<div class="grid gap-y-4 sm:grid-cols-2">
+									<TemplateFieldToggle
+										id="toggle-thumbnail"
+										label="Show Thumbnail"
+										checked={thumbnailEnabled}
+										onChange={(val) => (thumbnailEnabled = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-image"
+										label="Show Large Image"
+										checked={imageEnabled}
+										onChange={(val) => (imageEnabled = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-timestamp"
+										label="Show Timestamp"
+										checked={timestampEnabled}
+										onChange={(val) => (timestampEnabled = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-embedUrl"
+										label="Title as Hyperlink"
+										checked={embedUrlEnabled}
+										onChange={(val) => (embedUrlEnabled = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-footerIcon"
+										label="Footer Icon"
+										checked={footerIconEnabled}
+										onChange={(val) => (footerIconEnabled = val)}
+									/>
+								</div>
+							</div>
+							<div class="border-t border-slate-800/60 pt-5">
+								<h4 class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">Content Fields</h4>
+								<div class="grid gap-y-4 sm:grid-cols-2">
+									<TemplateFieldToggle
+										id="toggle-director"
+										label="Show Director Field"
+										checked={showDirector}
+										onChange={(val) => (showDirector = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-actors"
+										label="Show Cast Field"
+										checked={showActors}
+										onChange={(val) => (showActors = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-rating"
+										label="Show Rating Field"
+										checked={showRating}
+										onChange={(val) => (showRating = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-imdbRating"
+										label="Show IMDb Rating"
+										checked={showImdbRating}
+										onChange={(val) => (showImdbRating = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-genres"
+										label="Show Genres Field"
+										checked={showGenres}
+										onChange={(val) => (showGenres = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-tagline"
+										label="Show Tagline"
+										checked={showTagline}
+										onChange={(val) => (showTagline = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-meta"
+										label="Show Meta Row"
+										checked={showMeta}
+										onChange={(val) => (showMeta = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-studio"
+										label="Show Studio Field"
+										checked={showStudio}
+										onChange={(val) => (showStudio = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-budget"
+										label="Show Budget Row"
+										checked={showBudget}
+										onChange={(val) => (showBudget = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-writers"
+										label="Show Writers Field"
+										checked={showWriters}
+										onChange={(val) => (showWriters = val)}
+									/>
+									<TemplateFieldToggle
+										id="toggle-externalLinks"
+										label="Show External Links"
+										checked={showExternalLinks}
+										onChange={(val) => (showExternalLinks = val)}
+									/>
+								</div>
+							</div>
 						</div>
 					</SectionCard>
 
