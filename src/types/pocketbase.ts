@@ -271,6 +271,46 @@ export interface PBInstructionSetRecord {
   updated:            string;
 }
 
+// ─── Embed templates ─────────────────────────────────────────────────────────
+
+/** A fully configurable Discord embed template stored in PocketBase. */
+export interface PBEmbedTemplateRecord {
+  id:                 string;
+  name:               string;
+  description:        string;
+  template_key:       string;
+  is_active:          boolean;
+  // ── Author ──
+  author_enabled:     boolean;
+  author_name:        string;
+  author_url:         string;
+  author_icon_url:    string;
+  // ── Content ──
+  title_enabled:      boolean;
+  title_text:         string;
+  description_enabled: boolean;
+  description_text:   string;
+  url_enabled:        boolean;
+  url_text:           string;
+  // ── Color ──
+  color:              string;
+  // ── Timestamp ──
+  timestamp_enabled:  boolean;
+  // ── Footer ──
+  footer_enabled:     boolean;
+  footer_text:        string;
+  footer_icon_url:    string;
+  // ── Media ──
+  thumbnail_enabled:  boolean;
+  thumbnail_url:      string;
+  image_enabled:      boolean;
+  image_url:          string;
+  // ── Fields (JSON) ──
+  fields_json:        string;
+  created:            string;
+  updated:            string;
+}
+
 export interface PBWheelCleanupRunRecord {
   id:        string;
   timestamp: string;

@@ -1,5 +1,34 @@
 <script lang="ts">
-	let { templateData } = $props<{ templateData: Record<string, unknown> }>();
+	import type { PBEmbedTemplateRecord } from '../../../types/pocketbase';
+
+	let { template } = $props<{ template: PBEmbedTemplateRecord }>();
+
+	// Parse fields JSON for inline fields
+	function parseFields(json: string): Array<{ name: string; value: string; inline: boolean }> {
+		try {
+			const parsed = JSON.parse(json);
+			return Array.isArray(parsed) ? parsed : [];
+		} catch {
+			return [];
+		}
+	}
+
+	let embedFields = $derived(parseFields(template.fields_json ?? '[]'));
+
+	// Determine accent color — default to Discord blurple
+	let accentColor = $derived(template.color || '#5865F2');
+
+	// Build footer display
+	let footerParts = $derived.by(() => {
+		const parts: string[] = [];
+		if (template.footer_enabled && template.footer_text) {
+			parts.push(template.footer_text);
+		}
+		if (template.timestamp_enabled) {
+			parts.push('Today at 4:20 PM');
+		}
+		return parts;
+	});
 </script>
 
 <!-- Mock Discord Message Layout -->
@@ -28,137 +57,114 @@
 			<!-- Discord Embed -->
 			<div class="mt-2 flex max-w-lg overflow-hidden rounded border border-[#1e1f22] bg-[#2b2d31]">
 				<!-- Left Color Strip -->
-				<div
-					class="w-1 shrink-0"
-					style="background-color: {templateData.accentColor || '#5865F2'}"
-				></div>
+				<div class="w-1 shrink-0" style="background-color: {accentColor}"></div>
 
 				<div class="flex flex-1 flex-col p-4">
+					<!-- Author Line -->
+					{#if template.author_enabled && template.author_name}
+						<div class="mb-2 flex items-center gap-2">
+							{#if template.author_icon_url}
+								<img
+									src={template.author_icon_url}
+									alt=""
+									class="h-5 w-5 rounded-full object-cover"
+								/>
+							{/if}
+							{#if template.author_url}
+								<a
+									href={template.author_url}
+									class="text-xs font-medium text-white hover:underline"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									{template.author_name}
+								</a>
+							{:else}
+								<span class="text-xs font-medium text-white">{template.author_name}</span>
+							{/if}
+						</div>
+					{/if}
+
 					<div class="flex items-start justify-between gap-4">
-						<div class="flex-1">
-							<!-- Author / Title -->
-							<div class="mb-1 cursor-pointer text-xs font-bold text-white hover:underline">
-								{templateData.titleFormat || 'Untitled Template'}
-							</div>
+						<div class="min-w-0 flex-1">
+							<!-- Title -->
+							{#if template.title_enabled && template.title_text}
+								<div class="mb-1 text-xs font-bold">
+									{#if template.url_enabled && template.url_text}
+										<a
+											href={template.url_text}
+											class="text-white hover:underline"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{template.title_text}
+										</a>
+									{:else}
+										<span class="text-white">{template.title_text}</span>
+									{/if}
+								</div>
+							{/if}
 
 							<!-- Description -->
-							<div class="text-[13px] whitespace-pre-wrap text-[#dbdee1]">
-								{templateData.descriptionFormat || 'No description provided.'}
-							</div>
+							{#if template.description_enabled && template.description_text}
+								<div class="text-[13px] whitespace-pre-wrap text-[#dbdee1]">
+									{template.description_text}
+								</div>
+							{/if}
 
-							<!-- Fake Fields (Controlled by Toggles) -->
-							<div class="mt-4 flex flex-wrap gap-x-4 gap-y-3">
-								{#if templateData.showDirector}
-									<div class="min-w-[45%]">
-										<div class="text-[11px] font-bold text-white">Director</div>
-										<div class="text-[13px] text-[#dbdee1]">Some Director</div>
-									</div>
-								{/if}
-								{#if templateData.showActors}
-									<div class="min-w-[45%]">
-										<div class="text-[11px] font-bold text-white">Cast</div>
-										<div class="text-[13px] text-[#dbdee1]">Actor 1, Actor 2</div>
-									</div>
-								{/if}
-								{#if templateData.showRating}
-									<div class="min-w-[45%]">
-										<div class="text-[11px] font-bold text-white">Rating</div>
-										<div class="text-[13px] text-[#dbdee1]">PG-13</div>
-									</div>
-								{/if}
-								{#if templateData.showGenres}
-									<div class="min-w-[45%]">
-										<div class="text-[11px] font-bold text-white">Genres</div>
-										<div class="text-[13px] text-[#dbdee1]">Action, Sci-Fi</div>
-									</div>
-								{/if}
-							</div>
+							<!-- Inline Fields Grid -->
+							{#if embedFields.length > 0}
+								<div class="mt-3 flex flex-wrap gap-x-4 gap-y-3">
+									{#each embedFields as field (field.name)}
+										<div class={field.inline ? 'min-w-[45%]' : 'w-full'}>
+											<div class="text-[11px] font-bold text-white">{field.name}</div>
+											<div class="text-[13px] text-[#dbdee1]">{field.value}</div>
+										</div>
+									{/each}
+								</div>
+							{/if}
 						</div>
 
 						<!-- Thumbnail (Right aligned) -->
-						{#if templateData.thumbnailEnabled}
+						{#if template.thumbnail_enabled && template.thumbnail_url}
 							<div class="h-[100px] w-[75px] shrink-0 overflow-hidden rounded bg-[#1e1f22]">
 								<img
-									src="https://placehold.co/150x200/2b2d31/dbdee1?text=Poster"
+									src={template.thumbnail_url}
 									alt="Thumbnail"
-									class="h-full w-full object-cover opacity-80"
+									class="h-full w-full object-cover"
 								/>
 							</div>
 						{/if}
 					</div>
 
-					<!-- Bottom Image -->
-					{#if templateData.imageEnabled}
-						<div class="mt-4 max-w-[400px] overflow-hidden rounded bg-[#1e1f22]">
+					<!-- Large Image (full-width below content) -->
+					{#if template.image_enabled && template.image_url}
+						<div class="mt-4 overflow-hidden rounded bg-[#1e1f22]">
 							<img
-								src="https://placehold.co/600x300/2b2d31/dbdee1?text=Large+Image"
-								alt="Embed"
-								class="h-auto w-full opacity-80"
+								src={template.image_url}
+								alt=""
+								class="h-auto max-h-[300px] w-full object-cover"
 							/>
 						</div>
 					{/if}
 
 					<!-- Footer -->
-					<div class="mt-3 flex items-center gap-2">
-						<div class="text-[11px] text-[#dbdee1]">
-							{templateData.footerText || ''}
-							{#if templateData.timestampEnabled}
-								{#if templateData.footerText}•{/if} Today at 4:20 PM
+					{#if footerParts.length > 0}
+						<div class="mt-3 flex items-center gap-2">
+							{#if template.footer_enabled && template.footer_icon_url}
+								<img
+									src={template.footer_icon_url}
+									alt=""
+									class="h-4 w-4 rounded-full object-cover"
+								/>
 							{/if}
+							<div class="text-[11px] text-[#dbdee1]">
+								{footerParts.join(' • ')}
+							</div>
 						</div>
-					</div>
+					{/if}
 				</div>
 			</div>
-
-			<!-- Mock Interactive Buttons -->
-			{#if templateData.buttonsEnabled}
-				<div class="mt-2 flex flex-wrap gap-2">
-					{#if templateData.buttonLabels.badmovies}
-						<button
-							class="flex h-8 items-center gap-2 rounded bg-[#4e5058] px-4 text-sm font-medium text-white transition-colors hover:bg-[#6d6f78]"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="lucide lucide-external-link"
-								><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path
-									d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-								/></svg
-							>
-							{templateData.buttonLabels.badmovies}
-						</button>
-					{/if}
-					{#if templateData.buttonLabels.imdb}
-						<button
-							class="flex h-8 items-center gap-2 rounded bg-[#4e5058] px-4 text-sm font-medium text-white transition-colors hover:bg-[#6d6f78]"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="lucide lucide-external-link"
-								><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path
-									d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-								/></svg
-							>
-							{templateData.buttonLabels.imdb}
-						</button>
-					{/if}
-				</div>
-			{/if}
 		</div>
 	</div>
 </div>

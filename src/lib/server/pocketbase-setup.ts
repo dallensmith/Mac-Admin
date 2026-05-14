@@ -248,6 +248,44 @@ const collections: CollectionDef[] = [
 		]
 	},
 
+	// ── Embed templates ─────────────────────────────────────────────────
+	{
+		name: col('embed_templates'),
+		fields: [
+			text('name', true),
+			text('description'),
+			text('template_key', true),
+			bool('is_active'),
+			// Author
+			bool('author_enabled'),
+			text('author_name'),
+			text('author_url'),
+			text('author_icon_url'),
+			// Content
+			bool('title_enabled'),
+			text('title_text'),
+			bool('description_enabled'),
+			longtext('description_text'),
+			bool('url_enabled'),
+			text('url_text'),
+			// Color
+			text('color', true),
+			// Timestamp
+			bool('timestamp_enabled'),
+			// Footer
+			bool('footer_enabled'),
+			text('footer_text'),
+			text('footer_icon_url'),
+			// Media
+			bool('thumbnail_enabled'),
+			text('thumbnail_url'),
+			bool('image_enabled'),
+			text('image_url'),
+			// Fields
+			longtext('fields_json')
+		]
+	},
+
 	// ── Bot config (singleton) ────────────────────────────────────────────
 	{
 		name: col('bot_config'),
@@ -424,6 +462,7 @@ export async function seedDefaultData(adminPb: PocketBase): Promise<void> {
 
 	await seedBotConfig(adminPb);
 	await seedInstructionSets(adminPb);
+	await seedEmbedTemplates(adminPb);
 
 	logger.info('[pb-setup] Seed check complete');
 }
@@ -490,4 +529,193 @@ async function seedInstructionSets(adminPb: PocketBase): Promise<void> {
 			`[pb-setup] Failed to seed "${collectionName}": ${err instanceof Error ? err.message : String(err)}`
 		);
 	}
+}
+
+async function seedEmbedTemplates(adminPb: PocketBase): Promise<void> {
+	const collectionName = col('embed_templates');
+
+	// Check if any templates already exist — if so, skip seeding entirely
+	try {
+		const records = await adminPb.collection(collectionName).getList(1, 1);
+		if (records.totalItems > 0) {
+			logger.debug(`[pb-setup] "${collectionName}" already has records — skipping seed`);
+			return;
+		}
+	} catch (err) {
+		logger.error(
+			`[pb-setup] Failed to check "${collectionName}" for existing records: ${err instanceof Error ? err.message : String(err)}`
+		);
+		return;
+	}
+
+	const defaults: Array<{
+		name: string;
+		template_key: string;
+		description: string;
+		title_enabled: boolean;
+		title_text: string;
+		description_enabled: boolean;
+		description_text: string;
+		thumbnail_enabled: boolean;
+		image_enabled: boolean;
+		fields_json: string;
+	}> = [
+		{
+			name: 'Movie Lookup',
+			template_key: 'movie-lookup',
+			description: 'Used when a user searches for a specific movie.',
+			title_enabled: true,
+			title_text: '{{movie.title}} ({{movie.year}})',
+			description_enabled: true,
+			description_text: '{{movie.overview}}',
+			thumbnail_enabled: true,
+			image_enabled: false,
+			fields_json: JSON.stringify([
+				{ name: 'Director', value: '{{movie.director}}', inline: true },
+				{ name: 'Cast', value: '{{movie.actors}}', inline: true },
+				{ name: 'Rating', value: '{{movie.rating}}', inline: true },
+				{ name: 'Genres', value: '{{movie.genres}}', inline: true },
+				{ name: 'IMDb', value: '{{movie.imdbRating}}/10', inline: true },
+				{ name: 'Runtime', value: '{{movie.runtime}} min', inline: true }
+			])
+		},
+		{
+			name: 'Experiment Lookup',
+			template_key: 'experiment-lookup',
+			description: 'Used when a user searches for an experiment.',
+			title_enabled: true,
+			title_text: 'Experiment #{{experiment.number}}',
+			description_enabled: true,
+			description_text: '{{experiment.movies}}',
+			thumbnail_enabled: true,
+			image_enabled: false,
+			fields_json: JSON.stringify([
+				{ name: 'Date', value: '{{experiment.date}}', inline: true },
+				{ name: 'Host', value: '{{experiment.host}}', inline: true }
+			])
+		},
+		{
+			name: 'Review',
+			template_key: 'review',
+			description: 'Used for formatting movie review displays.',
+			title_enabled: true,
+			title_text: 'Review: {{review.movieTitle}}',
+			description_enabled: true,
+			description_text: '{{review.content}}',
+			thumbnail_enabled: false,
+			image_enabled: false,
+			fields_json: JSON.stringify([
+				{ name: 'Author', value: '{{review.author}}', inline: true },
+				{ name: 'Rating', value: '{{review.rating}}', inline: true },
+				{ name: 'Date', value: '{{review.date}}', inline: true }
+			])
+		},
+		{
+			name: 'Quote',
+			template_key: 'quote',
+			description: 'Used for displaying memorable quotes.',
+			title_enabled: true,
+			title_text: 'Quote from {{quote.movie}} ({{quote.year}})',
+			description_enabled: true,
+			description_text: '"{{quote.text}}"',
+			thumbnail_enabled: false,
+			image_enabled: false,
+			fields_json: JSON.stringify([
+				{ name: 'Character', value: '{{quote.character}}', inline: true },
+				{ name: 'Actor', value: '{{quote.actor}}', inline: true }
+			])
+		},
+		{
+			name: 'No Results',
+			template_key: 'no-results',
+			description: 'Displayed when a search yields nothing.',
+			title_enabled: true,
+			title_text: 'No Results Found',
+			description_enabled: true,
+			description_text: 'No results for "{{query}}" in {{source}}.',
+			thumbnail_enabled: false,
+			image_enabled: false,
+			fields_json: '[]'
+		},
+		{
+			name: 'Error Message',
+			template_key: 'error',
+			description: 'Generic error format for bot commands.',
+			title_enabled: true,
+			title_text: 'Error',
+			description_enabled: true,
+			description_text: '{{error.message}}',
+			thumbnail_enabled: false,
+			image_enabled: false,
+			fields_json: JSON.stringify([
+				{ name: 'Command', value: '{{error.command}}', inline: true }
+			])
+		},
+		{
+			name: 'Wheel Spin',
+			template_key: 'wheel-spin',
+			description: 'Displayed when the wheel picks a movie.',
+			title_enabled: true,
+			title_text: '🎡 The Wheel Has Spoken!',
+			description_enabled: true,
+			description_text: '**{{wheel.title}}** ({{wheel.year}})',
+			thumbnail_enabled: true,
+			image_enabled: false,
+			fields_json: JSON.stringify([
+				{ name: 'Suggested By', value: '{{wheel.suggestedBy}}', inline: true },
+				{ name: 'Added', value: '{{wheel.dateAdded}}', inline: true },
+				{ name: 'IMDb', value: '{{wheel.imdbId}}', inline: true }
+			])
+		},
+		{
+			name: 'Help',
+			template_key: 'help',
+			description: 'Bot command list and help.',
+			title_enabled: true,
+			title_text: '{{bot.name}} Commands',
+			description_enabled: true,
+			description_text: '{{bot.commands}}',
+			thumbnail_enabled: false,
+			image_enabled: false,
+			fields_json: '[]'
+		}
+	];
+
+	for (const tmpl of defaults) {
+		try {
+			await adminPb.collection(collectionName).create({
+				name: tmpl.name,
+				description: tmpl.description,
+				template_key: tmpl.template_key,
+				is_active: true,
+				author_enabled: false,
+				author_name: '',
+				author_url: '',
+				author_icon_url: '',
+				title_enabled: tmpl.title_enabled,
+				title_text: tmpl.title_text,
+				description_enabled: tmpl.description_enabled,
+				description_text: tmpl.description_text,
+				url_enabled: false,
+				url_text: '',
+				color: '#5865F2',
+				timestamp_enabled: true,
+				footer_enabled: true,
+				footer_text: '{{bot.name}} | Requested by {{user}}',
+				footer_icon_url: '',
+				thumbnail_enabled: tmpl.thumbnail_enabled,
+				thumbnail_url: '',
+				image_enabled: tmpl.image_enabled,
+				image_url: '',
+				fields_json: tmpl.fields_json
+			});
+			logger.info(`[pb-setup] Seeded embed template "${tmpl.name}" (key: ${tmpl.template_key})`);
+		} catch (err) {
+			logger.error(
+				`[pb-setup] Failed to seed embed template "${tmpl.name}": ${err instanceof Error ? err.message : String(err)}`
+			);
+		}
+	}
+
+	logger.info(`[pb-setup] Seeded ${defaults.length} default embed templates`);
 }
