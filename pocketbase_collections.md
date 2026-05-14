@@ -309,3 +309,214 @@ Settings marked **restart-required** are stored here and applied on the next bot
 | `custom_rules`       | text | JSON array of `{label, rule}` blocks injected before OUTPUT DISCIPLINE. Empty = use file default (`promptRules` in `conversation-rules.json`) |
 | `output_discipline`  | text | **Replaces** the hardcoded OUTPUT DISCIPLINE section when non-empty. Empty = use hardcoded                                                    |
 | `addendum`           | text | Free-form text appended at the very end of the prompt. Empty = nothing appended                                                               |
+
+---
+
+## `sm_embed_templates`
+
+**Purpose:** Fully configurable Discord embed templates used by the bot to compose and render message embeds. Each template maps to a bot command context via its `template_key` field. The bot looks up the active template (`is_active=true`) for each key at runtime and constructs a Discord embed following the [Discord Embed Object specification](https://discord.com/developers/docs/resources/message#embed-object). Polled alongside `sm_instruction_sets` on the `instruction_refresh_interval_ms` cycle for hot-reloading.
+
+**Template resolution:** The bot queries `sm_embed_templates` filtered by `template_key` and `is_active=true`. Only one template per key should be active at a time. The admin panel enforces this via the "Set Active" action (deactivates all other templates sharing the same key). If no active template is found for a key, the bot should fall back to a hardcoded minimal embed.
+
+**Variable substitution:** All text fields support `{{variable.path}}` placeholders. The bot replaces these at runtime with live data before sending the embed. See the Variable Catalog appendix for available variables per template key.
+
+### Metadata Fields
+
+| Field          | Type | Required | Notes                                                                                     |
+| -------------- | ---- | -------- | ----------------------------------------------------------------------------------------- |
+| `name`         | text | ✅        | Human-readable display name (e.g. "Movie Lookup", "Compact Review")                        |
+| `description`  | text |          | Optional notes describing when/how this template is used                                   |
+| `template_key` | text | ✅        | Bot command context key (e.g. `movie-lookup`, `experiment-lookup`, `review`, `quote`, `no-results`, `error`, `wheel-spin`, `help`). The bot filters by this key to find the active template for a given command. |
+| `is_active`    | bool |          | Only one template per `template_key` should be active. The bot uses the active one.        |
+
+### Author Block
+
+Corresponds to the [Discord Embed Author Object](https://discord.com/developers/docs/resources/message#embed-object-embed-author-structure).
+
+| Field             | Type | Notes                                                                                      |
+| ----------------- | ---- | ------------------------------------------------------------------------------------------ |
+| `author_enabled`  | bool | When `false`, the entire author row is omitted from the embed                              |
+| `author_name`     | text | Display name for the author line. Supports `{{variables}}`                                 |
+| `author_url`      | text | URL the author name links to. Supports `{{variables}}`                                     |
+| `author_icon_url` | text | Small icon shown left of the author name. Supports `{{variables}}`. Discord requires HTTPS. |
+
+### Content Block
+
+| Field                 | Type   | Notes                                                                                                           |
+| --------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| `title_enabled`       | bool   | When `false`, the embed title is omitted                                                                        |
+| `title_text`          | text   | Embed title text. Supports `{{variables}}`. Max 256 characters (Discord limit).                                  |
+| `description_enabled` | bool   | When `false`, the embed description is omitted                                                                  |
+| `description_text`    | text   | Embed description body. Supports `{{variables}}`. Max 4096 characters (Discord limit). Stored as `longtext`.     |
+| `url_enabled`         | bool   | When `true` AND `title_enabled=true`, the title becomes a clickable hyperlink to this URL                       |
+| `url_text`            | text   | The URL the title links to. Supports `{{variables}}`. Only used when `url_enabled=true`.                        |
+
+### Color
+
+| Field   | Type | Notes                                                                              |
+| ------- | ---- | ---------------------------------------------------------------------------------- |
+| `color` | text | Hex color string (e.g. `#5865F2`). Required. This is the left color strip on the embed. Use Discord's `color` field (integer). The bot must convert the hex string to an integer: `parseInt(color.slice(1), 16)`. |
+
+### Timestamp
+
+| Field               | Type | Notes                                                                  |
+| ------------------- | ---- | ---------------------------------------------------------------------- |
+| `timestamp_enabled` | bool | When `true`, the embed includes a timestamp in the footer area         |
+
+### Footer Block
+
+Corresponds to the [Discord Embed Footer Object](https://discord.com/developers/docs/resources/message#embed-object-embed-footer-structure).
+
+| Field             | Type | Notes                                                                                      |
+| ----------------- | ---- | ------------------------------------------------------------------------------------------ |
+| `footer_enabled`  | bool | When `false`, the entire footer is omitted                                                 |
+| `footer_text`     | text | Footer text. Supports `{{variables}}`. Max 2048 characters (Discord limit).                 |
+| `footer_icon_url` | text | Small icon shown left of the footer text. Supports `{{variables}}`. Discord requires HTTPS. |
+
+### Media Block
+
+Corresponds to the [Discord Embed Thumbnail](https://discord.com/developers/docs/resources/message#embed-object-embed-thumbnail-structure) and [Embed Image](https://discord.com/developers/docs/resources/message#embed-object-embed-image-structure) structures.
+
+| Field               | Type | Notes                                                                     |
+| ------------------- | ---- | ------------------------------------------------------------------------- |
+| `thumbnail_enabled` | bool | When `false`, the thumbnail is omitted                                    |
+| `thumbnail_url`     | text | URL for the thumbnail image (small, right-aligned). Supports `{{variables}}`. Discord requires HTTPS. |
+| `image_enabled`     | bool | When `false`, the large image is omitted                                  |
+| `image_url`         | text | URL for the large image (full-width below content). Supports `{{variables}}`. Discord requires HTTPS. |
+
+### Inline Fields
+
+Corresponds to the [Discord Embed Field Object](https://discord.com/developers/docs/resources/message#embed-object-embed-field-structure). Up to 25 fields per embed.
+
+| Field         | Type | Notes                                                                                                                               |
+| ------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `fields_json` | text | JSON array of field objects: `[{"name":"...","value":"...","inline":true}]`. Stored as `longtext`. Max 25 elements (Discord limit). |
+
+Each field object:
+- `name` (string): Field name. Max 256 characters. Supports `{{variables}}`.
+- `value` (string): Field value. Max 1024 characters. Supports `{{variables}}`.
+- `inline` (boolean): When `true`, the field renders side-by-side with other inline fields. When `false`, it takes the full width.
+
+---
+
+## Variable Catalog
+
+Common variables available in **all** embed templates:
+
+| Variable         | Description                          | Source       |
+| ---------------- | ------------------------------------ | ------------ |
+| `{{user}}`       | Discord username of the requester    | Discord      |
+| `{{user.mention}}` | Discord @mention of the requester  | Discord      |
+| `{{server.name}}`  | Discord server name                | Discord      |
+| `{{timestamp}}`    | Current ISO 8601 timestamp         | Bot          |
+
+### `movie-lookup`
+
+| Variable                | Description                     | Source        |
+| ----------------------- | ------------------------------- | ------------- |
+| `{{movie.title}}`       | Movie title                     | BadMovies DB  |
+| `{{movie.year}}`        | Release year                    | BadMovies DB  |
+| `{{movie.overview}}`    | Short plot summary              | BadMovies DB  |
+| `{{movie.releaseDate}}` | Full release date               | BadMovies DB  |
+| `{{movie.runtime}}`     | Runtime in minutes              | BadMovies DB  |
+| `{{movie.rating}}`      | Content rating (R, PG-13, etc.) | BadMovies DB  |
+| `{{movie.imdbRating}}`  | IMDb score out of 10            | BadMovies DB  |
+| `{{movie.revenue}}`     | Box office revenue              | BadMovies DB  |
+| `{{movie.director}}`    | Director name(s)                | BadMovies DB  |
+| `{{movie.writers}}`     | Writer name(s)                  | BadMovies DB  |
+| `{{movie.actors}}`      | Lead actors                     | BadMovies DB  |
+| `{{movie.genres}}`      | Associated genres               | BadMovies DB  |
+| `{{movie.badmoviesUrl}}`| Link to BadMovies.co entry      | BadMovies DB  |
+| `{{movie.imdbUrl}}`     | Link to IMDb page               | BadMovies DB  |
+| `{{movie.posterUrl}}`   | Poster image URL                | BadMovies DB  |
+| `{{movie.tmdbId}}`      | TMDb numeric ID                 | BadMovies DB  |
+| `{{movie.slug}}`        | URL slug                        | BadMovies DB  |
+
+### `experiment-lookup`
+
+| Variable                  | Description                  | Source        |
+| ------------------------- | ---------------------------- | ------------- |
+| `{{experiment.number}}`   | Experiment episode number    | BadMovies DB  |
+| `{{experiment.date}}`     | Date of the experiment       | BadMovies DB  |
+| `{{experiment.movies}}`   | List of movies watched       | BadMovies DB  |
+| `{{experiment.host}}`     | Host of the experiment       | BadMovies DB  |
+| `{{experiment.url}}`      | Link to experiment details   | BadMovies DB  |
+| `{{experiment.imageUrl}}` | Thumbnail for the experiment | BadMovies DB  |
+| `{{experiment.slug}}`     | URL slug                     | BadMovies DB  |
+
+### `review`
+
+| Variable               | Description                     | Source        |
+| ---------------------- | ------------------------------- | ------------- |
+| `{{review.author}}`    | Review author name              | BadMovies DB  |
+| `{{review.rating}}`    | Review rating/score             | BadMovies DB  |
+| `{{review.content}}`   | Full review text                | BadMovies DB  |
+| `{{review.date}}`      | Review date                     | BadMovies DB  |
+| `{{review.movieTitle}}`| Title of the reviewed movie     | BadMovies DB  |
+| `{{review.movieUrl}}`  | Link to the movie               | BadMovies DB  |
+| `{{review.url}}`       | Link to the review              | BadMovies DB  |
+
+### `quote`
+
+| Variable             | Description                          | Source        |
+| -------------------- | ------------------------------------ | ------------- |
+| `{{quote.text}}`     | The quote text                       | BadMovies DB  |
+| `{{quote.movie}}`    | Movie the quote is from              | BadMovies DB  |
+| `{{quote.character}}`| Character who said it                | BadMovies DB  |
+| `{{quote.actor}}`    | Actor who played the character       | BadMovies DB  |
+| `{{quote.year}}`     | Year of the movie                    | BadMovies DB  |
+| `{{quote.url}}`      | Link to the quote                    | BadMovies DB  |
+
+### `wheel-spin`
+
+| Variable                | Description                     | Source        |
+| ----------------------- | ------------------------------- | ------------- |
+| `{{wheel.title}}`       | Movie title from wheel          | Wheel (PB)    |
+| `{{wheel.year}}`        | Release year                    | Wheel (PB)    |
+| `{{wheel.tmdbId}}`      | TMDb numeric ID                 | Wheel (PB)    |
+| `{{wheel.imdbId}}`      | IMDb tt-ID                      | Wheel (PB)    |
+| `{{wheel.suggestedBy}}` | User who added the movie        | Wheel (PB)    |
+| `{{wheel.dateAdded}}`   | Date added to the wheel         | Wheel (PB)    |
+
+### `no-results`
+
+| Variable      | Description                              | Source   |
+| ------------- | ---------------------------------------- | -------- |
+| `{{query}}`   | The search query that returned no results | Discord  |
+| `{{source}}`  | Where the search was performed            | Discord  |
+
+### `error`
+
+| Variable            | Description                           | Source   |
+| ------------------- | ------------------------------------- | -------- |
+| `{{error.message}}` | Error description                     | Bot      |
+| `{{error.command}}` | The command that caused the error     | Bot      |
+| `{{error.context}}` | Additional error context              | Bot      |
+
+### `help`
+
+| Variable          | Description                  | Source      |
+| ----------------- | ---------------------------- | ----------- |
+| `{{bot.name}}`    | Bot display name             | Bot Config  |
+| `{{bot.commands}}`| Formatted command list       | Bot         |
+| `{{bot.prefix}}`  | Command prefix               | Bot Config  |
+
+---
+
+## Discord Embed Limits Reference
+
+The admin panel displays these limits to template authors. The bot should also validate against them when constructing embeds.
+
+| Constraint      | Limit                        |
+| --------------- | ---------------------------- |
+| Title           | 256 characters               |
+| Description     | 4096 characters              |
+| Field Name      | 256 characters               |
+| Field Value     | 1024 characters              |
+| Max Fields      | 25 fields per embed          |
+| Footer Text     | 2048 characters              |
+| Author Name     | 256 characters               |
+| Total Embed     | 6000 characters (all fields combined) |
+| Embeds per msg  | 10 embeds maximum            |
+
+> **Note:** All URLs in embeds (author icon, thumbnail, image, footer icon) must use HTTPS. The Discord API rejects non-HTTPS URLs.
