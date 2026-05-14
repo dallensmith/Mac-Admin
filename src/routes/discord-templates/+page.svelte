@@ -26,7 +26,8 @@
 		{ key: 'content', label: 'Content' },
 		{ key: 'media', label: 'Media' },
 		{ key: 'fields', label: 'Fields' },
-		{ key: 'footer', label: 'Footer' }
+		{ key: 'footer', label: 'Footer' },
+		{ key: 'variables', label: 'Variables' }
 	] as const;
 
 	type TabKey = (typeof tabs)[number]['key'];
@@ -195,6 +196,44 @@
 			await update();
 			selectedTemplateId = (data.templates[0] as RecordModel)?.id ?? '';
 		};
+
+	// ── Variable editing state ──────────────────────────────────────────
+	let editingVariableId = $state<string | null>(null);
+	let editVarName = $state('');
+	let editVarDesc = $state('');
+	let editVarSource = $state('');
+	let editVarDataPath = $state('');
+
+	function startEditVariable(v: { id?: string; name: string; description: string; source: string; data_path?: string }) {
+		editingVariableId = v.id ?? null;
+		editVarName = v.name;
+		editVarDesc = v.description || '';
+		editVarSource = v.source || '';
+		editVarDataPath = (v as Record<string, unknown>).data_path as string || '';
+	}
+
+	function cancelEditVariable() {
+		editingVariableId = null;
+	}
+
+	const enhanceCreateVar =
+		() =>
+		async ({ update }: { update: () => Promise<void> }) => {
+			await update();
+		};
+
+	const enhanceUpdateVar =
+		() =>
+		async ({ update }: { update: () => Promise<void> }) => {
+			await update();
+			editingVariableId = null;
+		};
+
+	const enhanceDeleteVar =
+		() =>
+		async ({ update }: { update: () => Promise<void> }) => {
+			await update();
+		};
 </script>
 
 <!-- ── Hidden action forms ─────────────────────────────────────────────── -->
@@ -207,6 +246,21 @@
 </form>
 <form id="deleteForm" method="POST" action="?/delete" use:enhance={enhanceDelete}>
 	<input type="hidden" name="id" value={selectedTemplate?.id} />
+</form>
+<form id="createVarForm" method="POST" action="?/createVariable" use:enhance={enhanceCreateVar}>
+	<input type="hidden" name="template_key" value={edits.template_key} />
+</form>
+<form id="updateVarForm" method="POST" action="?/updateVariable" use:enhance={enhanceUpdateVar}>
+	{#if editingVariableId}
+		<input type="hidden" name="id" value={editingVariableId} />
+		<input type="hidden" name="name" value={editVarName} />
+		<input type="hidden" name="description" value={editVarDesc} />
+		<input type="hidden" name="source" value={editVarSource} />
+		<input type="hidden" name="data_path" value={editVarDataPath} />
+	{/if}
+</form>
+<form id="deleteVarForm" method="POST" action="?/deleteVariable" use:enhance={enhanceDeleteVar}>
+	<input type="hidden" name="id" value={editingVariableId ?? ''} />
 </form>
 
 <PageHeader
@@ -566,6 +620,94 @@
 									onChange={(val) => (edits.timestamp_enabled = val)}
 								/>
 							</div>
+						</div>
+					</div>
+
+					<!-- ── Variables Tab ──────────────────────────────────────── -->
+					<div class={activeTab !== 'variables' ? 'hidden' : ''}>
+						<div class="space-y-4">
+							<div class="flex items-center justify-between">
+								<span class="label-caps">Template Variables for <code class="rounded bg-slate-700/60 px-1.5 py-0.5 text-xs text-cyan-400">{edits.template_key || '...'}</code></span>
+								<button
+									type="submit"
+									form="createVarForm"
+									class="text-label-xs font-bold tracking-widest text-cyan-400 uppercase transition-colors hover:text-cyan-300"
+								>
+									+ New Variable
+								</button>
+							</div>
+
+							{#if templateKeyVars.length === 0}
+								<p class="rounded border border-slate-800/60 bg-slate-900/40 px-4 py-6 text-center text-xs text-slate-500">
+									No variables defined for this template key. Click "+ New Variable" to add one, or switch to a different template key.
+								</p>
+							{:else}
+								<div class="space-y-2">
+									{#each templateKeyVars as v (v.name)}
+										{@const record = (data.variableRecords as Record<string, unknown>[]).find((r: Record<string, unknown>) => r.name === v.name && r.template_key === edits.template_key)}
+										{@const varId = record?.id as string | undefined}
+										{@const dataPath = record?.data_path as string | undefined}
+
+										<div class="rounded border border-slate-800/60 bg-slate-900/40 p-3">
+											{#if editingVariableId === varId}
+												<!-- Inline Edit Mode -->
+												<div class="space-y-2">
+													<div class="grid gap-2 sm:grid-cols-2">
+														<div>
+															<label class="text-[10px] font-bold text-slate-500 uppercase">Name</label>
+															<input type="text" bind:value={editVarName} class="input-dark text-sm" placeholder="movie.title" />
+														</div>
+														<div>
+															<label class="text-[10px] font-bold text-slate-500 uppercase">Source</label>
+															<input type="text" bind:value={editVarSource} class="input-dark text-sm" placeholder="BadMovies DB" />
+														</div>
+													</div>
+													<div>
+														<label class="text-[10px] font-bold text-slate-500 uppercase">Description</label>
+														<input type="text" bind:value={editVarDesc} class="input-dark text-sm" placeholder="Short description of this variable" />
+													</div>
+													<div>
+														<label class="text-[10px] font-bold text-slate-500 uppercase">Data Path (optional, for bot auto-resolution)</label>
+														<input type="text" bind:value={editVarDataPath} class="input-dark text-sm" placeholder="movies.title" />
+													</div>
+													<div class="flex gap-2">
+														<button type="submit" form="updateVarForm" class="rounded border border-cyan-500/50 bg-cyan-500/10 px-3 py-1 text-xs font-bold text-cyan-400 uppercase hover:bg-cyan-500/20">Save</button>
+														<button type="button" onclick={cancelEditVariable} class="rounded border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-bold text-slate-400 uppercase hover:text-slate-300">Cancel</button>
+														{#if varId}
+															<div class="flex-1"></div>
+															<button type="submit" form="deleteVarForm" class="rounded border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-xs font-bold text-rose-400 uppercase hover:bg-rose-500/20">Delete</button>
+														{/if}
+													</div>
+												</div>
+											{:else}
+												<!-- Display Mode -->
+												<div class="flex items-start justify-between gap-2">
+													<div class="min-w-0 flex-1">
+														<div class="flex items-center gap-2">
+															<code class="rounded bg-slate-800/80 px-1.5 py-0.5 text-xs text-fuchsia-400">{'{{' + v.name + '}}'}</code>
+															{#if dataPath}
+																<span class="text-[10px] text-slate-600">→ {dataPath}</span>
+															{/if}
+														</div>
+														<p class="mt-1 text-xs text-slate-400">{v.description}</p>
+														<span class="text-[10px] text-slate-600">{v.source}</span>
+													</div>
+													{#if varId}
+														<button
+															type="button"
+															class="shrink-0 rounded p-1 text-slate-500 transition-colors hover:bg-slate-800 hover:text-cyan-400"
+															onclick={() => startEditVariable({ id: varId, name: v.name, description: v.description, source: v.source, data_path: dataPath })}
+															aria-label="Edit variable"
+														>
+															<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+														</button>
+													{/if}
+												</div>
+											{/if}
+										</div>
+									{/each}
+								</div>
+							{/if}
 						</div>
 					</div>
 				</SectionCard>

@@ -119,11 +119,36 @@ const COMMON_VARIABLES: VariableDef[] = [
 
 // ── Load ─────────────────────────────────────────────────────────────────────
 
+// ── Load ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Builds the variable catalog from PocketBase records.
+ * Falls back to the hardcoded catalog if PocketBase is empty.
+ */
+function buildCatalogFromPb(
+	pbVars: Array<{ name: string; description: string; template_key: string; source: string; is_common?: boolean }>
+): { catalog: Record<string, VariableDef[]>; common: VariableDef[] } {
+	const catalog: Record<string, VariableDef[]> = {};
+	const common: VariableDef[] = [];
+
+	for (const v of pbVars) {
+		const def: VariableDef = { name: v.name, description: v.description ?? '', source: v.source ?? '' };
+		if (v.is_common) {
+			common.push(def);
+		} else {
+			const key = v.template_key;
+			if (!catalog[key]) catalog[key] = [];
+			catalog[key].push(def);
+		}
+	}
+
+	return { catalog, common };
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) redirect(302, '/login');
 
-	// Fetch without sort — PocketBase has a bug where sorting by updated/created
-	// returns 400 after a fresh Docker volume creation. Sort client-side instead.
+	// ── Templates ──────────────────────────────────────────────────────
 	const result = await locals.adminPb.collection('sm_embed_templates').getList(1, 10000);
 	const templates = result.items.sort((a, b) => {
 		const au = typeof a.updated === 'string' ? a.updated : '';
@@ -131,10 +156,34 @@ export const load: PageServerLoad = async ({ locals }) => {
 		return bu.localeCompare(au);
 	});
 
+	// ── Variables (PocketBase first, fall back to hardcoded) ───────────
+	let variableCatalog = VARIABLE_CATALOG;
+	let commonVariables = COMMON_VARIABLES;
+	let variableRecords: Array<Record<string, unknown>> = [];
+
+	try {
+		const pbVars = await locals.adminPb.collection('sm_template_variables').getFullList();
+		variableRecords = pbVars;
+		if (pbVars.length > 0) {
+			const built = buildCatalogFromPb(pbVars as Array<{
+				name: string; description: string; template_key: string; source: string; is_common?: boolean;
+			}>);
+			if (Object.keys(built.catalog).length > 0) {
+				variableCatalog = built.catalog;
+			}
+			if (built.common.length > 0) {
+				commonVariables = built.common;
+			}
+		}
+	} catch {
+		// Collection may not exist yet — use hardcoded fallback
+	}
+
 	return {
 		templates,
-		variableCatalog: VARIABLE_CATALOG,
-		commonVariables: COMMON_VARIABLES
+		variableCatalog,
+		commonVariables,
+		variableRecords
 	};
 };
 
@@ -301,5 +350,49 @@ export const actions: Actions = {
 				await locals.adminPb.collection('sm_embed_templates').update(t.id, { is_active: false });
 			}
 		}
+	},
+
+	// ── Variable management ─────────────────────────────────────────────
+
+	createVariable: async ({ locals, request }) => {
+		if (!locals.user) redirect(302, '/login');
+
+		const data = await request.formData();
+		const templateKey = getStr(data, 'template_key');
+		if (!templateKey) return fail(422, { error: 'Template key is required' });
+
+		await locals.adminPb.collection('sm_template_variables').create({
+			name: getStr(data, 'name') || 'new.variable',
+			description: getStr(data, 'description'),
+			template_key: templateKey,
+			source: getStr(data, 'source') || 'Custom',
+			data_path: getStr(data, 'data_path'),
+			is_common: templateKey === '_common'
+		});
+	},
+
+	updateVariable: async ({ locals, request }) => {
+		if (!locals.user) redirect(302, '/login');
+
+		const data = await request.formData();
+		const id = data.get('id');
+		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
+
+		await locals.adminPb.collection('sm_template_variables').update(id, {
+			name: getStr(data, 'name'),
+			description: getStr(data, 'description'),
+			source: getStr(data, 'source'),
+			data_path: getStr(data, 'data_path')
+		});
+	},
+
+	deleteVariable: async ({ locals, request }) => {
+		if (!locals.user) redirect(302, '/login');
+
+		const data = await request.formData();
+		const id = data.get('id');
+		if (!id || typeof id !== 'string') return fail(422, { error: 'ID required' });
+
+		await locals.adminPb.collection('sm_template_variables').delete(id);
 	}
 };

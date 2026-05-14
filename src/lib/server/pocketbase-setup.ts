@@ -286,6 +286,19 @@ const collections: CollectionDef[] = [
 		]
 	},
 
+	// ── Template variables ──────────────────────────────────────────────
+	{
+		name: col('template_variables'),
+		fields: [
+			text('name', true),
+			text('description'),
+			text('template_key', true),
+			text('source'),
+			text('data_path'),
+			bool('is_common')
+		]
+	},
+
 	// ── Bot config (singleton) ────────────────────────────────────────────
 	{
 		name: col('bot_config'),
@@ -489,6 +502,7 @@ export async function seedDefaultData(adminPb: PocketBase): Promise<void> {
 	await seedBotConfig(adminPb);
 	await seedInstructionSets(adminPb);
 	await seedEmbedTemplates(adminPb);
+	await seedTemplateVariables(adminPb);
 
 	logger.info('[pb-setup] Seed check complete');
 }
@@ -744,4 +758,152 @@ async function seedEmbedTemplates(adminPb: PocketBase): Promise<void> {
 	}
 
 	logger.info(`[pb-setup] Seeded ${defaults.length} default embed templates`);
+}
+
+async function seedTemplateVariables(adminPb: PocketBase): Promise<void> {
+	const collectionName = col('template_variables');
+
+	try {
+		const records = await adminPb.collection(collectionName).getList(1, 1);
+		if (records.totalItems > 0) {
+			logger.debug(`[pb-setup] "${collectionName}" already has records — skipping seed`);
+			return;
+		}
+	} catch (err) {
+		logger.error(
+			`[pb-setup] Failed to check "${collectionName}" for existing records: ${err instanceof Error ? err.message : String(err)}`
+		);
+		return;
+	}
+
+	const allVars: Array<{
+		name: string;
+		description: string;
+		template_key: string;
+		source: string;
+		data_path: string;
+		is_common?: boolean;
+	}> = [
+		// ── Common variables ──────────────────────────────────────────
+		{ name: 'user', description: 'Discord username of the requester', template_key: '_common', source: 'Discord', data_path: '', is_common: true },
+		{ name: 'user.mention', description: 'Discord @mention of the requester', template_key: '_common', source: 'Discord', data_path: '', is_common: true },
+		{ name: 'server.name', description: 'Discord server name', template_key: '_common', source: 'Discord', data_path: '', is_common: true },
+		{ name: 'timestamp', description: 'Current ISO 8601 timestamp', template_key: '_common', source: 'Bot', data_path: '', is_common: true },
+
+		// ── movie-lookup ──────────────────────────────────────────────
+		{ name: 'movie.title', description: 'Movie title', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.title' },
+		{ name: 'movie.year', description: 'Release year', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.year' },
+		{ name: 'movie.overview', description: 'Short plot summary', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.overview' },
+		{ name: 'movie.tagline', description: 'Movie tagline / slogan', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.tagline' },
+		{ name: 'movie.releaseDate', description: 'Full release date', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.releaseDate' },
+		{ name: 'movie.runtime', description: 'Runtime in minutes', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.runtime' },
+		{ name: 'movie.rating', description: 'Content rating (e.g. R, PG-13)', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.contentRating' },
+		{ name: 'movie.mpaaRating', description: 'MPAA rating', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.contentRating' },
+		{ name: 'movie.imdbRating', description: 'IMDb score out of 10', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.imdbVotes', description: 'Number of IMDb votes', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.tmdbRating', description: 'TMDb rating', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.tmdbVotes', description: 'TMDb vote count', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.budget', description: 'Production budget', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.budget' },
+		{ name: 'movie.revenue', description: 'Box office revenue', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.revenue' },
+		{ name: 'movie.studio', description: 'Production studio', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.studio' },
+		{ name: 'movie.director', description: 'Director name(s)', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.director' },
+		{ name: 'movie.writers', description: 'Writer name(s)', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.writers' },
+		{ name: 'movie.actors', description: 'Lead actors', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.actors' },
+		{ name: 'movie.genres', description: 'Associated genres', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.genres' },
+		{ name: 'movie.badmoviesUrl', description: 'Link to BadMovies.co entry', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.imdbUrl', description: 'Link to IMDb page', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.posterUrl', description: 'Poster image URL', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.posterPath' },
+		{ name: 'movie.trailerUrl', description: 'YouTube trailer URL', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.trailerUrl' },
+		{ name: 'movie.tmdbId', description: 'TMDb numeric ID', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.tmdbId' },
+		{ name: 'movie.imdbId', description: 'IMDb tt-ID', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.imdbId' },
+		{ name: 'movie.slug', description: 'URL slug', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: 'movies.slug' },
+		{ name: 'movie.reviewCount', description: 'Number of approved reviews', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.quoteCount', description: 'Number of approved quotes', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'movie.appearances', description: 'Number of experiments featuring this movie', template_key: 'movie-lookup', source: 'BadMovies DB', data_path: '' },
+
+		// ── experiment-lookup ─────────────────────────────────────────
+		{ name: 'experiment.number', description: 'Experiment episode number', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: 'experiments.experimentNumber' },
+		{ name: 'experiment.title', description: 'Full experiment title', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: 'experiments.title' },
+		{ name: 'experiment.date', description: 'Date of the experiment', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: 'experiments.date' },
+		{ name: 'experiment.host', description: 'Host of the experiment', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'experiment.totalMovies', description: 'Number of movies watched', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'experiment.movies', description: 'List of movies watched (comma-separated)', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'experiment.movieList', description: 'Formatted bullet list of movie titles', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'experiment.notes', description: 'Experiment notes / description', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: 'experiments.notes' },
+		{ name: 'experiment.url', description: 'Link to experiment details', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'experiment.imageUrl', description: 'Thumbnail / banner image URL', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: '' },
+		{ name: 'experiment.bannerUrl', description: 'Banner image URL', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: 'experiments.bannerPath' },
+		{ name: 'experiment.slug', description: 'URL slug', template_key: 'experiment-lookup', source: 'BadMovies DB', data_path: 'experiments.slug' },
+
+		// ── review ────────────────────────────────────────────────────
+		{ name: 'review.author', description: 'Review author name', template_key: 'review', source: 'BadMovies DB', data_path: '' },
+		{ name: 'review.rating', description: 'Review rating / score', template_key: 'review', source: 'BadMovies DB', data_path: '' },
+		{ name: 'review.content', description: 'Full review text', template_key: 'review', source: 'BadMovies DB', data_path: 'reviews.body' },
+		{ name: 'review.date', description: 'Review date', template_key: 'review', source: 'BadMovies DB', data_path: 'reviews.createdAt' },
+		{ name: 'review.movieTitle', description: 'Title of the reviewed movie', template_key: 'review', source: 'BadMovies DB', data_path: '' },
+		{ name: 'review.movieUrl', description: 'Link to the movie', template_key: 'review', source: 'BadMovies DB', data_path: '' },
+		{ name: 'review.url', description: 'Link to the review', template_key: 'review', source: 'BadMovies DB', data_path: '' },
+		{ name: 'review.ratingGood', description: 'Rating: Is it good? (0-10)', template_key: 'review', source: 'BadMovies DB', data_path: 'reviews.ratingGood' },
+		{ name: 'review.ratingEntertainment', description: 'Rating: Entertainment value (0-10)', template_key: 'review', source: 'BadMovies DB', data_path: 'reviews.ratingEntertainment' },
+		{ name: 'review.ratingSoBadItsGood', description: 'Rating: So bad it\'s good (0-10)', template_key: 'review', source: 'BadMovies DB', data_path: 'reviews.ratingSoBadItIsGood' },
+		{ name: 'review.ratingMemePotential', description: 'Rating: Meme potential (0-10)', template_key: 'review', source: 'BadMovies DB', data_path: 'reviews.ratingMemePotential' },
+		{ name: 'review.weightedScore', description: 'Computed weighted score', template_key: 'review', source: 'BadMovies DB', data_path: '' },
+		{ name: 'review.status', description: 'Approval status', template_key: 'review', source: 'BadMovies DB', data_path: 'reviews.status' },
+
+		// ── quote ─────────────────────────────────────────────────────
+		{ name: 'quote.text', description: 'The quote text', template_key: 'quote', source: 'BadMovies DB', data_path: 'quotes.quote' },
+		{ name: 'quote.movie', description: 'Movie the quote is from', template_key: 'quote', source: 'BadMovies DB', data_path: '' },
+		{ name: 'quote.character', description: 'Character who said it', template_key: 'quote', source: 'BadMovies DB', data_path: 'quotes.character' },
+		{ name: 'quote.actor', description: 'Actor who played the character', template_key: 'quote', source: 'BadMovies DB', data_path: 'quotes.actor' },
+		{ name: 'quote.year', description: 'Year of the movie', template_key: 'quote', source: 'BadMovies DB', data_path: '' },
+		{ name: 'quote.url', description: 'Link to the quote', template_key: 'quote', source: 'BadMovies DB', data_path: '' },
+		{ name: 'quote.context', description: 'Quote context / description', template_key: 'quote', source: 'BadMovies DB', data_path: 'quotes.context' },
+		{ name: 'quote.likes', description: 'Like count', template_key: 'quote', source: 'BadMovies DB', data_path: 'quotes.likes' },
+		{ name: 'quote.isMemorable', description: 'Whether marked as memorable', template_key: 'quote', source: 'BadMovies DB', data_path: 'quotes.isMemorable' },
+		{ name: 'quote.movieSlug', description: 'Movie URL slug', template_key: 'quote', source: 'BadMovies DB', data_path: '' },
+		{ name: 'quote.movieUrl', description: 'Full movie page URL', template_key: 'quote', source: 'BadMovies DB', data_path: '' },
+
+		// ── wheel-spin ────────────────────────────────────────────────
+		{ name: 'wheel.title', description: 'Movie title from wheel', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: 'title' },
+		{ name: 'wheel.year', description: 'Release year', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: 'year' },
+		{ name: 'wheel.tmdbId', description: 'TMDb numeric ID', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: 'tmdbId' },
+		{ name: 'wheel.imdbId', description: 'IMDb tt-ID', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: 'imdbId' },
+		{ name: 'wheel.suggestedBy', description: 'User who added the movie', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: 'suggestedBy' },
+		{ name: 'wheel.dateAdded', description: 'Date added to the wheel', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: 'dateAdded' },
+		{ name: 'wheel.voters', description: 'Comma-separated voter IDs', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: 'voters' },
+		{ name: 'wheel.voteCount', description: 'Number of votes', template_key: 'wheel-spin', source: 'Wheel (PB)', data_path: '' },
+
+		// ── no-results ────────────────────────────────────────────────
+		{ name: 'query', description: 'The search query that returned nothing', template_key: 'no-results', source: 'Discord', data_path: '' },
+		{ name: 'source', description: 'Where the search was performed', template_key: 'no-results', source: 'Discord', data_path: '' },
+
+		// ── error ─────────────────────────────────────────────────────
+		{ name: 'error.message', description: 'Error description', template_key: 'error', source: 'Bot', data_path: '' },
+		{ name: 'error.command', description: 'The command that caused the error', template_key: 'error', source: 'Bot', data_path: '' },
+		{ name: 'error.context', description: 'Additional error context', template_key: 'error', source: 'Bot', data_path: '' },
+
+		// ── help ──────────────────────────────────────────────────────
+		{ name: 'bot.name', description: 'Bot display name', template_key: 'help', source: 'Bot Config', data_path: '' },
+		{ name: 'bot.commands', description: 'Formatted command list', template_key: 'help', source: 'Bot', data_path: '' },
+		{ name: 'bot.prefix', description: 'Command prefix', template_key: 'help', source: 'Bot Config', data_path: '' }
+	];
+
+	for (const v of allVars) {
+		try {
+			await adminPb.collection(collectionName).create({
+				name: v.name,
+				description: v.description,
+				template_key: v.template_key,
+				source: v.source,
+				data_path: v.data_path,
+				is_common: v.is_common
+			});
+		} catch (err) {
+			logger.error(
+				`[pb-setup] Failed to seed template variable "${v.name}": ${err instanceof Error ? err.message : String(err)}`
+			);
+		}
+	}
+
+	logger.info(`[pb-setup] Seeded ${allVars.length} template variables`);
 }

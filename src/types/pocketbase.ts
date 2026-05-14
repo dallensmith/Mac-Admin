@@ -311,6 +311,23 @@ export interface PBEmbedTemplateRecord {
   updated:            string;
 }
 
+// ─── Template variables ──────────────────────────────────────────────────────
+
+/** A named variable available for use in embed templates. Stored in PocketBase so both the admin panel and bot share a single source of truth. */
+export interface PBTemplateVariableRecord {
+  id:           string;
+  name:         string;
+  description:  string;
+  template_key: string;
+  source:       string;
+  /** Optional data path for bot auto-resolution (e.g. "movies.title", "wheel.voters"). Empty = requires custom bot resolver code. */
+  data_path:    string;
+  /** When true, this variable is available in all template keys (e.g. {{user}}, {{timestamp}}). */
+  is_common:    boolean;
+  created:      string;
+  updated:      string;
+}
+
 export interface PBWheelCleanupRunRecord {
   id:        string;
   timestamp: string;
