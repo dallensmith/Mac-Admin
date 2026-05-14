@@ -1,6 +1,10 @@
 import type { Handle } from '@sveltejs/kit';
 import { createPb, createAdminPb, USERS_COLLECTION } from '$lib/server/auth';
-import { ensureAllCollections, seedDefaultData } from '$lib/server/pocketbase-setup';
+import {
+	ensureAuthCollection,
+	ensureAllCollections,
+	seedDefaultData
+} from '$lib/server/pocketbase-setup';
 
 let initialized = false;
 
@@ -39,6 +43,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		// Fire-and-forget: ensure collections first, then seed (order matters)
 		(async () => {
 			try {
+				await ensureAuthCollection(adminPb);
 				await ensureAllCollections(adminPb);
 				await seedDefaultData(adminPb);
 			} catch (err) {

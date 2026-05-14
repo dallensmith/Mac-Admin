@@ -333,6 +333,86 @@ export async function ensureAllCollections(adminPb: PocketBase): Promise<void> {
 	logger.info('[pb-setup] Collection check complete');
 }
 
+// ── Auth collection ────────────────────────────────────────────────────────
+
+/**
+ * Ensures the ma_users auth collection exists with Discord OAuth2 configured.
+ * Auth-type collection — must be created separately from the base collections above.
+ */
+export async function ensureAuthCollection(adminPb: PocketBase): Promise<void> {
+	const name = 'ma_users';
+	const existing = await adminPb.collections.getFullList({ fields: 'id,name,type' });
+	const found = existing.find((c: { name: string; type: string }) => c.name === name);
+
+	if (found) {
+		// If it already exists as auth, assume it's correctly configured from a prior run
+		if (found.type === 'auth') {
+			logger.debug(`[pb-setup] Auth collection "${name}" already exists — skipping`);
+			return;
+		}
+		// Exists as the wrong type — delete and recreate below
+		logger.warn(
+			`[pb-setup] "${name}" exists as type "${found.type}" instead of "auth" — recreating`
+		);
+		try {
+			await adminPb.collections.delete(found.id);
+		} catch (err) {
+			logger.error(
+				`[pb-setup] Failed to delete misconfigured "${name}": ${err instanceof Error ? err.message : String(err)}`
+			);
+			return;
+		}
+	}
+
+	const clientId = env.DISCORD_CLIENT_ID;
+	const clientSecret = env.DISCORD_CLIENT_SECRET;
+
+	if (!clientId || !clientSecret) {
+		logger.error(
+			'[pb-setup] DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET must be set to create the ma_users auth collection'
+		);
+		return;
+	}
+
+	try {
+		await adminPb.collections.create({
+			name,
+			type: 'auth',
+			createRule: '',
+			passwordAuth: {
+				enabled: false,
+				identityFields: []
+			},
+			oauth2: {
+				enabled: true,
+				mappedFields: {
+					id: '',
+					name: 'name',
+					username: 'username',
+					avatarURL: 'avatarUrl'
+				},
+				providers: [
+					{
+						name: 'discord',
+						clientId,
+						clientSecret,
+						authURL: 'https://discord.com/api/oauth2/authorize',
+						tokenURL: 'https://discord.com/api/oauth2/token',
+						userApiURL: 'https://discord.com/api/users/@me',
+						displayName: 'Discord'
+					}
+				]
+			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} as any);
+		logger.info(`[pb-setup] Created auth collection "${name}" with Discord OAuth2`);
+	} catch (err) {
+		logger.error(
+			`[pb-setup] Failed to create auth collection "${name}": ${err instanceof Error ? err.message : String(err)}`
+		);
+	}
+}
+
 // ── seedDefaultData ─────────────────────────────────────────────────────────
 
 /**
