@@ -8,6 +8,7 @@
 	import DiscordTemplatePreview from '$lib/components/ui/DiscordTemplatePreview.svelte';
 	import TemplateFieldToggle from '$lib/components/ui/TemplateFieldToggle.svelte';
 	import EmbedFieldEditor from '$lib/components/ui/EmbedFieldEditor.svelte';
+	import VariableAutocomplete from '$lib/components/ui/VariableAutocomplete.svelte';
 
 	let { data } = $props();
 
@@ -124,6 +125,12 @@
 	let templateKeyVars = $derived(
 		(data.variableCatalog as Record<string, { name: string; description: string; source: string }[]>)[edits.template_key] ?? []
 	);
+
+	// Flat list of all available variables (template key + common) for autocomplete
+	let allVariables = $derived([
+		...templateKeyVars,
+		...(data.commonVariables as { name: string; description: string; source: string }[])
+	]);
 
 	// ── Discord limits ────────────────────────────────────────────────────
 	const discordLimits = [
@@ -341,34 +348,31 @@
 							{#if edits.author_enabled}
 								<div>
 									<label for="authorName" class="label-caps">Author Name</label>
-									<input
+									<VariableAutocomplete
 										id="authorName"
 										name="author_name"
-										type="text"
 										bind:value={edits.author_name}
-										class="input-dark"
+										variables={allVariables}
 										placeholder={'e.g. {{bot.name}}'}
 									/>
 								</div>
 								<div>
 									<label for="authorUrl" class="label-caps">Author URL</label>
-									<input
+									<VariableAutocomplete
 										id="authorUrl"
 										name="author_url"
-										type="text"
 										bind:value={edits.author_url}
-										class="input-dark"
+										variables={allVariables}
 										placeholder={'e.g. {{movie.badmoviesUrl}}'}
 									/>
 								</div>
 								<div>
 									<label for="authorIconUrl" class="label-caps">Author Icon URL</label>
-									<input
+									<VariableAutocomplete
 										id="authorIconUrl"
 										name="author_icon_url"
-										type="text"
 										bind:value={edits.author_icon_url}
-										class="input-dark"
+										variables={allVariables}
 										placeholder={'e.g. {{bot.avatarUrl}}'}
 									/>
 								</div>
@@ -390,15 +394,11 @@
 							{#if edits.title_enabled}
 								<div>
 									<label for="titleText" class="label-caps">Title Text</label>
-									<input
-										id="titleText"
-										name="title_text"
-										type="text"
-										bind:value={edits.title_text}
-										class="input-dark"
-										placeholder={'e.g. {{movie.title}} ({{movie.year}})'}
-									/>
-									<p class="mt-1 text-xs text-slate-500">Max 256 characters</p>
+								<VariableAutocomplete
+									id="titleText"
+									name="title_text"
+									bind:value={edits.title_text}
+									variables={allVariables}
 								</div>
 							{/if}
 
@@ -413,17 +413,15 @@
 							{#if edits.description_enabled}
 								<div>
 									<label for="descText" class="label-caps">Description Text</label>
-									<textarea
-										id="descText"
-										name="description_text"
-										rows="4"
-										bind:value={edits.description_text}
-										class="input-dark"
-										placeholder={'e.g. {{movie.overview}}'}
-									></textarea>
-									<p class="mt-1 text-xs text-slate-500">Max 4096 characters</p>
-								</div>
-							{/if}
+								<VariableAutocomplete
+									id="descText"
+									name="description_text"
+									multiline
+									rows={4}
+									bind:value={edits.description_text}
+									variables={allVariables}
+									placeholder={'e.g. {{movie.overview}}'}
+								/>
 
 							<!-- URL -->
 							<input type="hidden" name="url_enabled" value={edits.url_enabled ? 'true' : 'false'} />
@@ -436,15 +434,11 @@
 							{#if edits.url_enabled}
 								<div>
 									<label for="urlText" class="label-caps">Embed URL</label>
-									<input
-										id="urlText"
-										name="url_text"
-										type="text"
-										bind:value={edits.url_text}
-										class="input-dark"
-										placeholder={'e.g. {{movie.badmoviesUrl}}'}
-									/>
-								</div>
+								<VariableAutocomplete
+									id="urlText"
+									name="url_text"
+									bind:value={edits.url_text}
+									variables={allVariables}
 							{/if}
 
 							<!-- Color -->
@@ -535,27 +529,22 @@
 							{#if edits.footer_enabled}
 								<div>
 									<label for="footerText" class="label-caps">Footer Text</label>
-									<input
-										id="footerText"
-										name="footer_text"
-										type="text"
-										bind:value={edits.footer_text}
-										class="input-dark"
-										placeholder={'e.g. {{bot.name}} | Requested by {{user}}'}
-									/>
-									<p class="mt-1 text-xs text-slate-500">Max 2048 characters</p>
-								</div>
-								<div>
-									<label for="footerIconUrl" class="label-caps">Footer Icon URL</label>
-									<input
-										id="footerIconUrl"
-										name="footer_icon_url"
-										type="text"
-										bind:value={edits.footer_icon_url}
-										class="input-dark"
-										placeholder={'e.g. {{bot.avatarUrl}}'}
-									/>
-								</div>
+								<VariableAutocomplete
+									id="footerText"
+									name="footer_text"
+									bind:value={edits.footer_text}
+									variables={allVariables}
+									placeholder={'e.g. {{bot.name}} | Requested by {{user}}'}
+								/>
+								<p class="mt-1 text-xs text-slate-500">Max 2048 characters</p>
+							</div>
+							<div>
+								<label for="footerIconUrl" class="label-caps">Footer Icon URL</label>
+								<VariableAutocomplete
+									id="footerIconUrl"
+									name="footer_icon_url"
+									bind:value={edits.footer_icon_url}
+									variables={allVariables}
 							{/if}
 
 							<div class="border-t border-slate-800/50 pt-4">
