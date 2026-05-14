@@ -40,16 +40,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (!initialized) {
 		initialized = true;
 		const adminPb = event.locals.adminPb;
-		// Fire-and-forget: ensure collections first, then seed (order matters)
-		(async () => {
-			try {
-				await ensureAuthCollection(adminPb);
-				await ensureAllCollections(adminPb);
-				await seedDefaultData(adminPb);
-			} catch (err) {
-				console.error('[hooks] PocketBase setup failed:', err);
-			}
-		})();
+		try {
+			await ensureAuthCollection(adminPb);
+			await ensureAllCollections(adminPb);
+			await seedDefaultData(adminPb);
+		} catch (err) {
+			console.error('[hooks] PocketBase setup failed:', err);
+		}
 	}
 
 	if (pb.authStore.isValid) {

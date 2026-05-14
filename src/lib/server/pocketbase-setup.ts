@@ -17,7 +17,7 @@ function getPrefix(): string {
 }
 
 function getWheelName(): string {
-	return env.POCKETBASE_WHEEL_COLLECTION || 'thewheel';
+	return env.POCKETBASE_WHEEL_COLLECTION || 'sm_wheel';
 }
 
 function col(name: string): string {
@@ -337,14 +337,40 @@ export async function ensureAllCollections(adminPb: PocketBase): Promise<void> {
 
 	// Fetch existing collections once
 	let existingNames: Set<string>;
+	let existingCollections: Array<{ id: string; name: string }>;
 	try {
 		const result = await adminPb.collections.getFullList({ fields: 'id,name' });
-		existingNames = new Set(result.map((c: { name: string }) => c.name));
+		existingCollections = result as Array<{ id: string; name: string }>;
+		existingNames = new Set(existingCollections.map((c) => c.name));
 	} catch (err) {
 		logger.error(
 			`[pb-setup] Failed to list existing collections: ${err instanceof Error ? err.message : String(err)}`
 		);
 		return;
+	}
+
+	// Fixup: if sm_embed_templates exists but is broken (returns 400 on query),
+	// delete it so it gets recreated with the correct schema below.
+	const embedColName = col('embed_templates');
+	if (existingNames.has(embedColName)) {
+		try {
+			await adminPb.collection(embedColName).getList(1, 1);
+		} catch {
+			logger.warn(
+				`[pb-setup] Collection "${embedColName}" exists but is broken — recreating`
+			);
+			const col = existingCollections.find((c) => c.name === embedColName);
+			if (col) {
+				try {
+					await adminPb.collections.delete(col.id);
+					existingNames.delete(embedColName);
+				} catch (delErr) {
+					logger.error(
+						`[pb-setup] Failed to delete broken "${embedColName}": ${delErr instanceof Error ? delErr.message : String(delErr)}`
+					);
+				}
+			}
+		}
 	}
 
 	for (const def of collections) {

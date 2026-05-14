@@ -247,7 +247,7 @@
 						<div class="flex w-full items-center gap-2">
 							<code class="rounded bg-slate-800/80 px-1.5 py-0.5 text-[10px] text-cyan-400">{rec.template_key}</code>
 							<span class="ml-auto text-label-xs font-bold tracking-widest text-slate-500 uppercase"
-								>Edited: {(rec.updated as string).slice(0, 10)}</span
+								>Edited: {((rec.updated as string) ?? '').slice(0, 10)}</span
 							>
 						</div>
 					</button>
@@ -320,7 +320,7 @@
 									class="input-dark"
 								/>
 								<datalist id="keySuggestions">
-									{#each keySuggestions as key}
+									{#each keySuggestions as key (key)}
 										<option value={key}></option>
 									{/each}
 								</datalist>

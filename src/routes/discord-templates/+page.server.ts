@@ -92,8 +92,13 @@ const COMMON_VARIABLES: VariableDef[] = [
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) redirect(302, '/login');
 
-	const templates = await locals.adminPb.collection('sm_embed_templates').getFullList({
-		sort: '-updated'
+	// Fetch without sort — PocketBase has a bug where sorting by updated/created
+	// returns 400 after a fresh Docker volume creation. Sort client-side instead.
+	const result = await locals.adminPb.collection('sm_embed_templates').getList(1, 10000);
+	const templates = result.items.sort((a, b) => {
+		const au = typeof a.updated === 'string' ? a.updated : '';
+		const bu = typeof b.updated === 'string' ? b.updated : '';
+		return bu.localeCompare(au);
 	});
 
 	return {
