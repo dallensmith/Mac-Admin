@@ -1,12 +1,16 @@
 <script lang="ts">
+	import VariableAutocomplete from '$lib/components/ui/VariableAutocomplete.svelte';
+
 	type EmbedField = { name: string; value: string; inline: boolean };
 
 	let {
 		fields = $bindable([] as EmbedField[]),
-		readonly = false
+		readonly = false,
+		variables = [] as { name: string; description: string; source: string }[]
 	} = $props<{
 		fields?: EmbedField[];
 		readonly?: boolean;
+		variables?: { name: string; description: string; source: string }[];
 	}>();
 
 	const MAX_FIELDS = 25;
@@ -29,14 +33,6 @@
 		const copy = [...fields];
 		[copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
 		fields = copy;
-	}
-
-	function updateFieldName(index: number, value: string) {
-		fields = fields.map((f: EmbedField, i: number) => (i === index ? { ...f, name: value } : f));
-	}
-
-	function updateFieldValue(index: number, value: string) {
-		fields = fields.map((f: EmbedField, i: number) => (i === index ? { ...f, value } : f));
 	}
 
 	function toggleInline(index: number) {
@@ -129,21 +125,15 @@
 						<!-- Field inputs -->
 						<div class="min-w-0 flex-1 space-y-2">
 							<div class="grid gap-2 sm:grid-cols-2">
-								<input
-									type="text"
+								<VariableAutocomplete
+									bind:value={field.name}
+									{variables}
 									placeholder="Field name (max 256)"
-									value={field.name}
-									oninput={(e) => updateFieldName(i, e.currentTarget.value)}
-									readonly={readonly}
-									class="input-dark text-sm {readonly ? 'cursor-default opacity-60' : ''}"
 								/>
-								<input
-									type="text"
+								<VariableAutocomplete
+									bind:value={field.value}
+									{variables}
 									placeholder="Field value (max 1024)"
-									value={field.value}
-									oninput={(e) => updateFieldValue(i, e.currentTarget.value)}
-									readonly={readonly}
-									class="input-dark text-sm {readonly ? 'cursor-default opacity-60' : ''}"
 								/>
 							</div>
 						</div>

@@ -394,11 +394,14 @@
 							{#if edits.title_enabled}
 								<div>
 									<label for="titleText" class="label-caps">Title Text</label>
-								<VariableAutocomplete
-									id="titleText"
-									name="title_text"
-									bind:value={edits.title_text}
-									variables={allVariables}
+									<VariableAutocomplete
+										id="titleText"
+										name="title_text"
+										bind:value={edits.title_text}
+										variables={allVariables}
+										placeholder={'e.g. {{movie.title}} ({{movie.year}})'}
+									/>
+									<p class="mt-1 text-xs text-slate-500">Max 256 characters</p>
 								</div>
 							{/if}
 
@@ -413,15 +416,18 @@
 							{#if edits.description_enabled}
 								<div>
 									<label for="descText" class="label-caps">Description Text</label>
-								<VariableAutocomplete
-									id="descText"
-									name="description_text"
-									multiline
-									rows={4}
-									bind:value={edits.description_text}
-									variables={allVariables}
-									placeholder={'e.g. {{movie.overview}}'}
-								/>
+									<VariableAutocomplete
+										id="descText"
+										name="description_text"
+										multiline
+										rows={4}
+										bind:value={edits.description_text}
+										variables={allVariables}
+										placeholder={'e.g. {{movie.overview}}'}
+									/>
+									<p class="mt-1 text-xs text-slate-500">Max 4096 characters</p>
+								</div>
+							{/if}
 
 							<!-- URL -->
 							<input type="hidden" name="url_enabled" value={edits.url_enabled ? 'true' : 'false'} />
@@ -434,11 +440,14 @@
 							{#if edits.url_enabled}
 								<div>
 									<label for="urlText" class="label-caps">Embed URL</label>
-								<VariableAutocomplete
-									id="urlText"
-									name="url_text"
-									bind:value={edits.url_text}
-									variables={allVariables}
+									<VariableAutocomplete
+										id="urlText"
+										name="url_text"
+										bind:value={edits.url_text}
+										variables={allVariables}
+										placeholder={'e.g. {{movie.badmoviesUrl}}'}
+									/>
+								</div>
 							{/if}
 
 							<!-- Color -->
@@ -476,12 +485,11 @@
 							{#if edits.thumbnail_enabled}
 								<div>
 									<label for="thumbnailUrl" class="label-caps">Thumbnail URL</label>
-									<input
+									<VariableAutocomplete
 										id="thumbnailUrl"
 										name="thumbnail_url"
-										type="text"
 										bind:value={edits.thumbnail_url}
-										class="input-dark"
+										variables={allVariables}
 										placeholder={'e.g. {{movie.posterUrl}}'}
 									/>
 								</div>
@@ -498,12 +506,11 @@
 							{#if edits.image_enabled}
 								<div>
 									<label for="imageUrl" class="label-caps">Image URL</label>
-									<input
+									<VariableAutocomplete
 										id="imageUrl"
 										name="image_url"
-										type="text"
 										bind:value={edits.image_url}
-										class="input-dark"
+										variables={allVariables}
 										placeholder={'e.g. {{experiment.imageUrl}}'}
 									/>
 								</div>
@@ -513,7 +520,7 @@
 
 					<!-- ── Fields Tab ────────────────────────────────────────── -->
 					<div class={activeTab !== 'fields' ? 'hidden' : ''}>
-						<EmbedFieldEditor bind:fields={embedFields} />
+						<EmbedFieldEditor bind:fields={embedFields} variables={allVariables} />
 					</div>
 
 					<!-- ── Footer Tab ────────────────────────────────────────── -->
@@ -529,22 +536,25 @@
 							{#if edits.footer_enabled}
 								<div>
 									<label for="footerText" class="label-caps">Footer Text</label>
-								<VariableAutocomplete
-									id="footerText"
-									name="footer_text"
-									bind:value={edits.footer_text}
-									variables={allVariables}
-									placeholder={'e.g. {{bot.name}} | Requested by {{user}}'}
-								/>
-								<p class="mt-1 text-xs text-slate-500">Max 2048 characters</p>
-							</div>
-							<div>
-								<label for="footerIconUrl" class="label-caps">Footer Icon URL</label>
-								<VariableAutocomplete
-									id="footerIconUrl"
-									name="footer_icon_url"
-									bind:value={edits.footer_icon_url}
-									variables={allVariables}
+									<VariableAutocomplete
+										id="footerText"
+										name="footer_text"
+										bind:value={edits.footer_text}
+										variables={allVariables}
+										placeholder={'e.g. {{bot.name}} | Requested by {{user}}'}
+									/>
+									<p class="mt-1 text-xs text-slate-500">Max 2048 characters</p>
+								</div>
+								<div>
+									<label for="footerIconUrl" class="label-caps">Footer Icon URL</label>
+									<VariableAutocomplete
+										id="footerIconUrl"
+										name="footer_icon_url"
+										bind:value={edits.footer_icon_url}
+										variables={allVariables}
+										placeholder={'e.g. {{bot.avatarUrl}}'}
+									/>
+								</div>
 							{/if}
 
 							<div class="border-t border-slate-800/50 pt-4">
@@ -619,7 +629,8 @@
 								<code class="rounded bg-slate-800/80 px-1.5 py-0.5 text-xs text-fuchsia-400"
 									>{'{{' + v.name + '}}'}</code
 								>
-								<span class="text-xs text-slate-400">{v.description}</span>
+								<span class="min-w-0 flex-1 text-xs text-slate-400">{v.description}</span>
+								<span class="shrink-0 rounded bg-slate-800 px-1 py-0.5 text-[9px] text-slate-500">{v.source}</span>
 							</li>
 						{/each}
 					</ul>
@@ -639,7 +650,8 @@
 								<code class="rounded bg-slate-800/80 px-1.5 py-0.5 text-xs text-fuchsia-400"
 									>{'{{' + v.name + '}}'}</code
 								>
-								<span class="text-xs text-slate-400">{v.description}</span>
+								<span class="min-w-0 flex-1 text-xs text-slate-400">{v.description}</span>
+								<span class="shrink-0 rounded bg-slate-800 px-1 py-0.5 text-[9px] text-slate-500">{v.source}</span>
 							</li>
 						{/each}
 					</ul>

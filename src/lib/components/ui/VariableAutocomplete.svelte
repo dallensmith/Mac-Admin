@@ -35,7 +35,7 @@
 		if (!filterText) return variables;
 		const q = filterText.toLowerCase();
 		return variables.filter(
-			(v) =>
+			(v: VariableDef) =>
 				v.name.toLowerCase().includes(q) ||
 				v.description.toLowerCase().includes(q)
 		);
@@ -170,21 +170,22 @@
 
 	<!-- Variable Autocomplete Dropdown -->
 	{#if dropdownOpen && filtered.length > 0}
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="absolute z-50 max-h-48 w-72 overflow-y-auto rounded border border-cyan-500/30 bg-slate-900 shadow-lg shadow-cyan-500/10"
 			style="top: {dropdownTop}px; left: {dropdownLeft}px;"
 			onmousedown={onDropdownMouseDown}
 			role="listbox"
+			tabindex="0"
 		>
 			{#each filtered as v, i (v.name)}
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div
-					class="flex cursor-pointer items-start gap-2 px-3 py-2 text-xs transition-colors {i === activeIndex
+				<button
+					type="button"
+					class="flex w-full cursor-pointer items-start gap-2 px-3 py-2 text-left text-xs transition-colors {i === activeIndex
 						? 'bg-cyan-500/20 text-cyan-300'
 						: 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}"
 					role="option"
 					aria-selected={i === activeIndex}
+					tabindex="0"
 					onclick={() => insertVariable(v)}
 				>
 					<code class="shrink-0 rounded bg-slate-800/80 px-1 py-0.5 text-[11px] text-fuchsia-400"
@@ -192,7 +193,7 @@
 					>
 					<span class="truncate">{v.description}</span>
 					<span class="ml-auto shrink-0 text-[10px] text-slate-600">{v.source}</span>
-				</div>
+				</button>
 			{/each}
 		</div>
 	{/if}

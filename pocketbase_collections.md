@@ -417,11 +417,18 @@ Common variables available in **all** embed templates:
 | `{{movie.title}}`       | Movie title                     | BadMovies DB  |
 | `{{movie.year}}`        | Release year                    | BadMovies DB  |
 | `{{movie.overview}}`    | Short plot summary              | BadMovies DB  |
+| `{{movie.tagline}}`     | Movie tagline / slogan          | BadMovies DB  |
 | `{{movie.releaseDate}}` | Full release date               | BadMovies DB  |
 | `{{movie.runtime}}`     | Runtime in minutes              | BadMovies DB  |
 | `{{movie.rating}}`      | Content rating (R, PG-13, etc.) | BadMovies DB  |
+| `{{movie.mpaaRating}}`  | MPAA rating                     | BadMovies DB  |
 | `{{movie.imdbRating}}`  | IMDb score out of 10            | BadMovies DB  |
+| `{{movie.imdbVotes}}`   | Number of IMDb votes            | BadMovies DB  |
+| `{{movie.tmdbRating}}`  | TMDb rating                     | BadMovies DB  |
+| `{{movie.tmdbVotes}}`   | TMDb vote count                 | BadMovies DB  |
+| `{{movie.budget}}`      | Production budget               | BadMovies DB  |
 | `{{movie.revenue}}`     | Box office revenue              | BadMovies DB  |
+| `{{movie.studio}}`      | Production studio               | BadMovies DB  |
 | `{{movie.director}}`    | Director name(s)                | BadMovies DB  |
 | `{{movie.writers}}`     | Writer name(s)                  | BadMovies DB  |
 | `{{movie.actors}}`      | Lead actors                     | BadMovies DB  |
@@ -429,43 +436,64 @@ Common variables available in **all** embed templates:
 | `{{movie.badmoviesUrl}}`| Link to BadMovies.co entry      | BadMovies DB  |
 | `{{movie.imdbUrl}}`     | Link to IMDb page               | BadMovies DB  |
 | `{{movie.posterUrl}}`   | Poster image URL                | BadMovies DB  |
+| `{{movie.trailerUrl}}`  | YouTube trailer URL             | BadMovies DB  |
 | `{{movie.tmdbId}}`      | TMDb numeric ID                 | BadMovies DB  |
+| `{{movie.imdbId}}`      | IMDb tt-ID                      | BadMovies DB  |
 | `{{movie.slug}}`        | URL slug                        | BadMovies DB  |
+| `{{movie.reviewCount}}` | Number of approved reviews      | BadMovies DB  |
+| `{{movie.quoteCount}}`  | Number of approved quotes       | BadMovies DB  |
+| `{{movie.appearances}}` | Number of experiments featuring this movie | BadMovies DB  |
 
 ### `experiment-lookup`
 
-| Variable                  | Description                  | Source        |
-| ------------------------- | ---------------------------- | ------------- |
-| `{{experiment.number}}`   | Experiment episode number    | BadMovies DB  |
-| `{{experiment.date}}`     | Date of the experiment       | BadMovies DB  |
-| `{{experiment.movies}}`   | List of movies watched       | BadMovies DB  |
-| `{{experiment.host}}`     | Host of the experiment       | BadMovies DB  |
-| `{{experiment.url}}`      | Link to experiment details   | BadMovies DB  |
-| `{{experiment.imageUrl}}` | Thumbnail for the experiment | BadMovies DB  |
-| `{{experiment.slug}}`     | URL slug                     | BadMovies DB  |
+| Variable                  | Description                        | Source        |
+| ------------------------- | ---------------------------------- | ------------- |
+| `{{experiment.number}}`   | Experiment episode number          | BadMovies DB  |
+| `{{experiment.title}}`    | Full experiment title              | BadMovies DB  |
+| `{{experiment.date}}`     | Date of the experiment             | BadMovies DB  |
+| `{{experiment.host}}`     | Host of the experiment             | BadMovies DB  |
+| `{{experiment.totalMovies}}` | Number of movies watched         | BadMovies DB  |
+| `{{experiment.movies}}`   | List of movies watched (comma-separated) | BadMovies DB  |
+| `{{experiment.movieList}}`| Formatted bullet list of movie titles | BadMovies DB  |
+| `{{experiment.notes}}`    | Experiment notes / description     | BadMovies DB  |
+| `{{experiment.url}}`      | Link to experiment details         | BadMovies DB  |
+| `{{experiment.imageUrl}}` | Thumbnail / banner image URL       | BadMovies DB  |
+| `{{experiment.bannerUrl}}`| Banner image URL                   | BadMovies DB  |
+| `{{experiment.slug}}`     | URL slug                           | BadMovies DB  |
 
 ### `review`
 
-| Variable               | Description                     | Source        |
-| ---------------------- | ------------------------------- | ------------- |
-| `{{review.author}}`    | Review author name              | BadMovies DB  |
-| `{{review.rating}}`    | Review rating/score             | BadMovies DB  |
-| `{{review.content}}`   | Full review text                | BadMovies DB  |
-| `{{review.date}}`      | Review date                     | BadMovies DB  |
-| `{{review.movieTitle}}`| Title of the reviewed movie     | BadMovies DB  |
-| `{{review.movieUrl}}`  | Link to the movie               | BadMovies DB  |
-| `{{review.url}}`       | Link to the review              | BadMovies DB  |
+| Variable                      | Description                            | Source        |
+| ----------------------------- | -------------------------------------- | ------------- |
+| `{{review.author}}`           | Review author name                     | BadMovies DB  |
+| `{{review.rating}}`           | Review rating / score                  | BadMovies DB  |
+| `{{review.content}}`          | Full review text                       | BadMovies DB  |
+| `{{review.date}}`             | Review date                            | BadMovies DB  |
+| `{{review.movieTitle}}`       | Title of the reviewed movie            | BadMovies DB  |
+| `{{review.movieUrl}}`         | Link to the movie                      | BadMovies DB  |
+| `{{review.url}}`              | Link to the review                     | BadMovies DB  |
+| `{{review.ratingGood}}`       | Rating: Is it good? (0-10)             | BadMovies DB  |
+| `{{review.ratingEntertainment}}` | Rating: Entertainment value (0-10)  | BadMovies DB  |
+| `{{review.ratingSoBadItsGood}}` | Rating: So bad it's good (0-10)     | BadMovies DB  |
+| `{{review.ratingMemePotential}}` | Rating: Meme potential (0-10)       | BadMovies DB  |
+| `{{review.weightedScore}}`    | Computed weighted score                | BadMovies DB  |
+| `{{review.status}}`           | Approval status                        | BadMovies DB  |
 
 ### `quote`
 
-| Variable             | Description                          | Source        |
-| -------------------- | ------------------------------------ | ------------- |
-| `{{quote.text}}`     | The quote text                       | BadMovies DB  |
-| `{{quote.movie}}`    | Movie the quote is from              | BadMovies DB  |
-| `{{quote.character}}`| Character who said it                | BadMovies DB  |
-| `{{quote.actor}}`    | Actor who played the character       | BadMovies DB  |
-| `{{quote.year}}`     | Year of the movie                    | BadMovies DB  |
-| `{{quote.url}}`      | Link to the quote                    | BadMovies DB  |
+| Variable              | Description                          | Source        |
+| --------------------- | ------------------------------------ | ------------- |
+| `{{quote.text}}`      | The quote text                       | BadMovies DB  |
+| `{{quote.movie}}`     | Movie the quote is from              | BadMovies DB  |
+| `{{quote.character}}` | Character who said it                | BadMovies DB  |
+| `{{quote.actor}}`     | Actor who played the character       | BadMovies DB  |
+| `{{quote.year}}`      | Year of the movie                    | BadMovies DB  |
+| `{{quote.url}}`       | Link to the quote                    | BadMovies DB  |
+| `{{quote.context}}`   | Quote context / description          | BadMovies DB  |
+| `{{quote.likes}}`     | Like count                           | BadMovies DB  |
+| `{{quote.isMemorable}}` | Whether marked as memorable        | BadMovies DB  |
+| `{{quote.movieSlug}}` | Movie URL slug                       | BadMovies DB  |
+| `{{quote.movieUrl}}`  | Full movie page URL                  | BadMovies DB  |
 
 ### `wheel-spin`
 
@@ -477,6 +505,8 @@ Common variables available in **all** embed templates:
 | `{{wheel.imdbId}}`      | IMDb tt-ID                      | Wheel (PB)    |
 | `{{wheel.suggestedBy}}` | User who added the movie        | Wheel (PB)    |
 | `{{wheel.dateAdded}}`   | Date added to the wheel         | Wheel (PB)    |
+| `{{wheel.voters}}`      | Comma-separated voter IDs       | Wheel (PB)    |
+| `{{wheel.voteCount}}`   | Number of votes                 | Wheel (PB)    |
 
 ### `no-results`
 
